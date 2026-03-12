@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidCoin - Giao diện cho Bé (Phiên bản Sao 🌟)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hiệu ứng chuyển tab và lơ lửng */
+        .tab-content { display: none; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .floating-star { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
+    </style>
+</head>
+<body class="bg-gray-200 flex justify-center items-center min-h-screen font-sans">
+
+    <div class="bg-white w-full max-w-md h-[800px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative border-8 border-gray-800">
+
+        <div class="bg-blue-500 p-6 text-white text-center rounded-b-3xl shadow-md z-10 relative">
+            <h1 class="text-2xl font-bold flex items-center justify-center gap-2 drop-shadow-md">
+                <span class="text-4xl">👦</span> Xin chào, Bé Bin!
+            </h1>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 bg-gray-50 pb-28">
+
+            <div id="tab-dashboard" class="tab-content active flex flex-col justify-center h-full space-y-6">
+
+                <div class="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 text-white shadow-xl text-center relative overflow-hidden transform transition-all hover:scale-[1.02]">
+                    <div class="absolute -right-6 -top-6 text-8xl opacity-30 floating-star">🌟</div>
+                    <div class="absolute -left-4 bottom-10 text-5xl opacity-20 floating-star" style="animation-delay: 1s;">✨</div>
+
+                    <p class="text-xl font-bold mb-2 uppercase tracking-wide">Tổng Sao Chăm Chỉ</p>
+
+                    <p class="text-[6rem] leading-none font-black drop-shadow-xl my-2">450</p>
+
+                    <div class="inline-block bg-white/20 px-4 py-1.5 rounded-full mb-6 mt-2 backdrop-blur-sm">
+                        <p class="text-sm font-bold">👑 Danh hiệu: Siêu Nhân Cấp 5</p>
+                    </div>
+
+                    <div class="bg-black/30 backdrop-blur-md inline-block w-full px-4 py-3 rounded-2xl mb-5 border border-white/20 shadow-inner">
+                        <p class="text-base font-bold text-gray-100">
+                            Trong túi đang có: <span class="text-yellow-300 text-2xl ml-1">120 🌟</span>
+                        </p>
+                    </div>
+
+                    <button onclick="switchTab('store')" class="bg-white text-orange-600 font-black py-4 px-6 rounded-2xl w-full text-xl shadow-lg active:scale-95 transition-transform flex justify-center items-center gap-2">
+                        <span>🎁</span> ĐI ĐỔI QUÀ NGAY!
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-tasks" class="tab-content space-y-4 pt-2">
+                <h2 class="text-2xl font-black text-gray-800 mb-6 text-center">Nhiệm vụ hôm nay</h2>
+
+                <div class="bg-white rounded-3xl p-4 shadow-sm border-2 border-gray-100 flex items-center gap-4 transition-all hover:shadow-md">
+                    <div class="text-5xl bg-blue-100 p-4 rounded-2xl">🛏️</div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-xl text-gray-800">Gấp chăn màn</h3>
+                        <p class="text-orange-500 font-black text-lg mt-1">+10 🌟</p>
+                    </div>
+                    <button onclick="alert('Đã gửi cho Bố Mẹ duyệt! Ting ting!')" class="bg-green-500 text-white text-3xl p-4 rounded-2xl shadow-md active:scale-90 transition-transform">
+                        ✓
+                    </button>
+                </div>
+
+                <div class="bg-yellow-50 rounded-3xl p-4 shadow-sm border-2 border-yellow-200 flex items-center gap-4 opacity-80">
+                    <div class="text-5xl bg-yellow-100 p-4 rounded-2xl">🧹</div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-xl text-gray-800">Quét nhà</h3>
+                        <p class="text-orange-500 font-black text-lg mt-1">+15 🌟</p>
+                    </div>
+                    <div class="text-sm font-bold text-yellow-700 bg-yellow-200 px-4 py-2 rounded-xl text-center shadow-inner">
+                        ⏳ Chờ Bố duyệt
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 rounded-3xl p-4 shadow-inner border-2 border-gray-200 flex items-center gap-4 grayscale opacity-60">
+                    <div class="text-5xl bg-gray-200 p-4 rounded-2xl">🦷</div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-xl text-gray-800 line-through">Đánh răng</h3>
+                        <p class="text-gray-500 font-bold mt-1">Đã nhận 5 🌟</p>
+                    </div>
+                    <div class="text-3xl p-2">✅</div>
+                </div>
+            </div>
+
+            <div id="tab-store" class="tab-content space-y-4 pt-2">
+                <div class="bg-gradient-to-r from-pink-500 to-rose-500 rounded-3xl p-5 text-white text-center shadow-lg mb-6">
+                    <h2 class="text-2xl font-black">🎪 Cửa Hàng Phép Thuật</h2>
+                    <div class="bg-white/20 inline-block px-4 py-1.5 rounded-full mt-2">
+                        <p class="text-sm font-bold">Bé đang có: <span class="text-yellow-300 text-lg">120 🌟</span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white rounded-3xl p-4 shadow-sm border-2 border-gray-100 text-center flex flex-col items-center">
+                        <div class="text-6xl mb-2">🍦</div>
+                        <h3 class="font-bold text-gray-800 mb-1">Ăn kem</h3>
+                        <p class="text-rose-500 font-black mb-3">- 50 🌟</p>
+                        <button onclick="alert('Đổi quà thành công! Bố mẹ sẽ mua kem cho bé nhé.')" class="bg-rose-500 text-white font-bold py-2 w-full rounded-xl active:scale-95 transition-transform shadow-md">Đổi ngay</button>
+                    </div>
+                    <div class="bg-white rounded-3xl p-4 shadow-sm border-2 border-gray-100 text-center flex flex-col items-center">
+                        <div class="text-6xl mb-2">📱</div>
+                        <h3 class="font-bold text-gray-800 mb-1">30p Youtube</h3>
+                        <p class="text-rose-500 font-black mb-3">- 30 🌟</p>
+                        <button onclick="alert('Đổi quà thành công!')" class="bg-rose-500 text-white font-bold py-2 w-full rounded-xl active:scale-95 transition-transform shadow-md">Đổi ngay</button>
+                    </div>
+                    <div class="bg-white rounded-3xl p-4 shadow-sm border-2 border-gray-100 text-center flex flex-col items-center opacity-50">
+                        <div class="text-6xl mb-2">🤖</div>
+                        <h3 class="font-bold text-gray-800 mb-1">Đồ chơi siêu nhân</h3>
+                        <p class="text-gray-500 font-black mb-3">- 500 🌟</p>
+                        <button class="bg-gray-300 text-gray-500 font-bold py-2 w-full rounded-xl cursor-not-allowed">Chưa đủ Sao</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-leaderboard" class="tab-content pt-2">
+                <div class="bg-blue-600 rounded-3xl p-6 text-white text-center shadow-lg mb-6">
+                    <h2 class="text-2xl font-black">🏆 Đua Top Tuần</h2>
+                    <p class="text-sm opacity-90 mt-1 bg-white/20 inline-block px-3 py-1 rounded-full">Nhóm: Anh Em Họ</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-white rounded-3xl p-3 flex items-center gap-4 border-4 border-yellow-400 shadow-md relative overflow-hidden">
+                        <div class="text-4xl w-10 text-center">🥇</div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bo" class="w-14 h-14 rounded-full bg-gray-100 border-2 border-yellow-400">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg">Anh Bo</h3>
+                            <p class="text-xs text-gray-500 font-bold">Cấp 6</p>
+                        </div>
+                        <div class="font-black text-2xl text-yellow-500 pr-2">800 <span class="text-sm">🌟</span></div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-3xl p-3 flex items-center gap-4 border-4 border-blue-400 shadow-lg transform scale-[1.03] my-5">
+                        <div class="text-4xl w-10 text-center">🥈</div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full bg-white border-2 border-blue-500 shadow-sm">
+                        <div class="flex-1">
+                            <h3 class="font-black text-blue-800 text-xl">Bé Bin</h3>
+                            <p class="text-xs text-blue-500 font-bold">Cấp 5 (Bạn)</p>
+                        </div>
+                        <div class="font-black text-3xl text-blue-600 pr-2">450 <span class="text-sm">🌟</span></div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-3 flex items-center gap-4 border-4 border-orange-300 shadow-sm">
+                        <div class="text-4xl w-10 text-center">🥉</div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Na" class="w-12 h-12 rounded-full bg-gray-100 border-2 border-orange-300">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg">Em Na</h3>
+                            <p class="text-xs text-gray-500 font-bold">Cấp 3</p>
+                        </div>
+                        <div class="font-black text-2xl text-orange-400 pr-2">300 <span class="text-sm">🌟</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="absolute bottom-0 w-full bg-white border-t-2 border-gray-100 flex justify-around p-2 pb-6 rounded-b-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-20">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn text-orange-500 flex flex-col items-center transition-transform active:scale-90 w-1/4 pt-2">
+                <span class="text-3xl mb-1">🏠</span>
+                <span class="text-[11px] font-black uppercase">Ví Sao</span>
+            </button>
+            <button onclick="switchTab('tasks')" id="btn-tasks" class="nav-btn text-gray-400 flex flex-col items-center transition-transform active:scale-90 w-1/4 pt-2">
+                <span class="text-3xl mb-1">📋</span>
+                <span class="text-[11px] font-bold uppercase">Nhiệm Vụ</span>
+            </button>
+            <button onclick="switchTab('store')" id="btn-store" class="nav-btn text-gray-400 flex flex-col items-center transition-transform active:scale-90 w-1/4 pt-2">
+                <span class="text-3xl mb-1">🎪</span>
+                <span class="text-[11px] font-bold uppercase">Cửa Hàng</span>
+            </button>
+            <button onclick="switchTab('leaderboard')" id="btn-leaderboard" class="nav-btn text-gray-400 flex flex-col items-center transition-transform active:scale-90 w-1/4 pt-2">
+                <span class="text-3xl mb-1">🏆</span>
+                <span class="text-[11px] font-bold uppercase">Đua Top</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Ẩn tất cả nội dung
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Reset toàn bộ nút Nav về màu xám
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-orange-500');
+                el.classList.add('text-gray-400');
+                el.querySelector('span:last-child').classList.remove('font-black');
+                el.querySelector('span:last-child').classList.add('font-bold');
+            });
+
+            // Hiện tab được chọn
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Đổi màu nút Nav tương ứng (Màu cam chủ đạo)
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.classList.add('text-orange-500');
+            activeBtn.querySelector('span:last-child').classList.remove('font-bold');
+            activeBtn.querySelector('span:last-child').classList.add('font-black');
+        }
+    </script>
+</body>
+</html>

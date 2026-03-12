@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidCoin - Quản lý của Bố Mẹ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Hiệu ứng swipe out cho thẻ duyệt việc */
+        .swipe-out-right { animation: swipeRight 0.3s forwards; }
+        .swipe-out-left { animation: swipeLeft 0.3s forwards; }
+        @keyframes swipeRight { to { transform: translateX(100%); opacity: 0; } }
+        @keyframes swipeLeft { to { transform: translateX(-100%); opacity: 0; } }
+    </style>
+</head>
+<body class="bg-gray-200 flex justify-center items-center min-h-screen">
+
+    <div class="bg-gray-50 w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-gray-800">
+
+        <div class="bg-white px-6 py-5 border-b shadow-sm flex justify-between items-center z-10">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Chào Bố Tuấn 👋</h1>
+                <p class="text-sm text-red-500 font-medium mt-1">⏳ Có 2 việc đang chờ duyệt</p>
+            </div>
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Tuan" class="w-12 h-12 rounded-full border border-gray-200 bg-gray-100">
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 pb-24">
+
+            <div id="tab-approve" class="tab-content active space-y-4">
+
+                <div id="card-1" class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all">
+                    <div class="p-4 flex justify-between items-center bg-blue-50">
+                        <div class="flex items-center gap-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-10 h-10 rounded-full bg-white border border-blue-200">
+                            <div>
+                                <p class="font-bold text-gray-800">Bé Bin</p>
+                                <p class="text-xs text-gray-500">Vừa xong • Gấp chăn màn</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-blue-600">+10 Xu</p>
+                            <p class="text-xs text-purple-600 font-medium">+10 XP</p>
+                        </div>
+                    </div>
+                    <div class="h-40 bg-gray-200 w-full relative">
+                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400&h=200" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">📷 Minh chứng</div>
+                    </div>
+                    <div class="flex divide-x border-t">
+                        <button onclick="handleAction('card-1', 'reject')" class="flex-1 py-3 text-red-500 font-bold hover:bg-red-50 flex justify-center items-center gap-2 transition-colors">
+                            <span class="text-xl">✕</span> Làm lại
+                        </button>
+                        <button onclick="handleAction('card-1', 'approve')" class="flex-1 py-3 text-green-500 font-bold hover:bg-green-50 flex justify-center items-center gap-2 transition-colors">
+                            <span class="text-xl">✓</span> Duyệt thưởng
+                        </button>
+                    </div>
+                </div>
+
+                <div id="card-2" class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all">
+                    <div class="p-4 flex justify-between items-center bg-orange-50">
+                        <div class="flex items-center gap-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Na" class="w-10 h-10 rounded-full bg-white border border-orange-200">
+                            <div>
+                                <p class="font-bold text-gray-800">Em Na</p>
+                                <p class="text-xs text-gray-500">10 phút trước • Rửa cốc chén</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-orange-600">+15 Xu</p>
+                        </div>
+                    </div>
+                    <div class="flex divide-x border-t">
+                        <button onclick="handleAction('card-2', 'reject')" class="flex-1 py-3 text-red-500 font-bold hover:bg-red-50 flex justify-center items-center gap-2">
+                            <span class="text-xl">✕</span> Làm lại
+                        </button>
+                        <button onclick="handleAction('card-2', 'approve')" class="flex-1 py-3 text-green-500 font-bold hover:bg-green-50 flex justify-center items-center gap-2">
+                            <span class="text-xl">✓</span> Duyệt thưởng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-config" class="tab-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Quản lý Nhiệm vụ</h2>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">+ Thêm mới</button>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl bg-gray-100 p-2 rounded-lg">🛏️</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Gấp chăn màn</h3>
+                                <p class="text-xs text-gray-500">Mỗi ngày • Dành cho: Tất cả</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="font-bold text-orange-500 mb-1">10 Xu / 10 XP</span>
+                            <div class="w-10 h-5 bg-green-500 rounded-full relative cursor-pointer">
+                                <div class="w-4 h-4 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between opacity-60">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl bg-gray-100 p-2 rounded-lg">🐕</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Cho chó ăn</h3>
+                                <p class="text-xs text-gray-500">Thứ 3, Thứ 5 • Dành cho: Bin</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="font-bold text-orange-500 mb-1">15 Xu / 10 XP</span>
+                            <div class="w-10 h-5 bg-gray-300 rounded-full relative cursor-pointer">
+                                <div class="w-4 h-4 bg-white rounded-full absolute left-0.5 top-0.5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-2 pb-6 rounded-b-3xl z-20">
+            <button onclick="switchTab('approve')" id="btn-approve" class="nav-btn text-blue-600 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1 relative">
+                    ✅
+                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">2</span>
+                </span>
+                <span class="text-xs font-bold">Duyệt Việc</span>
+            </button>
+            <button onclick="switchTab('config')" id="btn-config" class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1">⚙️</span>
+                <span class="text-xs font-medium">Nhiệm Vụ</span>
+            </button>
+            <button class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1">🎁</span>
+                <span class="text-xs font-medium">Trả Quà</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-blue-600');
+                el.querySelector('span:last-child').classList.remove('font-bold');
+                el.classList.add('text-gray-400');
+                el.querySelector('span:last-child').classList.add('font-medium');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.classList.add('text-blue-600');
+            activeBtn.querySelector('span:last-child').classList.remove('font-medium');
+            activeBtn.querySelector('span:last-child').classList.add('font-bold');
+        }
+
+        function handleAction(cardId, action) {
+            const card = document.getElementById(cardId);
+            if (action === 'approve') {
+                card.classList.add('swipe-out-right');
+            } else {
+                card.classList.add('swipe-out-left');
+            }
+            // Ẩn hoàn toàn thẻ sau khi chạy xong animation
+            setTimeout(() => {
+                card.style.display = 'none';
+            }, 300);
+        }
+    </script>
+</body>
+</html>
