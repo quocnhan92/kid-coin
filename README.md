@@ -15,8 +15,6 @@ KidCoin là nền tảng quản lý gia đình định hướng Gamification (Tr
 * *Hệ thống:* Giao dịch điểm số minh bạch, bất biến như ngân hàng.
 * *Cộng đồng:* Sân chơi thi đua chéo giữa các gia đình (Clubs/Leaderboard).
 
-
-
 ---
 
 # 2.️ THIẾT KẾ CƠ SỞ DỮ LIỆU CHUYÊN SÂU (DATABASE DESIGN SPECIFICATION)
@@ -29,6 +27,12 @@ KidCoin là nền tảng quản lý gia đình định hướng Gamification (Tr
 ## 2.1. Cụm Định danh & Phân quyền (Identity & Access)
 
 Cụm này quản lý thông tin cốt lõi của các gia đình và các thành viên bên trong. Thiết kế đảm bảo sự cô lập dữ liệu (Multi-tenancy) ở cấp độ `family_id`.
+
+**Luồng Đăng nhập (Device-First Auth Flow):**
+1. **Check Device:** Client gửi `X-Device-ID` (UUID sinh từ localStorage) lên Server.
+2. **Identify:**
+   - *Đã đăng ký:* Server trả về danh sách thành viên gia đình (Avatar + Tên). Người dùng chọn Avatar để vào. (Bố mẹ cần nhập thêm PIN).
+   - *Chưa đăng ký:* Server trả về `404`. Client hiện Form đăng nhập Username/Password của Bố mẹ để kích hoạt thiết bị mới.
 
 ### Bảng: `families` (Root Tenant)
 
@@ -104,16 +108,19 @@ Trái tim của hệ thống tài chính ảo. Đảm bảo tính nhất quán (
 ### Bảng: `task_logs` (Nhật ký thực thi nhiệm vụ)
 
 | Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
-| --- | --- | --- | --- |
+| :--- | :--- | :--- | :--- |
 | `id` | `UUID` | PK | Ghi nhận 1 lần làm việc. |
-| `kid_id` | `UUID` | FK -> `users.id` | Bé nào thực hiện. *Index: `idx_tasklog_kid*` |
-| `task_id` | `UUID` | FK -> `family_tasks.id` | Làm việc gì. |
-| `status` | `VARCHAR(20)` | NOT NULL | ENUM: `'PENDING_APPROVAL'`, `'APPROVED'`, `'REJECTED'`. *Index: `idx_tasklog_status*` |
-| `proof_image_url` | `VARCHAR(255)` | Nullable | Link ảnh minh chứng bé chụp. |
-| `created_at` | `TIMESTAMP` | Default `NOW()` | Lúc bé bấm "Đã xong". |
+| `kid_id` | `UUID` | FK -> `users.id` | Bé nào thực hiện. *Index: `idx_tasklog_kid`* |
+| `family_task_id` | `UUID` | FK -> `family_tasks.id`, Nullable | Điền nếu đây là Việc nhà. |
+| `club_task_id` | `UUID` | FK -> `club_tasks.id`, Nullable | Điền nếu đây là Việc của Nhóm/Lớp. |
+| `status` | `VARCHAR(20)` | NOT NULL | ENUM: `'PENDING_APPROVAL'`, `'APPROVED'`, `'REJECTED'`. *Index: `idx_tasklog_status`* |
+| `proof_image_url` | `VARCHAR(255)` | Nullable | Link ảnh minh chứng. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Lúc bé bấm báo cáo. |
 | `resolved_at` | `TIMESTAMP` | Nullable | Lúc bố mẹ bấm "Duyệt" hoặc "Từ chối". |
 
-### Bảng: `redemption_logs` (Nhật ký đổi quà - Mới bổ sung)
+> **🔥 Ràng buộc DB Toàn vẹn (Check Constraint):** > Yêu cầu Database kiểm tra bắt buộc: `CHECK (num_nonnulls(family_task_id, club_task_id) = 1)`. Một bản ghi Log chỉ được phép trỏ về đúng 1 nguồn nhiệm vụ, không được để trống cả 2 và không được điền cả 2.
+
+### Bảng: `redemption_logs` (Nhật ký đổi quà)
 
 | Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
 | --- | --- | --- | --- |
@@ -146,13 +153,45 @@ Trái tim của hệ thống tài chính ảo. Đảm bảo tính nhất quán (
 | `details` | `JSONB` | Nullable | Payload request/diff changes. |
 | `request_id` | `VARCHAR(50)` | Nullable | Trace ID từ Middleware để gom nhóm log. |
 | `error_message` | `TEXT` | Nullable | Lưu Stack Trace nếu lỗi. |
+| `ip_address` | `VARCHAR(45)` | Nullable | IP của client thực hiện. |
+| `user_agent` | `VARCHAR(500)` | Nullable | Chuỗi User-Agent đầy đủ. |
+| `device_info` | `JSONB` | Nullable | Snapshot thông tin thiết bị tại thời điểm gọi API (OS, Browser...). |
 | `created_at` | `TIMESTAMP` | Default `NOW()` |  |
 
 ---
 
-## 2.4. Cụm Sân chơi Cộng đồng (Social Gamification)
+## 2.4. Cụm Sân chơi Cộng đồng (Social Gamification) & Quản lý Thiết bị
 
-Phục vụ tính năng thi đua chéo giữa các gia đình (Leaderboard, Clubs) mà vẫn bảo mật thông tin nội bộ.
+### Bảng: `family_devices` (Quản lý thiết bị đăng nhập)
+Kiểm soát danh sách thiết bị được phép truy cập của từng gia đình, hỗ trợ thu hồi quyền (Revoke) từ xa.
+
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | PK, Default `uuid_generate_v4()` | Khóa chính của thiết bị. |
+| `family_id` | `UUID` | FK -> `families.id` | Thiết bị này thuộc về nhà nào. *Index: `idx_device_family_id`* |
+| `device_name` | `VARCHAR(100)` | NOT NULL | Tên gợi nhớ (VD: "iPad phòng khách"). |
+| `device_token` | `VARCHAR(255)` | UNIQUE, NOT NULL | Token cấp quyền cho thiết bị (Nên hash nếu lưu trữ). |
+| `initial_ip_address` | `VARCHAR(45)` | Nullable | IP đăng ký lần đầu. |
+| `user_agent` | `VARCHAR(500)` | Nullable | Chuỗi User-Agent đầy đủ lúc đăng ký. |
+| `device_info` | `JSONB` | Nullable | Thông tin chi tiết thiết bị (OS, Model, Browser) đã parse. |
+| `is_default` | `BOOLEAN` | Default `FALSE` | Đánh dấu thiết bị chính chủ của bố mẹ. Không thể bị xóa tự động. |
+| `is_active` | `BOOLEAN` | Default `TRUE` | Trạng thái hoạt động (False = Bị phụ huynh thu hồi). |
+| `last_active_at` | `TIMESTAMP` | Default `NOW()` | Thời điểm thiết bị gọi API lần cuối (Hỗ trợ dọn rác). |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Ngày thiết bị được cấp quyền. |
+
+### Bảng: `club_tasks` (Nhiệm vụ Nhóm/Lớp)
+Nhiệm vụ do Trưởng nhóm (Cô giáo/Phụ huynh tạo nhóm) "phát loa" đến toàn bộ các bé trong Club. Điểm số thực tế do bố mẹ tự duyệt và chi trả.
+
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | PK | Khóa chính nhiệm vụ nhóm. |
+| `club_id` | `UUID` | FK -> `clubs.id` | Nhiệm vụ này thuộc nhóm nào. *Index: `idx_club_task_club_id`* |
+| `creator_family_id`| `UUID` | FK -> `families.id` | Gia đình/Người tạo nhiệm vụ (VD: Cô giáo). |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên nhiệm vụ (VD: "Làm bài Toán trang 15"). |
+| `suggested_points` | `INTEGER` | NOT NULL | Điểm 🌟 gợi ý. |
+| `deadline` | `TIMESTAMP` | Nullable | Hạn chót nộp bài (Nếu có). |
+| `is_active` | `BOOLEAN` | Default `TRUE` | Trạng thái hiển thị nhiệm vụ. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | |
 
 ### Bảng: `clubs` (Câu lạc bộ / Nhóm thi đua)
 
@@ -173,8 +212,6 @@ Phục vụ tính năng thi đua chéo giữa các gia đình (Leaderboard, Club
 | `kid_id` | `UUID` | FK -> `users.id` | Bé nào tham gia. |
 | `joined_at` | `TIMESTAMP` | Default `NOW()` | Ngày gia nhập. |
 
-> **Lưu ý:** Bảng `club_members` sử dụng **Composite Primary Key** gồm `(club_id, kid_id)` để đảm bảo một bé không thể tham gia trùng lặp 2 lần vào cùng một nhóm.
-
 ---
 
 ## 3. THIẾT KẾ GIAO DIỆN LẬP TRÌNH (API DESIGN)
@@ -182,7 +219,13 @@ Phục vụ tính năng thi đua chéo giữa các gia đình (Leaderboard, Club
 **Công nghệ:** FastAPI (Python)
 **Nguyên tắc thiết kế:** RESTful, tuân thủ ACID Transaction cho các nghiệp vụ tài chính ảo. Phân quyền thông qua JWT Token (`family_id`, `role`).
 
-### 3.1. Nhóm API Core Gamification (Daily Life)
+### 3.1. Nhóm API Authentication (Device-First)
+
+* `GET /api/v1/auth/device-status`: Kiểm tra `X-Device-ID`. Trả về danh sách thành viên nếu đã đăng ký.
+* `POST /api/v1/auth/register-device`: Login lần đầu bằng `username/password` của Parent để cấp quyền cho thiết bị. Lưu IP, UserAgent.
+* `POST /api/v1/auth/quick-login`: Đăng nhập nhanh bằng Avatar. Yêu cầu PIN nếu là Parent.
+
+### 3.2. Nhóm API Core Gamification (Daily Life)
 
 * `GET /api/v1/quests/daily` *(Role: PARENT/KID)*: Lấy danh sách việc cần làm trong ngày.
 * `POST /api/v1/quests/{task_id}/submit` *(Role: KID)*: Bé gửi báo cáo (`proof_image_url`). Chuyển status `task_logs` -> `PENDING_APPROVAL`.
@@ -195,7 +238,7 @@ Phục vụ tính năng thi đua chéo giữa các gia đình (Leaderboard, Club
 * `PUT /api/v1/rewards/delivery/{redemption_id}` *(Role: PARENT)*: Bố mẹ xác nhận "Đã đưa quà" -> Status `DELIVERED`.
 * `GET /api/v1/users/{kid_id}/history` *(Role: PARENT/KID)*: Xem sao kê từ bảng `transactions`.
 
-### 3.2. Nhóm API Social Gamification (Community)
+### 3.3. Nhóm API Social Gamification (Community)
 
 * `POST /api/v1/clubs` *(Role: PARENT)*: Tạo nhóm, sinh `invite_code`.
 * `POST /api/v1/clubs/join` *(Role: PARENT)*: Nhập `invite_code` để join các bé nhà mình vào nhóm.
