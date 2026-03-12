@@ -1,158 +1,252 @@
-# kid-coin
-Kid Coin for Your Family
+Đây là bản tái cấu trúc tài liệu thiết kế dự án **KidCoin** theo chuẩn Software Architecture Document (SAD), giúp bạn có một cái nhìn tổng thể, khoa học và dễ dàng theo dõi trong suốt quá trình phát triển dự án.
 
-TÀI LIỆU THIẾT KẾ CƠ SỞ DỮ LIỆU - KIDCOIN (POSTGRESQL)
-1. Nguyên tắc thiết kế (Design Principles)
-Multi-tenancy: Mọi dữ liệu custom của người dùng đều gắn với family_id để cô lập dữ liệu giữa các gia đình.
+---
 
-Sổ cái bất biến (Immutable Ledger): Bảng transactions hoạt động như Core Banking, ghi nhận mọi biến động số dư. Tuyệt đối không update trực tiếp cột current_coin mà không có record đối chiếu.
+# TÀI LIỆU THIẾT KẾ HỆ THỐNG - KIDCOIN
 
-Soft Deletes: Sử dụng cột is_deleted (boolean) cho các cấu hình nhiệm vụ/phần thưởng để bảo toàn lịch sử giao dịch.
+## 1. MỤC TIÊU DỰ ÁN (TARGET)
 
-2. Cụm Định danh & Phân quyền (Identity & Access)
-Bảng families (Quản lý không gian gia đình)
-Đóng vai trò là tenant root.
+KidCoin là nền tảng quản lý gia đình định hướng Gamification (Trò chơi hóa) và Social Gamification (Thi đua cộng đồng).
 
-id: UUID (Primary Key)
+* **Vấn đề giải quyết:** Giảm tải áp lực nhắc nhở việc nhà cho phụ huynh; tạo động lực tự giác và bài học quản lý tài chính sớm cho trẻ em.
+* **Đối tượng (Users):** Phụ huynh (Người giao việc & cấp quyền) và Trẻ em (Người thực hiện & nhận thưởng).
+* **Giá trị cốt lõi:**
+* *Gia đình:* Không gian khép kín, an toàn để quản lý nội bộ.
+* *Hệ thống:* Giao dịch điểm số minh bạch, bất biến như ngân hàng.
+* *Cộng đồng:* Sân chơi thi đua chéo giữa các gia đình (Clubs/Leaderboard).
 
-name: VARCHAR(100) - Tên hiển thị của gia đình (VD: "Nhà Cà Rốt").
 
-parent_pin: VARCHAR(60) - Mã PIN 4 số (đã hash) để khóa không gian của bố mẹ trên thiết bị chung.
 
-created_at: TIMESTAMP
+---
 
-Bảng users (Tài khoản định danh)
-Quản lý chung cả bố mẹ và con cái, phân biệt qua Role.
+# 2.️ THIẾT KẾ CƠ SỞ DỮ LIỆU CHUYÊN SÂU (DATABASE DESIGN SPECIFICATION)
 
-id: UUID (Primary Key)
+* **Hệ quản trị:** PostgreSQL
+* **Schema:** `public`
 
-family_id: UUID (Foreign Key -> families.id)
+---
 
-role: VARCHAR(20) - ENUM: 'PARENT', 'KID'
+## 2.1. Cụm Định danh & Phân quyền (Identity & Access)
 
-username: VARCHAR(100) - (Unique, Nullable) Dùng cho Parent đăng nhập (Email/SĐT).
+Cụm này quản lý thông tin cốt lõi của các gia đình và các thành viên bên trong. Thiết kế đảm bảo sự cô lập dữ liệu (Multi-tenancy) ở cấp độ `family_id`.
 
-display_name: VARCHAR(50) - Tên gọi ở nhà (VD: Bố Tuấn, Bé Bin).
+### Bảng: `families` (Root Tenant)
 
-avatar_url: VARCHAR(255)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK, Default `uuid_generate_v4()` | Khóa chính định danh gia đình. |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên hiển thị (VD: "Nhà Cà Rốt"). *Index: `idx_family_name*` |
+| `parent_pin` | `VARCHAR(60)` | NOT NULL | Mã PIN 4 số (đã hash qua bcrypt) để khóa quyền thiết lập. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Thời gian khởi tạo. |
 
-current_coin: INTEGER - (Default 0). Số dư ví hiện tại của Kid.
+### Bảng: `users` (Thành viên gia đình)
 
-created_at: TIMESTAMP
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK, Default `uuid_generate_v4()` | Khóa chính. |
+| `family_id` | `UUID` | FK -> `families.id` | Trỏ về gia đình. *Index: B-Tree `(family_id, role)*` |
+| `role` | `VARCHAR(20)` | NOT NULL | ENUM: `'PARENT'`, `'KID'`. |
+| `username` | `VARCHAR(100)` | UNIQUE, Nullable | Định danh đăng nhập của PARENT (SĐT/Email). *Index: `idx_user_username*` |
+| `display_name` | `VARCHAR(50)` | NOT NULL | Tên gọi ở nhà (VD: Bố Tuấn, Bé Bin). |
+| `avatar_url` | `VARCHAR(255)` | Nullable | Đường dẫn ảnh đại diện/icon. |
+| `current_coin` | `INTEGER` | Default `0` | Tổng dư ví hiện tại của KID (Bộ đệm hiển thị nhanh). |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Thời gian tạo tài khoản. |
 
-Index: B-Tree trên (family_id, role) để query nhanh danh sách con cái trong nhà.
+---
 
-3. Cụm Động cơ Nhiệm vụ & Phần thưởng (Task & Reward Engine)
-Bảng master_tasks & master_rewards (Dữ liệu mồi của hệ thống)
-Cung cấp sẵn các template để bố mẹ chọn bằng 1 chạm.
+## 2.2. Cụm Động cơ Gamification (Task & Reward Engine)
 
-id: SERIAL (Primary Key)
+Lưu trữ danh mục công việc và phần thưởng. Tách biệt giữa dữ liệu mồi của hệ thống (`master_`) và dữ liệu tùy biến của từng nhà (`family_`).
 
-name: VARCHAR(100) (VD: "Đánh răng", "Xem TV 30 phút")
+### Bảng: `master_tasks` (Nhiệm vụ hệ thống gợi ý)
 
-icon_url: VARCHAR(255)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `SERIAL` | PK | Dùng auto-increment cho dữ liệu tĩnh. |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên mẫu (VD: "Đánh răng trước khi ngủ"). |
+| `icon_url` | `VARCHAR(255)` | Nullable | Hình ảnh icon chuẩn. |
+| `suggested_value` | `INTEGER` | NOT NULL | Mức điểm khuyến nghị (VD: 10). |
+| `category` | `VARCHAR(50)` | NOT NULL | Nhóm (Việc nhà, Học tập). *Index: `idx_master_task_category*` |
 
-suggested_value: INTEGER - Điểm gợi ý (cộng hoặc trừ).
+> **Lưu ý:** Cần tạo thêm bảng `master_rewards` có cấu trúc tương tự `master_tasks`, dùng để mồi dữ liệu phần thưởng gợi ý cho hệ thống.
 
-category: VARCHAR(50) - Phân loại (Học tập, Việc nhà, Giải trí...)
+### Bảng: `family_tasks` (Nhiệm vụ thực tế của gia đình)
 
-Bảng family_tasks (Nhiệm vụ custom của gia đình)
-id: UUID (Primary Key)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính nhiệm vụ tùy biến. |
+| `family_id` | `UUID` | FK -> `families.id` | Chỉ hiển thị trong gia đình này. *Index: `idx_family_task_fid*` |
+| `master_task_id` | `INTEGER` | FK -> `master_tasks.id` | Null nếu bố mẹ tự tạo mới hoàn toàn. |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên công việc. |
+| `points_reward` | `INTEGER` | NOT NULL, `> 0` | Điểm cộng khi hoàn thành. |
+| `is_active` | `BOOLEAN` | Default `TRUE` | Trạng thái hiển thị trên app của con. |
+| `is_deleted` | `BOOLEAN` | Default `FALSE` | Soft Delete bảo toàn lịch sử. |
 
-family_id: UUID (Foreign Key -> families.id)
+### Bảng: `family_rewards` (Phần thưởng do gia đình cấu hình)
 
-master_task_id: INT (Foreign Key, Nullable) - Trỏ về master nếu chọn từ template.
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính phần thưởng. |
+| `family_id` | `UUID` | FK -> `families.id` | *Index: `idx_family_reward_fid*` |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên quà (VD: "30 phút chơi iPad"). |
+| `points_cost` | `INTEGER` | NOT NULL, `> 0` | Giá quy đổi (Số xu trừ đi). |
+| `stock_limit` | `INTEGER` | Nullable | Số lượng tối đa có thể đổi (VD: 2 lần/tuần). |
+| `is_active` | `BOOLEAN` | Default `TRUE` | Hiển thị/Ẩn trong Cửa hàng. |
+| `is_deleted` | `BOOLEAN` | Default `FALSE` | Soft Delete. |
 
-name: VARCHAR(100)
+---
 
-points_reward: INTEGER - Điểm thưởng do bố mẹ tự định giá.
+## 2.3. Cụm Giao dịch cốt lõi & Nhật ký (Core Ledger & Audit)
 
-is_active: BOOLEAN - (Default True). Tắt/bật nhiệm vụ trên bảng của con.
+Trái tim của hệ thống tài chính ảo. Đảm bảo tính nhất quán (ACID) của toàn bộ luồng điểm số.
 
-is_deleted: BOOLEAN - (Default False).
+### Bảng: `task_logs` (Nhật ký thực thi nhiệm vụ)
 
-Bảng family_rewards (Phần thưởng custom của gia đình)
-id: UUID (Primary Key)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Ghi nhận 1 lần làm việc. |
+| `kid_id` | `UUID` | FK -> `users.id` | Bé nào thực hiện. *Index: `idx_tasklog_kid*` |
+| `task_id` | `UUID` | FK -> `family_tasks.id` | Làm việc gì. |
+| `status` | `VARCHAR(20)` | NOT NULL | ENUM: `'PENDING_APPROVAL'`, `'APPROVED'`, `'REJECTED'`. *Index: `idx_tasklog_status*` |
+| `proof_image_url` | `VARCHAR(255)` | Nullable | Link ảnh minh chứng bé chụp. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Lúc bé bấm "Đã xong". |
+| `resolved_at` | `TIMESTAMP` | Nullable | Lúc bố mẹ bấm "Duyệt" hoặc "Từ chối". |
 
-family_id: UUID (Foreign Key -> families.id)
+### Bảng: `transactions` (Sổ cái bất biến - Lịch sử điểm số)
 
-master_reward_id: INT (Foreign Key, Nullable)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính giao dịch. |
+| `kid_id` | `UUID` | FK -> `users.id` | Tài khoản biến động. *Index: `idx_trx_kid*` |
+| `amount` | `INTEGER` | NOT NULL | Giá trị (+ là cộng điểm, - là trừ điểm). |
+| `transaction_type` | `VARCHAR(50)` | NOT NULL | ENUM: `'TASK_COMPLETION'`, `'REWARD_REDEMPTION'`, `'PENALTY'`, `'BONUS'`. |
+| `reference_id` | `UUID` | Nullable | Trỏ đến `task_logs.id` hoặc ID lượt đổi quà. |
+| `description` | `VARCHAR(255)` | NOT NULL | Diễn giải (VD: "Hoàn thành: Rửa bát"). |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | *Index: `idx_trx_created_at*` (Phục vụ truy vấn Leaderboard cực nhanh). |
 
-name: VARCHAR(100)
+### Bảng: `audit_logs` (Ghi vết hệ thống chi tiết)
 
-points_cost: INTEGER - Giá quy đổi (VD: 50 xu).
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính log. |
+| `user_id` | `UUID` | FK Nullable | Người thao tác (Bố/Mẹ/Con). |
+| `action` | `VARCHAR(100)` | NOT NULL | Tên hành động (VD: `'APPROVE_TASK'`). |
+| `status` | `VARCHAR(20)` | NOT NULL | ENUM: `'INIT'`, `'PROCESSING'`, `'SUCCESS'`, `'FAILED'`. |
+| `details` | `JSONB` | Nullable | Tận dụng sức mạnh PostgreSQL để lưu Payload request/diff changes. |
+| `error_message` | `TEXT` | Nullable | Lưu Stack Trace nếu lỗi. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` |  |
 
-stock_limit: INTEGER (Nullable) - Số lượng tối đa có thể đổi trong tuần.
+---
 
-is_active: BOOLEAN (Default True)
+## 2.4. Cụm Sân chơi Cộng đồng (Social Gamification)
 
-is_deleted: BOOLEAN (Default False)
+Phục vụ tính năng thi đua chéo giữa các gia đình (Leaderboard, Clubs) mà vẫn bảo mật thông tin nội bộ.
 
-4. Cụm Giao dịch & Nhật ký (Transaction & Logs)
-Bảng task_logs (Nhật ký thực thi)
-Ghi nhận trạng thái làm việc hàng ngày của các bé.
+### Bảng: `clubs` (Câu lạc bộ / Nhóm thi đua)
 
-id: UUID (Primary Key)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính nhóm. |
+| `name` | `VARCHAR(100)` | NOT NULL | Tên nhóm (VD: "Chiến binh việc nhà"). |
+| `creator_family_id` | `UUID` | FK -> `families.id` | Gia đình khởi tạo (Admin nhóm). |
+| `invite_code` | `VARCHAR(20)` | UNIQUE, NOT NULL | Mã chia sẻ qua Zalo/Facebook. *Index: `idx_club_invite*` |
+| `is_active` | `BOOLEAN` | Default `TRUE` | Trạng thái hoạt động của nhóm. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` |  |
 
-kid_id: UUID (Foreign Key -> users.id)
+### Bảng: `club_members` (Thành viên tham gia)
 
-task_id: UUID (Foreign Key -> family_tasks.id)
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
+| --- | --- | --- | --- |
+| `club_id` | `UUID` | FK -> `clubs.id` | Thuộc nhóm nào. |
+| `kid_id` | `UUID` | FK -> `users.id` | Bé nào tham gia. |
+| `joined_at` | `TIMESTAMP` | Default `NOW()` | Ngày gia nhập. |
 
-status: VARCHAR(20) - ENUM: 'PENDING_APPROVAL' (Chờ duyệt), 'APPROVED' (Đã duyệt), 'REJECTED' (Bị từ chối).
+> **Lưu ý:** Bảng `club_members` sử dụng **Composite Primary Key** gồm `(club_id, kid_id)` để đảm bảo một bé không thể tham gia trùng lặp 2 lần vào cùng một nhóm.
 
-proof_image_url: VARCHAR(255) (Nullable) - Ảnh chụp minh chứng.
+---
 
-created_at: TIMESTAMP (Lúc con báo cáo xong)
+## 3. THIẾT KẾ GIAO DIỆN LẬP TRÌNH (API DESIGN)
 
-resolved_at: TIMESTAMP (Lúc bố mẹ duyệt)
+**Công nghệ:** FastAPI (Python)
+**Nguyên tắc thiết kế:** RESTful, tuân thủ ACID Transaction cho các nghiệp vụ tài chính ảo. Phân quyền thông qua JWT Token (`family_id`, `role`).
 
-Bảng transactions (Sổ cái ví điểm - Cực kỳ quan trọng)
-id: UUID (Primary Key)
+### 3.1. Nhóm API Core Gamification (Daily Life)
 
-kid_id: UUID (Foreign Key -> users.id)
+* `GET /api/v1/quests/daily` *(Role: PARENT/KID)*: Lấy danh sách việc cần làm trong ngày.
+* `POST /api/v1/quests/{task_id}/submit` *(Role: KID)*: Bé gửi báo cáo (`proof_image_url`). Chuyển status `task_logs` -> `PENDING_APPROVAL`.
+* `POST /api/v1/quests/{log_id}/verify` *(Role: PARENT)*: Bố mẹ duyệt (APPROVE/REJECT).
+* *Transaction bắt buộc (Nếu APPROVE):* Update `task_logs` -> Insert `transactions` (+ Coin) -> Update `users.current_coin` -> Ghi `audit_logs`. Rollback nếu lỗi.
 
-amount: INTEGER - Số điểm biến động (+ là cộng từ nhiệm vụ, - là trừ do đổi quà).
 
-transaction_type: VARCHAR(50) - ENUM: 'TASK_COMPLETION', 'REWARD_REDEMPTION', 'PENALTY', 'BONUS'.
+* `GET /api/v1/rewards` *(Role: PARENT/KID)*: Xem giỏ hàng phần thưởng.
+* `POST /api/v1/rewards/{reward_id}/redeem` *(Role: KID)*: Bé đổi quà. Check `current_coin` >= `cost`. Transaction trừ tiền.
+* `GET /api/v1/users/{kid_id}/history` *(Role: PARENT/KID)*: Xem sao kê từ bảng `transactions`.
 
-reference_id: UUID - Trỏ đến task_logs.id hoặc ID của lượt đổi quà để đối soát.
+### 3.2. Nhóm API Social Gamification (Community)
 
-description: VARCHAR(255) (VD: "Thưởng dọn đồ chơi", "Đổi 30p xem Youtube").
+* `POST /api/v1/clubs` *(Role: PARENT)*: Tạo nhóm, sinh `invite_code`.
+* `POST /api/v1/clubs/join` *(Role: PARENT)*: Nhập `invite_code` để join các bé nhà mình vào nhóm.
+* `GET /api/v1/clubs/{club_id}/leaderboard` *(Role: PARENT/KID)*: Lấy bảng xếp hạng. Tính `SUM(amount)` từ `transactions` (chỉ tính điểm cộng `TASK_COMPLETION`) theo tuần/tháng. Cân nhắc dùng Redis Cache.
 
-created_at: TIMESTAMP
+---
 
-5. Cụm Sân chơi Cộng đồng (Social/Clubs)
-Bảng clubs (Nhóm thi đua)
-id: UUID (Primary Key)
+## 4. THIẾT KẾ KIẾN TRÚC MÃ NGUỒN (CODE DESIGN)
 
-name: VARCHAR(100) (VD: "Chiến binh việc nhà Lớp 1A")
+**Framework Backend:** FastAPI + SQLAlchemy (ORM) + Alembic (Migration).
 
-creator_family_id: UUID (Foreign Key -> families.id)
+**Cấu trúc thư mục (Monolith Modular):**
 
-invite_code: VARCHAR(20) (Unique) - Mã định danh để share qua Zalo.
+```text
+kidcoin_backend/
+├── app/
+│   ├── api/          # Nơi chứa các Route/Endpoints (v1)
+│   ├── core/         # Cấu hình hệ thống (Config, Security, JWT, DB session)
+│   ├── models/       # Định nghĩa các Table SQLAlchemy (User, Task, Transaction...)
+│   ├── schemas/      # Định nghĩa Pydantic Models để validate request/response (DTOs)
+│   ├── services/     # Nơi chứa Logic nghiệp vụ (Ví dụ: Hàm xử lý Transaction duyệt điểm)
+│   └── templates/    # Chứa file HTML view (nếu dùng Jinja2)
+├── tests/            # Unit tests và Integration tests
+├── alembic/          # Quản lý version database
+├── docker-compose.yml
+└── requirements.txt
 
-is_active: BOOLEAN (Default True)
+```
 
-created_at: TIMESTAMP
+**Nguyên tắc viết Code:**
 
-Bảng club_members (Thành viên nhóm)
-club_id: UUID (Foreign Key -> clubs.id)
+1. **Tách biệt Interface và Logic (Fat Service, Thin Controller):** File trong thư mục `api/` chỉ nhận request và trả response. Mọi logic tính toán (ví dụ: cộng điểm, check tồn kho quà) phải nằm trong thư mục `services/`.
+2. **Validation chặt chẽ:** Sử dụng triệt để Pydantic (`schemas/`) để bắt lỗi dữ liệu ngay từ đầu vào (VD: không cho phép nhập điểm thưởng < 0).
 
-kid_id: UUID (Foreign Key -> users.id)
+---
 
-joined_at: TIMESTAMP
+## 5. THIẾT KẾ GIAO DIỆN NGƯỜI DÙNG (FE DESIGN)
 
-Primary Key: Composite (club_id, kid_id) để đảm bảo 1 bé không join 1 group 2 lần.
+**Nguyên tắc thiết kế (UI/UX):**
 
-Lời khuyên khi triển khai trên FastAPI (SQLAlchemy)
-Quản lý Transaction (Database Commit): Khi API duyệt nhiệm vụ (POST /tasks/approve) được gọi, bạn phải bọc 2 thao tác sau trong cùng một khối transaction của SQLAlchemy (sử dụng db.commit() ở bước cuối):
+* **Visual-First:** Giao diện cho con không cần chữ, dùng Icon khổng lồ, màu sắc tươi sáng, nút bấm lớn trên Tablet.
+* **Instant Feedback:** Hiệu ứng Gamification tức thì. Khi có điểm cộng, màn hình phải nhảy số (Number Ticker) và có âm thanh "Kaching" (Coin sound).
+* **Zero-friction Parent UI:** Bố mẹ quản lý qua dạng list vuốt trái/phải trên Mobile để duyệt việc (như Tinder swiping).
 
-Thao tác 1: Update bảng task_logs status thành APPROVED.
+**Wireframe Cốt lõi (3 màn hình chính):**
 
-Thao tác 2: Insert 1 dòng mới vào bảng transactions (+ điểm).
+1. **Dashboard (Ví Sao):** Hiển thị số điểm to ở giữa màn hình, thanh tiến trình đổi món quà yêu thích bên dưới.
+2. **Bảng Nhiệm Vụ (Task Board):** Các thẻ (Cards) hiển thị icon công việc. Màu xám (Chưa làm), Xanh (Đang chờ duyệt).
+3. **Sân chơi (Leaderboard):** Giao diện bục vinh quang (Podium) 1-2-3 cho nhóm thi đua.
 
-Thao tác 3: Update cột current_coin trong bảng users = current_coin + điểm.
+---
 
-Nếu 1 trong 3 thao tác lỗi, gọi db.rollback() để đảm bảo không bị tình trạng báo duyệt rồi nhưng tiền không vào ví.
+## 6. KẾ HOẠCH TRIỂN KHAI (CI/CD DEPLOYMENT)
 
-Leaderboard API: Khi query bảng xếp hạng cho Club, chỉ cần tính SUM(amount) từ bảng transactions kết hợp với JOIN club_members, lọc theo khoảng thời gian created_at (tuần này, tháng này) là sẽ ra được bảng xếp hạng realtime với hiệu năng rất cao của PostgreSQL.
+**Môi trường:** Oracle Cloud (Free Tier)
+**Công cụ:** Docker, GitHub Actions.
+
+1. **Môi trường Local:** Sử dụng `docker-compose` để chạy DB PostgreSQL và Backend song song khi dev.
+2. **Database Migration:** Dùng Alembic để tự động tạo schema từ `models/` lên PostgreSQL.
+3. **CI/CD Pipeline (.github/workflows):**
+* Push code lên branch `main`.
+* GitHub Actions tự động SSH vào Oracle VPS.
+* Pull code mới -> Chạy `docker-compose up -d --build` để khởi động lại dịch vụ.
+
+
+
+Tài liệu này đóng vai trò như bản thiết kế gốc (Blueprint). Bạn có muốn đi vào chi tiết viết code cho file cấu trúc Database bằng SQLAlchemy (`models/`) trước không?
