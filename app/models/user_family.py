@@ -25,6 +25,8 @@ class Family(Base):
     tasks = relationship("FamilyTask", back_populates="family")
     rewards = relationship("FamilyReward", back_populates="family")
     clubs = relationship("Club", back_populates="creator_family")
+    devices = relationship("FamilyDevice", back_populates="family") # Added
+    created_club_tasks = relationship("ClubTask", back_populates="creator_family") # Added
 
 class User(Base):
     __tablename__ = "users"

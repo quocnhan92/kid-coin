@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, DateTime, ForeignKey, JSON, Integer, Enum, Index
+from sqlalchemy.orm import relationship # Added this import
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
@@ -26,11 +27,16 @@ class AuditLog(Base):
     details = Column(JSON, nullable=True) # Store input params, changes (diff), etc.
     error_message = Column(String, nullable=True) # Stack trace or error message if FAILED
     
+    # Device Tracking
     ip_address = Column(String(45), nullable=True)
-    user_agent = Column(String(255), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    device_info = Column(JSON, nullable=True) # Parsed device snapshot: {os: 'Android', version: '14'}
+    
     duration_ms = Column(Integer, nullable=True) # Time taken if applicable
     
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+    user = relationship("User", back_populates="audit_logs")
+    
     def __repr__(self):
         return f"<AuditLog(action={self.action}, status={self.status}, user={self.user_id})>"

@@ -3,6 +3,18 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
+# Pydantic model for Club data returned by the API
+class Club(BaseModel):
+    id: UUID
+    name: str
+    creator_family_id: UUID
+    invite_code: str
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True # Allows creating Pydantic model from ORM object
+
 class ClubCreateRequest(BaseModel):
     name: str
 

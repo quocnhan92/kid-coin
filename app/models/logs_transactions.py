@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, Index, BigInteger
+from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, Index, BigInteger, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -26,18 +26,27 @@ class TaskLog(Base):
     __table_args__ = (
         Index("idx_task_log_status", "status"),
         Index("idx_task_log_created_at", "created_at"),
+        CheckConstraint(
+            "num_nonnulls(family_task_id, club_task_id) = 1",
+            name="chk_one_task_source"
+        )
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     kid_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    task_id = Column(UUID(as_uuid=True), ForeignKey("family_tasks.id"), nullable=False, index=True)
+    
+    # Polymorphic relationship: A log belongs to EITHER a family task OR a club task
+    family_task_id = Column(UUID(as_uuid=True), ForeignKey("family_tasks.id"), nullable=True, index=True)
+    club_task_id = Column(UUID(as_uuid=True), ForeignKey("club_tasks.id"), nullable=True, index=True)
+    
     status = Column(Enum(TaskStatus), default=TaskStatus.PENDING_APPROVAL)
     proof_image_url = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
     kid = relationship("User", back_populates="logs")
-    task = relationship("FamilyTask", back_populates="logs")
+    family_task = relationship("FamilyTask", back_populates="logs")
+    club_task = relationship("ClubTask", back_populates="logs")
 
 class RedemptionLog(Base):
     __tablename__ = "redemption_logs"

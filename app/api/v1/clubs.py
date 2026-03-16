@@ -9,7 +9,7 @@ import secrets
 
 router = APIRouter()
 
-@router.post("/", response_model=Club)
+@router.post("/", response_model=club_schemas.Club) # Use the Pydantic schema here
 async def create_club(
     request: club_schemas.ClubCreateRequest,
     current_user: User = Depends(deps.require_role(deps.Role.PARENT)),

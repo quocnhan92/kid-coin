@@ -18,12 +18,12 @@ class AuditService:
         error_message: Optional[str] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
+        device_info: Optional[Dict[str, Any]] = None, # Added
         request_id: Optional[str] = None,
         duration_ms: Optional[int] = None
     ):
         """
         Creates an audit log entry.
-        Automatically uses context.get_request_id() if request_id is not provided.
         """
         
         # Auto-fetch request_id from context
@@ -40,6 +40,7 @@ class AuditService:
             error_message=error_message,
             ip_address=ip_address,
             user_agent=user_agent,
+            device_info=device_info, # Added
             request_id=final_request_id,
             duration_ms=duration_ms
         )
@@ -59,6 +60,7 @@ class AuditService:
         details: Optional[Dict[str, Any]] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
+        device_info: Optional[Dict[str, Any]] = None, # Added
         request_id: Optional[str] = None
     ):
         """
@@ -76,5 +78,6 @@ class AuditService:
             error_message=error_msg,
             ip_address=ip_address,
             user_agent=user_agent,
+            device_info=device_info,
             request_id=request_id
         )

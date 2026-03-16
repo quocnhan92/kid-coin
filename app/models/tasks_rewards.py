@@ -44,7 +44,7 @@ class FamilyTask(Base):
 
     family = relationship("Family", back_populates="tasks")
     master_task = relationship("MasterTask", back_populates="family_tasks")
-    logs = relationship("TaskLog", back_populates="task")
+    logs = relationship("TaskLog", back_populates="family_task") # Updated back_populates
 
 class MasterReward(Base):
     __tablename__ = "master_rewards"

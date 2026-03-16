@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidCoin - Bé Làm Việc Tốt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .coin-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-yellow-100 flex justify-center items-center min-h-screen font-sans">
+
+    <div class="bg-white w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-yellow-400">
+
+        <!-- Header -->
+        <div class="bg-yellow-300 px-6 py-6 border-b-4 border-yellow-400 shadow-sm flex justify-between items-center z-10 rounded-b-3xl">
+            <div>
+                <h1 class="text-2xl font-extrabold text-yellow-900 drop-shadow-sm">Chào Bé Bin! 🐻</h1>
+                <div class="flex items-center gap-2 mt-2 bg-white/50 px-3 py-1 rounded-full w-fit">
+                    <span class="text-2xl">💰</span>
+                    <span id="coin-balance" class="text-xl font-black text-yellow-800">0</span>
+                    <span class="text-xs font-bold text-yellow-800">Xu</span>
+                </div>
+            </div>
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full border-4 border-white bg-yellow-100 shadow-md">
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-4 pb-24 bg-yellow-50">
+
+            <!-- Tab: Quests (Nhiệm vụ) -->
+            <div id="tab-quests" class="tab-content active space-y-4">
+                <h2 class="text-lg font-black text-yellow-800 mb-2 uppercase tracking-wide">Việc hôm nay 📅</h2>
+                <div id="quest-list" class="space-y-3">
+                    <!-- Dynamic Quests Here -->
+                    <div class="text-center text-gray-400 py-10">Đang tải nhiệm vụ...</div>
+                </div>
+            </div>
+
+            <!-- Tab: Shop (Cửa hàng) -->
+            <div id="tab-shop" class="tab-content space-y-4">
+                <h2 class="text-lg font-black text-purple-800 mb-2 uppercase tracking-wide">Đổi Quà 🎁</h2>
+                <div id="shop-list" class="grid grid-cols-2 gap-3">
+                    <!-- Dynamic Rewards Here -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="absolute bottom-0 w-full bg-white border-t-4 border-yellow-200 flex justify-around p-3 pb-6 rounded-t-3xl z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
+            <button onclick="switchTab('quests')" id="btn-quests" class="nav-btn text-yellow-600 flex flex-col items-center w-1/2 transform transition hover:scale-105">
+                <span class="text-4xl mb-1 filter drop-shadow-md">📝</span>
+                <span class="text-sm font-black">Nhiệm Vụ</span>
+            </button>
+            <button onclick="switchTab('shop')" id="btn-shop" class="nav-btn text-gray-400 flex flex-col items-center w-1/2 transform transition hover:scale-105">
+                <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🛒</span>
+                <span class="text-sm font-black">Cửa Hàng</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Auth Simulation (Hidden) -->
+    <div class="fixed top-2 right-2 opacity-20 hover:opacity-100">
+        <button onclick="loginAsKid()" class="bg-gray-800 text-white text-xs px-2 py-1 rounded">Reset Auth to Kid</button>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1';
+
+        // --- Auth Helper ---
+        // For demo purposes, we need to ensure the backend sees us as a KID.
+        // In a real app, this would be a proper login screen.
+        async function loginAsKid() {
+            // We can't easily set the HTTP-only cookie from JS without a proper endpoint.
+            // But since our deps.py checks for a hardcoded user if no cookie,
+            // we will simulate by passing a header or just relying on the default (which is currently Parent if not specified).
+            // Wait, we need a way to tell the backend "I am a Kid".
+            // Let's assume for this demo, we've already set the cookie or we use a special header.
+            alert("Vui lòng xóa cookie hoặc dùng tab ẩn danh để test luồng Kid nếu đang bị nhận là Parent!");
+        }
+
+        // --- Logic ---
+
+        async function fetchQuests() {
+            try {
+                const response = await fetch(`${API_BASE}/quests/daily`);
+                if (!response.ok) throw new Error('Failed to fetch quests');
+                const quests = await response.json();
+                renderQuests(quests);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('quest-list').innerHTML = '<div class="text-center text-red-500 font-bold">Lỗi tải dữ liệu!</div>';
+            }
+        }
+
+        function renderQuests(quests) {
+            const container = document.getElementById('quest-list');
+            container.innerHTML = '';
+
+            if (quests.length === 0) {
+                 container.innerHTML = '<div class="text-center text-gray-500">Hôm nay không có việc gì! Đi chơi thôi! 🎈</div>';
+                 return;
+            }
+
+            quests.forEach(quest => {
+                const isPending = quest.status === 'PENDING_APPROVAL';
+                const isDone = quest.status === 'APPROVED';
+                
+                const card = document.createElement('div');
+                card.className = `bg-white p-4 rounded-2xl shadow-lg border-b-4 ${isDone ? 'border-green-400 opacity-60' : isPending ? 'border-blue-400' : 'border-gray-200'} flex justify-between items-center transform transition hover:scale-[1.02]`;
+                
+                let buttonHtml = '';
+                if (!quest.status || quest.status === 'REJECTED') {
+                    buttonHtml = `
+                        <button onclick="submitTask('${quest.task_id}', '${quest.name}')" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-4 rounded-xl shadow-md active:translate-y-1 transition-all">
+                            Làm xong!
+                        </button>
+                    `;
+                } else if (isPending) {
+                    buttonHtml = `<span class="text-blue-500 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full">⏳ Đang chờ duyệt</span>`;
+                } else {
+                    buttonHtml = `<span class="text-green-500 font-bold text-sm bg-green-50 px-3 py-1 rounded-full">✅ Đã xong</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="text-4xl bg-gray-50 p-2 rounded-xl border border-gray-100">
+                             ${getIcon(quest.name)}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg">${quest.name}</h3>
+                            <span class="text-yellow-600 font-black text-sm">+${quest.points_reward} Xu</span>
+                        </div>
+                    </div>
+                    <div>
+                        ${buttonHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function submitTask(taskId, taskName) {
+            if (!confirm(`Bé đã làm xong việc "${taskName}" chưa?`)) return;
+
+            try {
+                // Mock proof image for now
+                const body = { proof_image_url: "https://via.placeholder.com/300x200.png?text=Done" };
+                
+                const response = await fetch(`${API_BASE}/quests/${taskId}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) throw new Error('Submit failed');
+                
+                alert("Đã gửi báo cáo! Chờ bố mẹ duyệt nhé. 👍");
+                fetchQuests(); // Reload list
+
+            } catch (error) {
+                console.error(error);
+                alert("Có lỗi xảy ra!");
+            }
+        }
+
+        async function fetchRewards() {
+            try {
+                const response = await fetch(`${API_BASE}/rewards/`);
+                if (!response.ok) throw new Error('Failed to fetch rewards');
+                const rewards = await response.json();
+                renderRewards(rewards);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderRewards(rewards) {
+             const container = document.getElementById('shop-list');
+             container.innerHTML = '';
+             
+             rewards.forEach(reward => {
+                 const card = document.createElement('div');
+                 card.className = "bg-white p-3 rounded-2xl shadow-md border-b-4 border-purple-200 flex flex-col items-center text-center";
+                 card.innerHTML = `
+                    <div class="text-5xl mb-2">${getIcon(reward.name)}</div>
+                    <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1 h-10 flex items-center justify-center">${reward.name}</h3>
+                    <div class="text-purple-600 font-black text-lg mb-2">${reward.points_cost} Xu</div>
+                    <button onclick="redeemReward('${reward.id}', ${reward.points_cost})" class="w-full bg-purple-500 text-white font-bold py-1.5 rounded-lg text-sm shadow-sm active:scale-95">Đổi Ngay</button>
+                 `;
+                 container.appendChild(card);
+             });
+        }
+
+        async function redeemReward(rewardId, cost) {
+            const currentBalance = parseInt(document.getElementById('coin-balance').innerText);
+            if (currentBalance < cost) {
+                alert("Bé chưa đủ xu để đổi món này! Hãy làm thêm việc nhé. 💪");
+                return;
+            }
+
+            if(!confirm("Bé có chắc muốn đổi món quà này không?")) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/rewards/${rewardId}/redeem`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Redeem failed');
+                }
+                
+                const result = await response.json();
+                alert(`Đổi thành công! Số dư mới: ${result.new_balance} Xu`);
+                
+                // Update Balance UI
+                document.getElementById('coin-balance').innerText = result.new_balance;
+                document.getElementById('coin-balance').parentElement.classList.add('coin-pop');
+                setTimeout(() => document.getElementById('coin-balance').parentElement.classList.remove('coin-pop'), 300);
+
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function getIcon(name) {
+            const map = {
+                'Đánh răng': '🪥',
+                'Gấp chăn': '🛏️',
+                'Học bài': '📚',
+                'Rửa bát': '🍽️',
+                'Chơi': '🎮',
+                'Kẹo': '🍬',
+                'TV': '📺'
+            };
+            for (const key in map) {
+                if (name.includes(key)) return map[key];
+            }
+            return '✨';
+        }
+
+        // --- Tabs ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-yellow-600');
+                el.querySelector('span:first-child').classList.add('grayscale', 'opacity-50');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.add('text-yellow-600');
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.querySelector('span:first-child').classList.remove('grayscale', 'opacity-50');
+            
+            if (tabId === 'shop') fetchRewards();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchQuests();
+            // Mock fetching balance for now (should be separate API or part of User object)
+            // For now, let's assume it's 0 or fetched via another call.
+            // In a real app, GET /api/v1/users/me would return this.
+        });
+    </script>
+</body>
+</html>

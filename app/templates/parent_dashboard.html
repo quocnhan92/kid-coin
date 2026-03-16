@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidCoin - Quản lý của Bố Mẹ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .swipe-out-right { animation: swipeRight 0.3s forwards; }
+        .swipe-out-left { animation: swipeLeft 0.3s forwards; }
+        @keyframes swipeRight { to { transform: translateX(100%); opacity: 0; } }
+        @keyframes swipeLeft { to { transform: translateX(-100%); opacity: 0; } }
+    </style>
+</head>
+<body class="bg-gray-200 flex justify-center items-center min-h-screen">
+
+    <div class="bg-gray-50 w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-gray-800">
+
+        <!-- Header -->
+        <div class="bg-white px-6 py-5 border-b shadow-sm flex justify-between items-center z-10">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Chào <span id="parent-name">Bố Mẹ</span> 👋</h1>
+                <p id="pending-count-label" class="text-sm text-red-500 font-medium mt-1">⏳ Đang tải...</p>
+            </div>
+            <img id="parent-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Parent" class="w-12 h-12 rounded-full border border-gray-200 bg-gray-100">
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-4 pb-24">
+
+            <!-- Tab: Approve -->
+            <div id="tab-approve" class="tab-content active space-y-4">
+                <div id="pending-tasks-container" class="space-y-4">
+                    <!-- Dynamic Content Here -->
+                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+
+            <!-- Tab: Config (Placeholder for now) -->
+            <div id="tab-config" class="tab-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Quản lý Nhiệm vụ</h2>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">+ Thêm mới</button>
+                </div>
+                <div class="text-center text-gray-500 mt-10">
+                    Tính năng đang phát triển...
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-2 pb-6 rounded-b-3xl z-20">
+            <button onclick="switchTab('approve')" id="btn-approve" class="nav-btn text-blue-600 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1 relative">
+                    ✅
+                    <span id="badge-count" class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                </span>
+                <span class="text-xs font-bold">Duyệt Việc</span>
+            </button>
+            <button onclick="switchTab('config')" id="btn-config" class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1">⚙️</span>
+                <span class="text-xs font-medium">Nhiệm Vụ</span>
+            </button>
+            <button class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
+                <span class="text-2xl mb-1">🎁</span>
+                <span class="text-xs font-medium">Trả Quà</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- API Integration ---
+        const API_BASE = '/api/v1';
+
+        async function fetchPendingTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/parent/pending-tasks`);
+                if (!response.ok) throw new Error('Failed to fetch tasks');
+                const tasks = await response.json();
+                renderPendingTasks(tasks);
+                updateBadge(tasks.length);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('pending-tasks-container').innerHTML = 
+                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
+            }
+        }
+
+        function renderPendingTasks(tasks) {
+            const container = document.getElementById('pending-tasks-container');
+            container.innerHTML = '';
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 opacity-50">
+                        <span class="text-4xl block mb-2">🎉</span>
+                        <p>Hết việc cần duyệt rồi!</p>
+                    </div>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.id = `card-${task.log_id}`;
+                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
+                
+                // Format timestamp
+                const timeStr = new Date(task.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+
+                card.innerHTML = `
+                    <div class="p-4 flex justify-between items-center bg-blue-50">
+                        <div class="flex items-center gap-3">
+                            <img src="${task.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + task.kid_name}" class="w-10 h-10 rounded-full bg-white border border-blue-200">
+                            <div>
+                                <p class="font-bold text-gray-800">${task.kid_name}</p>
+                                <p class="text-xs text-gray-500">${timeStr} • ${task.task_name}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-blue-600">+${task.points_reward} Xu</p>
+                        </div>
+                    </div>
+                    ${task.proof_image_url ? `
+                    <div class="h-40 bg-gray-200 w-full relative">
+                        <img src="${task.proof_image_url}" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">📷 Minh chứng</div>
+                    </div>` : ''}
+                    <div class="flex divide-x border-t">
+                        <button onclick="handleAction('${task.log_id}', 'REJECT')" class="flex-1 py-3 text-red-500 font-bold hover:bg-red-50 flex justify-center items-center gap-2 transition-colors">
+                            <span class="text-xl">✕</span> Từ chối
+                        </button>
+                        <button onclick="handleAction('${task.log_id}', 'APPROVE')" class="flex-1 py-3 text-green-500 font-bold hover:bg-green-50 flex justify-center items-center gap-2 transition-colors">
+                            <span class="text-xl">✓</span> Duyệt thưởng
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function handleAction(logId, action) {
+            const card = document.getElementById(`card-${logId}`);
+            
+            // 1. Optimistic UI Update (Animate out)
+            if (action === 'APPROVE') {
+                card.classList.add('swipe-out-right');
+            } else {
+                card.classList.add('swipe-out-left');
+            }
+
+            try {
+                // 2. Call API
+                const response = await fetch(`${API_BASE}/quests/${logId}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, comment: action === 'APPROVE' ? "Good job!" : "Try again" })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Action failed');
+                }
+
+                // 3. Remove from DOM after animation
+                setTimeout(() => {
+                    card.style.display = 'none';
+                    card.remove();
+                    // Update count
+                    const currentCount = parseInt(document.getElementById('badge-count').innerText) || 0;
+                    updateBadge(Math.max(0, currentCount - 1));
+                    
+                    // Show empty state if needed
+                    const container = document.getElementById('pending-tasks-container');
+                    if (container.children.length === 0) {
+                        renderPendingTasks([]);
+                    }
+                }, 300);
+
+            } catch (error) {
+                console.error(error);
+                alert("Có lỗi xảy ra, vui lòng thử lại!");
+                card.classList.remove('swipe-out-right', 'swipe-out-left'); // Revert animation
+            }
+        }
+
+        function updateBadge(count) {
+            const badge = document.getElementById('badge-count');
+            const label = document.getElementById('pending-count-label');
+            
+            if (count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+                label.innerText = `⏳ Có ${count} việc đang chờ duyệt`;
+                label.className = "text-sm text-red-500 font-medium mt-1";
+            } else {
+                badge.classList.add('hidden');
+                label.innerText = "✅ Đã duyệt hết việc!";
+                label.className = "text-sm text-green-500 font-medium mt-1";
+            }
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-blue-600');
+                el.querySelector('span:last-child').classList.remove('font-bold');
+                el.classList.add('text-gray-400');
+                el.querySelector('span:last-child').classList.add('font-medium');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.classList.add('text-blue-600');
+            activeBtn.querySelector('span:last-child').classList.remove('font-medium');
+            activeBtn.querySelector('span:last-child').classList.add('font-bold');
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPendingTasks();
+        });
+    </script>
+</body>
+</html>
