@@ -29,6 +29,7 @@ ENV/
 .env
 
 # PyCharm / IDE
+.venv/
 .idea/
 .vscode/
 *.swp
