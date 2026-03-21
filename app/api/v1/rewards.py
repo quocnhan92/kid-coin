@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.tasks_rewards import FamilyReward
-from app.models.logs_transactions import Transaction, TransactionType, RedemptionLog
+from app.models.logs_transactions import Transaction, TransactionType, RedemptionLog, RedemptionStatus
 from app.models.user_family import User
 from app.services.audit import AuditService, AuditStatus
 from app.schemas import reward as reward_schemas
@@ -57,7 +57,7 @@ async def redeem_reward(
         redemption = RedemptionLog(
             kid_id=current_user.id,
             reward_id=reward.id,
-            status="PENDING_DELIVERY"
+            status=RedemptionStatus.PENDING_DELIVERY
         )
         db.add(redemption)
         db.flush() # get ID
@@ -104,3 +104,54 @@ async def redeem_reward(
             error=e
         )
         raise HTTPException(status_code=500, detail="Redemption failed")
+
+@router.put("/delivery/{redemption_id}")
+async def deliver_reward(
+    redemption_id: str,
+    request: reward_schemas.DeliveryRequest,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    PARENT: Confirm delivery of a reward.
+    """
+    log = db.query(RedemptionLog).filter(RedemptionLog.id == redemption_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Redemption log not found")
+        
+    kid = db.query(User).get(log.kid_id)
+    if kid.family_id != current_user.family_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this log")
+
+    if log.status != RedemptionStatus.PENDING_DELIVERY:
+         raise HTTPException(status_code=400, detail="Reward already delivered")
+
+    if request.status != "DELIVERED":
+        raise HTTPException(status_code=400, detail="Invalid status update")
+
+    try:
+        from datetime import datetime
+        log.status = RedemptionStatus.DELIVERED
+        log.delivered_at = datetime.now()
+        
+        db.commit()
+        
+        AuditService.log(
+            db=db,
+            action="DELIVER_REWARD",
+            resource_type="RedemptionLog",
+            resource_id=str(log.id),
+            status=AuditStatus.SUCCESS
+        )
+        
+        return {"status": "success", "message": "Reward marked as delivered"}
+    except Exception as e:
+        db.rollback()
+        AuditService.log_failed(
+            db=db,
+            action="DELIVER_REWARD",
+            resource_type="RedemptionLog",
+            resource_id=redemption_id,
+            error=e
+        )
+        raise HTTPException(status_code=500, detail="Delivery confirmation failed")

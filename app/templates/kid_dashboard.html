@@ -100,6 +100,17 @@
             }
         }
 
+        async function fetchMe() {
+            try {
+                const response = await fetch(`${API_BASE}/users/me`);
+                if (!response.ok) throw new Error('Failed to fetch user info');
+                const me = await response.json();
+                document.getElementById('coin-balance').innerText = me.current_coin;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         function renderQuests(quests) {
             const container = document.getElementById('quest-list');
             container.innerHTML = '';
@@ -268,9 +279,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchQuests();
-            // Mock fetching balance for now (should be separate API or part of User object)
-            // For now, let's assume it's 0 or fetched via another call.
-            // In a real app, GET /api/v1/users/me would return this.
+            fetchMe();
         });
     </script>
 </body>

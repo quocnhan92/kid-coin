@@ -33,10 +33,10 @@ async def get_daily_quests(
     quests = []
     for task in active_tasks:
         log = db.query(TaskLog).filter(
-            TaskLog.task_id == task.id,
+            TaskLog.family_task_id == task.id,
             TaskLog.kid_id == current_user.id,
             TaskLog.created_at >= today_start
-        ).first()
+        ).order_by(TaskLog.created_at.desc()).first()
         
         quest_item = quest_schemas.QuestItem(
             id=log.id if log else None, # Log ID if submitted, else None
@@ -74,19 +74,20 @@ async def submit_quest(
     # 2. Check if already submitted today
     today_start = datetime.combine(date.today(), datetime.min.time())
     existing_log = db.query(TaskLog).filter(
-        TaskLog.task_id == task.id,
+        TaskLog.family_task_id == task.id,
         TaskLog.kid_id == current_user.id,
         TaskLog.created_at >= today_start
-    ).first()
+    ).order_by(TaskLog.created_at.desc()).first()
     
-    if existing_log:
+    # Allow re-submit only if the latest attempt was rejected.
+    if existing_log and existing_log.status != TaskStatus.REJECTED:
         raise HTTPException(status_code=400, detail="Task already submitted today")
 
     # 3. Create Task Log
     try:
         new_log = TaskLog(
             kid_id=current_user.id,
-            task_id=task.id,
+            family_task_id=task.id,
             status=TaskStatus.PENDING_APPROVAL,
             proof_image_url=request.proof_image_url
         )
@@ -155,7 +156,7 @@ async def verify_quest(
             log.status = TaskStatus.APPROVED
             
             # Transaction: Add Coin & XP
-            task = db.query(FamilyTask).get(log.task_id)
+            task = db.query(FamilyTask).get(log.family_task_id)
             points = task.points_reward
             
             from app.models.logs_transactions import Transaction, TransactionType

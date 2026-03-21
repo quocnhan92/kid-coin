@@ -39,14 +39,29 @@
                 </div>
             </div>
 
-            <!-- Tab: Config (Placeholder for now) -->
+            <!-- Tab: Config -->
             <div id="tab-config" class="tab-content">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-gray-800">Quản lý Nhiệm vụ</h2>
-                    <button class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">+ Thêm mới</button>
+                    <button onclick="fetchFamilyTasks()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">
+                        Làm mới
+                    </button>
                 </div>
-                <div class="text-center text-gray-500 mt-10">
-                    Tính năng đang phát triển...
+                <div id="family-tasks-container" class="space-y-4">
+                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+
+            <!-- Tab: Redeem delivery -->
+            <div id="tab-redeem" class="tab-content space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-gray-800">Trả Quà</h2>
+                    <button onclick="fetchPendingRedemptions()" class="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">
+                        Làm mới
+                    </button>
+                </div>
+                <div id="pending-redemptions-container" class="space-y-4">
+                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
                 </div>
             </div>
 
@@ -65,7 +80,7 @@
                 <span class="text-2xl mb-1">⚙️</span>
                 <span class="text-xs font-medium">Nhiệm Vụ</span>
             </button>
-            <button class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
+            <button onclick="switchTab('redeem')" id="btn-redeem" class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
                 <span class="text-2xl mb-1">🎁</span>
                 <span class="text-xs font-medium">Trả Quà</span>
             </button>
@@ -203,6 +218,159 @@
             }
         }
 
+        async function fetchPendingRedemptions() {
+            try {
+                const response = await fetch(`${API_BASE}/parent/pending-redemptions`);
+                if (!response.ok) throw new Error('Failed to fetch pending redemptions');
+                const logs = await response.json();
+                renderPendingRedemptions(logs);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('pending-redemptions-container').innerHTML =
+                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
+            }
+        }
+
+        function renderPendingRedemptions(redemptions) {
+            const container = document.getElementById('pending-redemptions-container');
+            container.innerHTML = '';
+
+            if (redemptions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 opacity-50">
+                        <span class="text-4xl block mb-2">🎉</span>
+                        <p>Không có quà nào cần giao.</p>
+                    </div>`;
+                return;
+            }
+
+            redemptions.forEach(log => {
+                const card = document.createElement('div');
+                card.id = `redeem-card-${log.redemption_id}`;
+                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
+
+                const timeStr = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                card.innerHTML = `
+                    <div class="p-4 flex justify-between items-center bg-purple-50">
+                        <div class="flex items-center gap-3">
+                            <img src="${log.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + log.kid_name}" class="w-10 h-10 rounded-full bg-white border border-purple-200">
+                            <div>
+                                <p class="font-bold text-gray-800">${log.kid_name}</p>
+                                <p class="text-xs text-gray-500">${timeStr} • ${log.reward_name}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-purple-700">-${log.points_cost} Xu</p>
+                        </div>
+                    </div>
+                    <div class="flex divide-x border-t">
+                        <button onclick="deliverReward('${log.redemption_id}')" class="flex-1 py-3 text-green-600 font-bold hover:bg-green-50 flex justify-center items-center gap-2 transition-colors">
+                            <span class="text-xl">✓</span> Đã đưa quà
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        async function deliverReward(redemptionId) {
+            const card = document.getElementById(`redeem-card-${redemptionId}`);
+            try {
+                const response = await fetch(`${API_BASE}/rewards/delivery/${redemptionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'DELIVERED' })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Delivery failed');
+                }
+
+                if (card) {
+                    card.style.display = 'none';
+                    card.remove();
+                }
+
+                fetchPendingRedemptions();
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi khi xác nhận giao quà. Vui lòng thử lại!');
+            }
+        }
+
+        async function fetchFamilyTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/parent/tasks`);
+                if (!response.ok) throw new Error('Failed to fetch family tasks');
+                const tasks = await response.json();
+                renderFamilyTasks(tasks);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('family-tasks-container').innerHTML =
+                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
+            }
+        }
+
+        function renderFamilyTasks(tasks) {
+            const container = document.getElementById('family-tasks-container');
+            container.innerHTML = '';
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 opacity-50">
+                        <span class="text-4xl block mb-2">🧩</span>
+                        <p>Chưa có nhiệm vụ nào.</p>
+                    </div>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
+
+                card.innerHTML = `
+                    <div class="p-4 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl bg-gray-100 p-2 rounded-lg">📝</div>
+                            <div>
+                                <p class="font-bold text-gray-800">${task.name}</p>
+                                <p class="text-xs text-gray-500">${task.points_reward} Xu • ${new Date(task.created_at).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold ${task.is_active ? 'text-green-600' : 'text-gray-500'}">
+                                ${task.is_active ? 'Đang bật' : 'Tạm tắt'}
+                            </span>
+                            <button onclick="toggleTask('${task.id}')" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-xl text-sm active:scale-95 transition-transform">
+                                Tắt/Bật
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        async function toggleTask(taskId) {
+            try {
+                const response = await fetch(`${API_BASE}/parent/tasks/${taskId}/toggle`, {
+                    method: 'PUT'
+                });
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Toggle failed');
+                }
+                await fetchFamilyTasks();
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi khi bật/tắt nhiệm vụ. Vui lòng thử lại!');
+            }
+        }
+
         // --- Tab Switching Logic ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -219,6 +387,9 @@
             activeBtn.classList.add('text-blue-600');
             activeBtn.querySelector('span:last-child').classList.remove('font-medium');
             activeBtn.querySelector('span:last-child').classList.add('font-bold');
+
+            if (tabId === 'config') fetchFamilyTasks();
+            if (tabId === 'redeem') fetchPendingRedemptions();
         }
 
         // --- Initialization ---
