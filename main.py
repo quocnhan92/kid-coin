@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 import logging
 import os
+import threading
 from app.core.database import engine, Base, SessionLocal
 from app.api.v1 import system as system_router
 from app.api.v1 import users as users_router
@@ -23,10 +24,13 @@ from app.models.logs_transactions import TaskLog, Transaction, RedemptionLog
 from app.models.social import Club, ClubMember
 from app.models.audit import AuditLog
 from app.models.devices import FamilyDevice
+from app.services.task_proof_cleanup import scheduler_loop
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+cleanup_stop_event = threading.Event()
+cleanup_thread = None
 
 # Create tables
 try:
@@ -146,6 +150,29 @@ def seed_initial_data():
         db.rollback()
     finally:
         db.close()
+
+
+@app.on_event("startup")
+def start_daily_cleanup_scheduler():
+    global cleanup_thread
+    if cleanup_thread and cleanup_thread.is_alive():
+        return
+
+    cleanup_stop_event.clear()
+    cleanup_thread = threading.Thread(
+        target=scheduler_loop,
+        args=(cleanup_stop_event,),
+        daemon=True,
+        name="task-proof-cleanup-scheduler",
+    )
+    cleanup_thread.start()
+    logger.info("Started daily cleanup scheduler (runs at 01:00 every day).")
+
+
+@app.on_event("shutdown")
+def stop_daily_cleanup_scheduler():
+    cleanup_stop_event.set()
+    logger.info("Stopped daily cleanup scheduler.")
 
 # --- Webpage Routes ---
 
