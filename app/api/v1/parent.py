@@ -68,6 +68,10 @@ class UpdateKidRequest(BaseModel):
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
 
+class CreateAdminRequest(BaseModel):
+    display_name: str
+    username: str
+
 class CreateTaskRequest(BaseModel):
     name: str
     points_reward: int
@@ -321,6 +325,49 @@ async def update_kid(
         db.rollback()
         AuditService.log_failed(db=db, action="UPDATE_KID_PROFILE", resource_type="User", error=e)
         raise HTTPException(status_code=500, detail="Could not update kid")
+
+@router.post("/admins")
+async def create_admin(
+    request: CreateAdminRequest,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Create a new admin (Parent/Grandparent) in the family.
+    """
+    # Check if username already exists globally (username must be unique)
+    existing_user = db.query(User).filter(User.username == request.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.")
+
+    try:
+        from uuid import uuid4
+        new_admin = User(
+            id=uuid4(),
+            family_id=current_user.family_id,
+            role=Role.PARENT,
+            display_name=request.display_name,
+            username=request.username,
+            avatar_url=f"https://api.dicebear.com/7.x/avataaars/svg?seed={request.display_name.replace(' ', '')}"
+        )
+        db.add(new_admin)
+        db.commit()
+        db.refresh(new_admin)
+
+        AuditService.log(
+            db=db,
+            action="CREATE_ADMIN",
+            resource_type="User",
+            resource_id=str(new_admin.id),
+            status=AuditStatus.SUCCESS,
+            details={"name": request.display_name, "username": request.username}
+        )
+
+        return {"status": "success", "message": f"Đã tạo tài khoản quản trị cho {request.display_name}"}
+    except Exception as e:
+        db.rollback()
+        AuditService.log_failed(db=db, action="CREATE_ADMIN", resource_type="User", error=e)
+        raise HTTPException(status_code=500, detail="Lỗi khi tạo tài khoản quản trị")
 
 @router.post("/tasks", response_model=FamilyTaskResponse)
 async def create_task(

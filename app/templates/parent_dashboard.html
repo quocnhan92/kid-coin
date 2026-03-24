@@ -27,6 +27,9 @@
                 <h1 class="text-xl font-bold text-gray-800 hidden sm:block">KidCoin</h1>
             </div>
             <div class="flex items-center gap-4">
+                <button onclick="showCreateAdminModal()" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-bold border border-blue-200 hidden sm:block">
+                    + Thêm Admin (Bố/Mẹ)
+                </button>
                 <span id="current-user" class="text-sm font-medium text-gray-600 hidden sm:block">...</span>
                 <button onclick="logout()" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-bold border border-red-200">
                     Đăng xuất
@@ -59,6 +62,10 @@
             <button onclick="switchTab('pending')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors relative">
                 ⏳ Chờ duyệt
                 <span id="pending-badge" class="absolute top-1 right-1 transform translate-x-1/4 -translate-y-1/4 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden-section shadow-sm ring-2 ring-white">0</span>
+            </button>
+            <!-- Mobile only Admin button -->
+            <button onclick="showCreateAdminModal()" class="sm:hidden px-4 py-2 border-b-2 border-transparent text-blue-600 font-medium hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap rounded-t-lg transition-colors">
+                + Bố/Mẹ mới
             </button>
         </div>
 
@@ -164,6 +171,30 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Thêm Quản trị viên (Bố/Mẹ) -->
+    <div id="create-admin-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+            <h2 class="text-2xl font-black text-blue-800 mb-2 text-center">Thêm Quản trị viên 👨‍👩‍👧‍👦</h2>
+            <p class="text-sm text-gray-500 text-center mb-6">Thêm Mẹ, Ông, Bà vào cùng quản lý gia đình</p>
+            <form id="admin-form" onsubmit="createAdmin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên hiển thị</label>
+                    <input type="text" id="admin-name" required placeholder="VD: Mẹ Hoa, Ông Nội..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên đăng nhập (Username)</label>
+                    <input type="text" id="admin-username" required placeholder="VD: mehoa123" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                    <p class="text-xs text-gray-400 mt-1">Dùng để đăng nhập trên thiết bị mới (Mật khẩu PIN chung của gia đình).</p>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-admin-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo Tài Khoản</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -346,7 +377,6 @@
             <div class="p-6">
                 <!-- Image Preview (if any) -->
                 <div id="approve-image-container" class="mb-4 hidden-section">
-                    <!-- Changed object-cover to object-contain and increased max-height -->
                     <img id="approve-image" src="" class="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-900">
                 </div>
                 
@@ -543,6 +573,31 @@
                 
                 grid.appendChild(img);
             });
+        }
+        
+        async function createAdmin(event) {
+            event.preventDefault();
+            const name = document.getElementById('admin-name').value;
+            const username = document.getElementById('admin-username').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/admins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ display_name: name, username: username }) 
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Thêm Quản trị viên thất bại');
+                }
+
+                alert('Đã thêm Quản trị viên thành công!');
+                closeModal('create-admin-modal');
+                document.getElementById('admin-form').reset();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
         }
 
         async function createKid(event) {
@@ -943,6 +998,11 @@
             return '✨';
         }
 
+        function showCreateAdminModal() {
+            document.getElementById('create-admin-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('admin-name').focus(), 100);
+        }
+
         function showCreateKidModal() {
             renderAvatarPicker('kid-avatar-picker', 'kid-avatar-url');
             document.getElementById('create-kid-modal').classList.remove('hidden-section');
@@ -976,7 +1036,7 @@
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const modals = ['create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'create-reward-modal', 'approve-modal'];
+            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'create-reward-modal', 'approve-modal'];
             modals.forEach(id => {
                 const modal = document.getElementById(id);
                 if (event.target == modal) {
@@ -995,8 +1055,13 @@
 
         async function fetchCurrentUser() {
             try {
-                // Static display for demo
-                document.getElementById('current-user').textContent = "Bố/Mẹ (Admin)";
+                const response = await fetch(`${API_BASE}/users/me`);
+                if (response.ok) {
+                    const me = await response.json();
+                    document.getElementById('current-user').textContent = me.display_name + " (Quản trị)";
+                } else {
+                    document.getElementById('current-user').textContent = "Bố/Mẹ (Quản trị viên)";
+                }
             } catch (error) {
                 console.error(error);
             }
