@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.tasks_rewards import FamilyTask, VerificationType
 from app.models.logs_transactions import TaskLog, TaskStatus
-from app.models.user_family import User
+from app.models.user_family import User, Role
 from app.models.audit import AuditStatus
 from app.services.audit import AuditService
 from app.schemas import quest as quest_schemas
@@ -14,11 +14,11 @@ router = APIRouter()
 
 @router.get("/daily", response_model=List[quest_schemas.QuestItem])
 async def get_daily_quests(
-    current_user: User = Depends(deps.require_role(deps.Role.KID)),
+    current_user: User = Depends(deps.get_current_user), # Changed to get_current_user
     db: Session = Depends(deps.get_db)
 ):
     """
-    KID: Get daily quests for the kid.
+    Get daily quests for the current user (Kid or Parent).
     """
     # 1. Get all active tasks for the family
     active_tasks = db.query(FamilyTask).filter(
@@ -27,7 +27,7 @@ async def get_daily_quests(
         FamilyTask.is_deleted == False
     ).all()
 
-    # 2. Check if the kid has already submitted or completed any today
+    # 2. Check if the user has already submitted or completed any today
     today_start = datetime.combine(date.today(), datetime.min.time())
     
     quests = []
@@ -57,11 +57,11 @@ async def get_daily_quests(
 async def submit_quest(
     task_id: str,
     request: quest_schemas.QuestSubmitRequest,
-    current_user: User = Depends(deps.require_role(deps.Role.KID)),
+    current_user: User = Depends(deps.get_current_user), # Changed to get_current_user
     db: Session = Depends(deps.get_db)
 ):
     """
-    KID: Submit a quest for approval.
+    Submit a quest for approval (Kid or Parent).
     """
     # 1. Validate task
     task = db.query(FamilyTask).filter(
@@ -176,7 +176,7 @@ async def verify_quest(
         raise HTTPException(status_code=404, detail="Submission not found")
         
     # verify ownership via kid's family
-    kid = db.query(User).get(log.kid_id)
+    kid = db.query(User).get(log.kid_id) # Technically this is the user who submitted it (Parent or Kid)
     if kid.family_id != current_user.family_id:
         raise HTTPException(status_code=403, detail="Not authorized for this submission")
 

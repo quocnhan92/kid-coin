@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidCoin - Bé Làm Việc Tốt</title>
+    <title>KidCoin - Làm Việc Tốt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
@@ -22,8 +22,8 @@
         <div class="bg-yellow-300 px-6 py-6 border-b-4 border-yellow-400 shadow-sm flex justify-between items-center z-10 rounded-b-3xl">
             <div>
                 <h1 class="text-2xl font-extrabold text-yellow-900 drop-shadow-sm flex items-center gap-2">
-                    Chào Bé <span id="kid-name-header">...</span>! 
-                    <button onclick="showProfileModal()" class="text-sm bg-yellow-400 hover:bg-yellow-50 rounded-full px-2 py-1 shadow-sm transition-colors">✏️</button>
+                    Chào <span id="kid-name-header">...</span>! 
+                    <button onclick="showProfileModal()" class="text-sm bg-yellow-400 hover:bg-yellow-500 rounded-full px-2 py-1 shadow-sm transition-colors">✏️</button>
                 </h1>
                 <div class="flex items-center gap-2 mt-2 bg-white/50 px-3 py-1 rounded-full w-fit">
                     <span class="text-2xl">💰</span>
@@ -69,6 +69,11 @@
                 <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🛒</span>
                 <span class="text-sm font-black">Cửa Hàng</span>
             </button>
+            <!-- Parent Return Button (only visible if role is PARENT) -->
+            <a href="/parent" id="btn-return-parent" class="hidden-section nav-btn text-blue-600 flex flex-col items-center w-1/3 transform transition hover:scale-105">
+                <span class="text-4xl mb-1 filter drop-shadow-md">⚙️</span>
+                <span class="text-sm font-black">Quản lý</span>
+            </a>
         </div>
 
     </div>
@@ -79,13 +84,13 @@
     <!-- Modal: Sửa Profile -->
     <div id="profile-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
         <div class="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm border-4 border-yellow-400 relative">
-            <h2 class="text-xl font-black text-yellow-800 mb-4 text-center">Trang trí thẻ của bé ✨</h2>
+            <h2 class="text-xl font-black text-yellow-800 mb-4 text-center">Trang trí thẻ ✨</h2>
             
             <form id="profile-form" onsubmit="updateProfile(event)" class="space-y-4">
                 <div>
                     <!-- Hiding Name Edit for Kids as requested, just showing it -->
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Tên gọi ở nhà</label>
-                    <input type="text" id="edit-name" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-yellow-200 rounded-xl font-bold text-gray-500 text-center text-lg cursor-not-allowed" title="Nhờ bố mẹ đổi tên giúp nhé!">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tên gọi</label>
+                    <input type="text" id="edit-name" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-yellow-200 rounded-xl font-bold text-gray-500 text-center text-lg cursor-not-allowed" title="Nhờ quản trị viên đổi tên giúp nhé!">
                     <p class="text-xs text-gray-400 text-center mt-1">Nhờ bố mẹ đổi tên giúp nhé!</p>
                 </div>
                 
@@ -114,7 +119,6 @@
     <script>
         const API_BASE = '/api/v1';
         let pendingTaskUpload = null;
-        let parentCommentsMap = {}; // To store comments if needed later
 
         // --- Logic ---
 
@@ -149,6 +153,16 @@
                     avatarHeader.src = me.avatar_url;
                     document.getElementById('selected-avatar').value = me.avatar_url;
                 }
+                
+                // Show return button if parent
+                if (me.role === 'PARENT') {
+                    document.getElementById('btn-return-parent').classList.remove('hidden-section');
+                    // Adjust widths
+                    document.getElementById('btn-quests').classList.remove('w-1/2');
+                    document.getElementById('btn-quests').classList.add('w-1/3');
+                    document.getElementById('btn-shop').classList.remove('w-1/2');
+                    document.getElementById('btn-shop').classList.add('w-1/3');
+                }
             } catch (error) {
                 console.error(error);
             }
@@ -176,7 +190,7 @@
                 // Trạng thái: Chưa làm hoặc Bị từ chối
                 if (!quest.status || isRejected) {
                     let reqText = quest.verification_type === 'Tự động duyệt' ? '⚡ Bấm là có điểm' : 
-                                  quest.verification_type === 'Bố mẹ kiểm tra trực tiếp' ? '👀 Cần bố mẹ ktra' : '📸 Cần chụp ảnh';
+                                  quest.verification_type === 'Bố mẹ kiểm tra trực tiếp' ? '👀 Cần người ktra' : '📸 Cần chụp ảnh';
                     
                     actionArea = `
                         <div class="flex justify-between items-center w-full">
@@ -187,7 +201,7 @@
                         </div>
                     `;
                 } else if (isPending) {
-                    actionArea = `<div class="w-full text-right"><span class="text-blue-500 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full border border-blue-200">⏳ Đang chờ bố mẹ duyệt</span></div>`;
+                    actionArea = `<div class="w-full text-right"><span class="text-blue-500 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full border border-blue-200">⏳ Đang chờ duyệt</span></div>`;
                 } else if (isDone) {
                     actionArea = `<div class="w-full text-right"><span class="text-green-500 font-bold text-sm bg-green-50 px-3 py-1 rounded-full border border-green-200">✅ Hoàn thành xuất sắc</span></div>`;
                 }
@@ -196,9 +210,9 @@
                 let commentHtml = '';
                 if (quest.parent_comment) {
                     if (isRejected) {
-                        commentHtml = `<div class="bg-red-50 p-3 rounded-xl text-sm text-red-700 font-medium flex gap-2 items-start border border-red-100"><span class="text-lg">👩‍🏫</span> <span>Bố mẹ nhắn: <em>"${quest.parent_comment}"</em></span></div>`;
+                        commentHtml = `<div class="bg-red-50 p-3 rounded-xl text-sm text-red-700 font-medium flex gap-2 items-start border border-red-100"><span class="text-lg">👩‍🏫</span> <span>Lời nhắn: <em>"${quest.parent_comment}"</em></span></div>`;
                     } else if (isDone) {
-                        commentHtml = `<div class="bg-green-50 p-3 rounded-xl text-sm text-green-700 font-medium flex gap-2 items-start border border-green-100"><span class="text-lg">🌟</span> <span>Bố mẹ khen: <em>"${quest.parent_comment}"</em></span></div>`;
+                        commentHtml = `<div class="bg-green-50 p-3 rounded-xl text-sm text-green-700 font-medium flex gap-2 items-start border border-green-100"><span class="text-lg">🌟</span> <span>Lời khen: <em>"${quest.parent_comment}"</em></span></div>`;
                     }
                 }
 
@@ -220,7 +234,7 @@
         }
 
         function prepareTaskSubmit(taskId, taskName, verificationType) {
-            if (!confirm(`Bé đã làm xong việc "${taskName}" chưa?`)) return;
+            if (!confirm(`Đã làm xong việc "${taskName}" chưa?`)) return;
             
             if (verificationType === 'Cần chụp ảnh') {
                 pendingTaskUpload = { taskId, taskName };
@@ -263,12 +277,12 @@
                         ctx.drawImage(img, 0, 0, width, height);
 
                         let quality = initialQuality;
-                        const targetSize = 900 * 1024; // ~0.9MB (Dưới 1MB)
+                        const targetSize = 900 * 1024; // 0.9MB
                         
                         const attemptCompress = () => {
                             canvas.toBlob((blob) => {
-                                // Nếu ảnh vẫn to hơn 1MB và chất lượng chưa quá thấp, tiếp tục giảm
                                 if (blob.size > targetSize && quality > 0.2) {
+                                    console.log(`Size ${blob.size} too large, reducing quality to ${quality - 0.15}`);
                                     quality -= 0.15;
                                     attemptCompress();
                                 } else {
@@ -281,7 +295,7 @@
                             }, 'image/jpeg', quality);
                         };
                         
-                        attemptCompress(); // Bắt đầu đệ quy nén
+                        attemptCompress();
                     };
                     img.onerror = (error) => reject(error);
                 };
@@ -291,11 +305,9 @@
 
         async function submitTask(taskId, taskName, proofImageUrl, verificationType) {
             try {
-                // If it's a photo task and we have a local file, we need to upload it first
                 let finalUrl = proofImageUrl;
                 if (proofImageUrl && proofImageUrl instanceof File) {
                      document.getElementById('loading-overlay').classList.remove('hidden-section');
-                     // Nén ảnh: Giới hạn 800x800, tự động giảm quality đến khi < 1MB
                      const compressedFile = await compressImageFile(proofImageUrl);
 
                      const formData = new FormData();
@@ -327,10 +339,10 @@
                 }
                 
                 if (verificationType === 'Tự động duyệt') {
-                    alert("Tuyệt vời! Bé đã được cộng điểm ngay lập tức! 🎉");
+                    alert("Tuyệt vời! Bạn đã được cộng điểm ngay lập tức! 🎉");
                     fetchMe(); // Update balance
                 } else {
-                    alert("Đã gửi báo cáo! Chờ bố mẹ duyệt nhé. 👍");
+                    alert("Đã gửi báo cáo! Chờ duyệt nhé. 👍");
                 }
                 
                 fetchQuests(); // Reload list
@@ -381,12 +393,11 @@
         async function redeemReward(rewardId, cost) {
             const currentBalance = parseInt(document.getElementById('coin-balance').innerText);
             if (currentBalance < cost) {
-                alert("Bé chưa đủ xu để đổi món này! Hãy làm thêm việc nhé. 💪");
+                alert("Chưa đủ xu để đổi món này! Hãy làm thêm việc nhé. 💪");
                 return;
             }
 
-            // Gọi bố mẹ ra nhập PIN - Để prototype nhanh, ta cứ confirm thường. Ở hệ thống thật sẽ gọi API login check PIN
-            if(!confirm("Bé có chắc muốn đổi món quà này không?")) return;
+            if(!confirm("Bạn có chắc muốn đổi món quà này không?")) return;
 
             try {
                 const response = await fetch(`${API_BASE}/rewards/${rewardId}/redeem`, {
@@ -401,7 +412,7 @@
                 }
                 
                 const result = await response.json();
-                alert(`Đổi thành công! Nhớ nhắc bố mẹ đưa quà nhé! 🎁\nSố dư mới: ${result.new_balance} Xu`);
+                alert(`Đổi thành công! Nhớ nhắc người duyệt đưa quà nhé! 🎁\nSố dư mới: ${result.new_balance} Xu`);
                 
                 // Update Balance UI
                 document.getElementById('coin-balance').innerText = result.new_balance;
@@ -447,8 +458,7 @@
 
         async function updateProfile(event) {
             event.preventDefault();
-            // Name is disabled for kids, so we only update avatar
-            // const name = document.getElementById('edit-name').value;
+            // Name is disabled, so we only update avatar
             const avatarUrl = document.getElementById('selected-avatar').value;
 
             try {
@@ -502,9 +512,11 @@
 
             document.getElementById('tab-' + tabId).classList.add('active');
             const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.add('text-yellow-600');
-            activeBtn.classList.remove('text-gray-400');
-            activeBtn.querySelector('span:first-child').classList.remove('grayscale', 'opacity-50');
+            if (activeBtn) {
+                 activeBtn.classList.add('text-yellow-600');
+                 activeBtn.classList.remove('text-gray-400');
+                 activeBtn.querySelector('span:first-child').classList.remove('grayscale', 'opacity-50');
+            }
             
             if (tabId === 'shop') fetchRewards();
         }

@@ -642,6 +642,10 @@ async def approve_task(
     if log.status != TaskStatus.PENDING_APPROVAL:
         raise HTTPException(status_code=400, detail="Submission already processed")
 
+    # PREVENT SELF-APPROVAL
+    if log.kid_id == current_user.id:
+        raise HTTPException(status_code=403, detail="Bạn không thể tự duyệt nhiệm vụ của chính mình!")
+
     try:
         log.resolved_at = datetime.now()
         log.parent_comment = request.comment # Save praise or reject reason
