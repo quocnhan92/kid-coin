@@ -3,398 +3,1009 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidCoin - Quản lý của Bố Mẹ</title>
+    <title>KidCoin - Dashboard Bố Mẹ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .swipe-out-right { animation: swipeRight 0.3s forwards; }
-        .swipe-out-left { animation: swipeLeft 0.3s forwards; }
-        @keyframes swipeRight { to { transform: translateX(100%); opacity: 0; } }
-        @keyframes swipeLeft { to { transform: translateX(-100%); opacity: 0; } }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Use !important to ensure hiding works even with flex/grid utilities */
+        .hidden-section { display: none !important; }
+        
+        /* Custom scrollbar for tab navigation */
+        .tab-scroll::-webkit-scrollbar { height: 4px; }
+        .tab-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .tab-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .tab-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-200 flex justify-center items-center min-h-screen">
-
-    <div class="bg-gray-50 w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-gray-800">
-
-        <!-- Header -->
-        <div class="bg-white px-6 py-5 border-b shadow-sm flex justify-between items-center z-10">
-            <div>
-                <h1 class="text-xl font-bold text-gray-800">Chào <span id="parent-name">Bố Mẹ</span> 👋</h1>
-                <p id="pending-count-label" class="text-sm text-red-500 font-medium mt-1">⏳ Đang tải...</p>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🏠</span>
+                <h1 class="text-xl font-bold text-gray-800 hidden sm:block">KidCoin</h1>
             </div>
-            <img id="parent-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Parent" class="w-12 h-12 rounded-full border border-gray-200 bg-gray-100">
+            <div class="flex items-center gap-4">
+                <span id="current-user" class="text-sm font-medium text-gray-600 hidden sm:block">...</span>
+                <button onclick="logout()" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-bold border border-red-200">
+                    Đăng xuất
+                </button>
+            </div>
         </div>
+    </nav>
 
-        <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto p-4 pb-24">
-
-            <!-- Tab: Approve -->
-            <div id="tab-approve" class="tab-content active space-y-4">
-                <div id="pending-tasks-container" class="space-y-4">
-                    <!-- Dynamic Content Here -->
-                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
-                </div>
-            </div>
-
-            <!-- Tab: Config -->
-            <div id="tab-config" class="tab-content">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">Quản lý Nhiệm vụ</h2>
-                    <button onclick="fetchFamilyTasks()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">
-                        Làm mới
-                    </button>
-                </div>
-                <div id="family-tasks-container" class="space-y-4">
-                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
-                </div>
-            </div>
-
-            <!-- Tab: Redeem delivery -->
-            <div id="tab-redeem" class="tab-content space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-800">Trả Quà</h2>
-                    <button onclick="fetchPendingRedemptions()" class="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform">
-                        Làm mới
-                    </button>
-                </div>
-                <div id="pending-redemptions-container" class="space-y-4">
-                    <div class="text-center text-gray-400 py-10">Đang tải dữ liệu...</div>
-                </div>
-            </div>
-
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Mobile Helper Arrow -->
+        <div class="md:hidden flex justify-end text-xs text-gray-400 mb-1 italic">
+            Vuốt ngang để xem thêm menu ➡️
         </div>
-
-        <!-- Bottom Navigation -->
-        <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-2 pb-6 rounded-b-3xl z-20">
-            <button onclick="switchTab('approve')" id="btn-approve" class="nav-btn text-blue-600 flex flex-col items-center w-1/3">
-                <span class="text-2xl mb-1 relative">
-                    ✅
-                    <span id="badge-count" class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
-                </span>
-                <span class="text-xs font-bold">Duyệt Việc</span>
+        
+        <!-- Tab Navigation -->
+        <div class="mb-8 flex gap-2 border-b border-gray-200 overflow-x-auto tab-scroll pb-2 relative">
+            <button onclick="switchTab('overview')" class="tab-btn active px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-bold whitespace-nowrap bg-blue-50 rounded-t-lg transition-colors">
+                📊 Tổng quan
             </button>
-            <button onclick="switchTab('config')" id="btn-config" class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
-                <span class="text-2xl mb-1">⚙️</span>
-                <span class="text-xs font-medium">Nhiệm Vụ</span>
+            <button onclick="switchTab('kids')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+                👶 Các con
             </button>
-            <button onclick="switchTab('redeem')" id="btn-redeem" class="nav-btn text-gray-400 flex flex-col items-center w-1/3">
-                <span class="text-2xl mb-1">🎁</span>
-                <span class="text-xs font-medium">Trả Quà</span>
+            <button onclick="switchTab('tasks')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+                ✅ Việc nhà
+            </button>
+            <button onclick="switchTab('rewards')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+                🎁 Cửa hàng
+            </button>
+            <button onclick="switchTab('pending')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors relative">
+                ⏳ Chờ duyệt
+                <span id="pending-badge" class="absolute top-1 right-1 transform translate-x-1/4 -translate-y-1/4 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden-section shadow-sm ring-2 ring-white">0</span>
             </button>
         </div>
 
+        <!-- Tab: Tổng quan -->
+        <div id="overview" class="tab-content fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tổng số con</h3>
+                        <p id="total-kids" class="text-3xl font-black text-blue-600">-</p>
+                    </div>
+                    <div class="text-4xl opacity-20">👶</div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-yellow-100 p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nhiệm vụ active</h3>
+                        <p id="total-tasks" class="text-3xl font-black text-yellow-600">-</p>
+                    </div>
+                    <div class="text-4xl opacity-20">📋</div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 p-6 flex items-center justify-between cursor-pointer hover:bg-red-50 transition-colors" onclick="switchTab('pending')">
+                    <div>
+                        <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Cần duyệt ngay</h3>
+                        <p id="pending-count" class="text-3xl font-black text-red-600">-</p>
+                    </div>
+                    <div class="text-4xl opacity-20">🚨</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>📋</span> Bài tập chờ duyệt gần đây</h2>
+                    <div id="recent-pending-tasks" class="space-y-3">
+                        <p class="text-gray-500 text-center py-8">Đang tải...</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Quà chờ giao gần đây</h2>
+                    <div id="recent-pending-rewards" class="space-y-3">
+                        <p class="text-gray-500 text-center py-8">Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Quản lý Con -->
+        <div id="kids" class="tab-content hidden-section fade-in">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-2xl font-black text-gray-800">Gia đình Cà Rốt</h2>
+                <button onclick="showCreateKidModal()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                    ➕ Thêm thành viên
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="kids-grid">
+                <p class="text-gray-500 text-center py-8 col-span-full">Đang tải...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Nhiệm vụ -->
+        <div id="tasks" class="tab-content hidden-section fade-in">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-2xl font-black text-gray-800">Việc nhà & Học tập</h2>
+                <button onclick="showCreateTaskModal()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                    ➕ Giao việc mới
+                </button>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div id="tasks-list" class="divide-y divide-gray-100">
+                    <p class="text-gray-500 text-center py-8">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Quà thưởng -->
+        <div id="rewards" class="tab-content hidden-section fade-in">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-2xl font-black text-gray-800">Cửa hàng phần thưởng</h2>
+                <button onclick="showCreateRewardModal()" class="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold shadow-md shadow-purple-200">
+                    ➕ Thêm món mới
+                </button>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div id="rewards-list" class="divide-y divide-gray-100">
+                    <p class="text-gray-500 text-center py-8">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Chờ duyệt -->
+        <div id="pending" class="tab-content hidden-section fade-in">
+            <div class="space-y-8">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>✅</span> Cần duyệt mỏi tay</h2>
+                    <div id="pending-tasks-full" class="space-y-4">
+                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang tải...</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Nợ quà các sếp</h2>
+                    <div id="pending-rewards-full" class="space-y-4">
+                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        // --- API Integration ---
-        const API_BASE = '/api/v1';
+    <!-- Modal: Thêm con -->
+    <div id="create-kid-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+            <h2 class="text-2xl font-black text-gray-800 mb-6 text-center">Thêm bé mới 👶</h2>
+            <form id="kid-form" onsubmit="createKid(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên gọi ở nhà của bé</label>
+                    <input type="text" id="kid-name" required placeholder="VD: Bé Gạo, Cún..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chọn ảnh đại diện</label>
+                    <div class="grid grid-cols-4 gap-2" id="kid-avatar-picker">
+                        <!-- JS generated -->
+                    </div>
+                    <input type="hidden" id="kid-avatar-url">
+                </div>
 
-        async function fetchPendingTasks() {
-            try {
-                const response = await fetch(`${API_BASE}/parent/pending-tasks`);
-                if (!response.ok) throw new Error('Failed to fetch tasks');
-                const tasks = await response.json();
-                renderPendingTasks(tasks);
-                updateBadge(tasks.length);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('pending-tasks-container').innerHTML = 
-                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-kid-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu thành viên</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal: Sửa con -->
+    <div id="edit-kid-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+            <h2 class="text-2xl font-black text-gray-800 mb-6 text-center">Sửa thông tin bé ✏️</h2>
+            <form id="edit-kid-form" onsubmit="updateKid(event)" class="space-y-5">
+                <input type="hidden" id="edit-kid-id">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên gọi</label>
+                    <input type="text" id="edit-kid-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Đổi ảnh đại diện</label>
+                    <div class="grid grid-cols-4 gap-2" id="edit-kid-avatar-picker">
+                        <!-- JS generated -->
+                    </div>
+                    <input type="hidden" id="edit-kid-avatar-url">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('edit-kid-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Tạo Nhiệm vụ -->
+    <div id="create-task-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-gray-800 mb-6">Giao việc mới 📝</h2>
+            <form id="task-form" onsubmit="createTask(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên việc</label>
+                    <div class="flex gap-2">
+                        <select id="task-icon" class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-2xl">
+                            <option value="🪥">🪥</option>
+                            <option value="🛏️">🛏️</option>
+                            <option value="📚">📚</option>
+                            <option value="🍽️">🍽️</option>
+                            <option value="🧹">🧹</option>
+                            <option value="🗑️">🗑️</option>
+                            <option value="👕">👕</option>
+                            <option value="💧">💧</option>
+                            <option value="✨">✨</option>
+                        </select>
+                        <input type="text" id="task-name" required placeholder="Gấp chăn màn..." class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng (Xu)</label>
+                        <div class="relative">
+                            <input type="number" id="task-points" required min="1" placeholder="10" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
+                            <span class="absolute right-4 top-3 text-gray-400 font-bold">💰</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Nhóm</label>
+                        <select id="task-category" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
+                            <option value="Việc nhà">Việc nhà</option>
+                            <option value="Học tập">Học tập</option>
+                            <option value="Cá nhân">Cá nhân</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Yêu cầu báo cáo</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="verification" value="Cần chụp ảnh" checked class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">📸 Bắt buộc chụp ảnh</span>
+                        </label>
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="verification" value="Bố mẹ kiểm tra trực tiếp" class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">👀 Bố mẹ tự đi kiểm tra</span>
+                        </label>
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="verification" value="Tự động duyệt" class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">⚡ Tự động cộng tiền luôn</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu việc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Tạo Quà thưởng -->
+    <div id="create-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-purple-800 mb-6">Đưa hàng lên kệ 🎁</h2>
+            <form id="reward-form" onsubmit="createReward(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên món quà</label>
+                    <div class="flex gap-2">
+                        <select id="reward-icon" class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 text-2xl">
+                            <option value="📺">📺</option>
+                            <option value="🎮">🎮</option>
+                            <option value="🍦">🍦</option>
+                            <option value="🍬">🍬</option>
+                            <option value="📱">📱</option>
+                            <option value="🧸">🧸</option>
+                            <option value="🚴">🚴</option>
+                            <option value="💵">💵</option>
+                        </select>
+                        <input type="text" id="reward-name" required placeholder="Xem TV 30 phút..." class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Giá bán (Xu)</label>
+                        <input type="number" id="reward-cost" required min="1" placeholder="50" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Số lượng kho</label>
+                        <input type="number" id="reward-stock" min="1" placeholder="Vô hạn" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-reward-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Lên kệ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Duyệt Việc (Khen/Chê) -->
+    <div id="approve-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div id="approve-modal-header" class="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img id="approve-kid-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    <div>
+                        <p id="approve-kid-name" class="font-bold text-gray-800">...</p>
+                        <p id="approve-task-name" class="text-xs text-gray-500">...</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('approve-modal')" class="text-gray-400 hover:text-gray-600 font-bold text-xl px-2">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Image Preview (if any) -->
+                <div id="approve-image-container" class="mb-4 hidden-section">
+                    <!-- Changed object-cover to object-contain and increased max-height -->
+                    <img id="approve-image" src="" class="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-900">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Lời nhắn cho con (Tùy chọn)</label>
+                    <textarea id="approve-comment" rows="2" placeholder="Ví dụ: Giỏi lắm! / Con làm lại góc này nhé..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+                </div>
+
+                <input type="hidden" id="approve-log-id">
+                
+                <div class="flex gap-3">
+                    <button onclick="submitApproval('REJECT')" class="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 border border-red-200 transition-colors">✕ Từ chối</button>
+                    <button onclick="submitApproval('APPROVE')" class="flex-[2] py-3 bg-green-500 text-white font-black rounded-xl hover:bg-green-600 shadow-md shadow-green-200 transform active:scale-95 transition-all text-lg">✓ Duyệt Thưởng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const API_BASE = '/api/v1';
+        let currentTab = 'overview';
+        let allKids = [];
+
+        // --- Tab Management ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-section'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-600', 'text-blue-600', 'font-bold', 'bg-blue-50');
+                el.classList.add('border-transparent', 'text-gray-600', 'font-medium');
+            });
+
+            document.getElementById(tab).classList.remove('hidden-section');
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(`'${tab}'`));
+            if(activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-600', 'font-medium');
+                activeBtn.classList.add('border-blue-600', 'text-blue-600', 'font-bold', 'bg-blue-50');
+            }
+
+            loadTabData(tab);
+        }
+
+        async function loadTabData(tab) {
+            if (tab === 'overview') {
+                await loadOverview();
+            } else if (tab === 'kids') {
+                await loadKids();
+            } else if (tab === 'tasks') {
+                await loadTasks();
+            } else if (tab === 'rewards') {
+                await loadRewards();
+            } else if (tab === 'pending') {
+                await loadPending();
             }
         }
 
-        function renderPendingTasks(tasks) {
-            const container = document.getElementById('pending-tasks-container');
-            container.innerHTML = '';
+        // --- Load Data Functions ---
+        async function loadOverview() {
+            try {
+                const [kidsRes, tasksRes, pendingTasksRes, pendingRewardsRes] = await Promise.all([
+                    fetch(`${API_BASE}/parent/kids`),
+                    fetch(`${API_BASE}/parent/tasks`),
+                    fetch(`${API_BASE}/parent/pending-tasks`),
+                    fetch(`${API_BASE}/parent/pending-redemptions`)
+                ]);
 
-            if (tasks.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 opacity-50">
-                        <span class="text-4xl block mb-2">🎉</span>
-                        <p>Hết việc cần duyệt rồi!</p>
-                    </div>`;
-                return;
-            }
+                const kids = await kidsRes.json();
+                const tasks = await tasksRes.json();
+                const pendingTasks = await pendingTasksRes.json();
+                const pendingRewards = await pendingRewardsRes.json();
 
-            tasks.forEach(task => {
-                const card = document.createElement('div');
-                card.id = `card-${task.log_id}`;
-                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
+                const totalPending = pendingTasks.length + pendingRewards.length;
+
+                document.getElementById('total-kids').textContent = kids.length;
+                document.getElementById('total-tasks').textContent = tasks.filter(t => t.is_active).length;
+                document.getElementById('pending-count').textContent = totalPending;
                 
-                // Format timestamp
-                const timeStr = new Date(task.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                // Update badge
+                const badge = document.getElementById('pending-badge');
+                if (totalPending > 0) {
+                    badge.textContent = totalPending;
+                    badge.classList.remove('hidden-section');
+                } else {
+                    badge.classList.add('hidden-section');
+                }
 
-                card.innerHTML = `
-                    <div class="p-4 flex justify-between items-center bg-blue-50">
+                // Show recent pending tasks
+                const recentTasksHtml = pendingTasks.slice(0, 3).map(p => `
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors" onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name}', '${p.kid_avatar}', '${p.proof_image_url || ''}')">
                         <div class="flex items-center gap-3">
-                            <img src="${task.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + task.kid_name}" class="w-10 h-10 rounded-full bg-white border border-blue-200">
+                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                             <div>
-                                <p class="font-bold text-gray-800">${task.kid_name}</p>
-                                <p class="text-xs text-gray-500">${timeStr} • ${task.task_name}</p>
+                                <p class="font-bold text-gray-800 text-sm leading-tight">${p.kid_name}</p>
+                                <p class="text-xs text-gray-600 truncate max-w-[150px]">${p.task_name}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="font-bold text-blue-600">+${task.points_reward} Xu</p>
+                            <span class="text-xs font-black text-blue-600">+${p.points_reward}</span>
+                            ${p.proof_image_url ? '<div class="text-[10px] text-gray-400 mt-0.5">📷 Có ảnh</div>' : ''}
                         </div>
                     </div>
-                    ${task.proof_image_url ? `
-                    <div class="h-40 bg-gray-200 w-full relative">
-                        <img src="${task.proof_image_url}" class="w-full h-full object-cover">
-                        <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">📷 Minh chứng</div>
-                    </div>` : ''}
-                    <div class="flex divide-x border-t">
-                        <button onclick="handleAction('${task.log_id}', 'REJECT')" class="flex-1 py-3 text-red-500 font-bold hover:bg-red-50 flex justify-center items-center gap-2 transition-colors">
-                            <span class="text-xl">✕</span> Từ chối
-                        </button>
-                        <button onclick="handleAction('${task.log_id}', 'APPROVE')" class="flex-1 py-3 text-green-500 font-bold hover:bg-green-50 flex justify-center items-center gap-2 transition-colors">
-                            <span class="text-xl">✓</span> Duyệt thưởng
-                        </button>
+                `).join('');
+                document.getElementById('recent-pending-tasks').innerHTML = recentTasksHtml || '<p class="text-gray-400 text-center py-4 text-sm italic">Sạch sẽ! Không có việc chờ duyệt.</p>';
+
+                // Show recent pending rewards
+                const recentRewardsHtml = pendingRewards.slice(0, 3).map(p => `
+                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded-xl border border-purple-100">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm leading-tight">${p.kid_name}</p>
+                                <p class="text-xs text-purple-700 font-medium truncate max-w-[150px]">${p.reward_name}</p>
+                            </div>
+                        </div>
+                        <button onclick="confirmDelivery('${p.redemption_id}')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-colors">Giao quà</button>
                     </div>
-                `;
-                container.appendChild(card);
+                `).join('');
+                document.getElementById('recent-pending-rewards').innerHTML = recentRewardsHtml || '<p class="text-gray-400 text-center py-4 text-sm italic">Chưa ai nợ quà.</p>';
+
+            } catch (error) {
+                console.error("Error loading overview:", error);
+            }
+        }
+
+        async function loadKids() {
+            try {
+                const res = await fetch(`${API_BASE}/parent/kids`);
+                allKids = await res.json();
+
+                const html = allKids.map(kid => `
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button onclick="showEditKidModal('${kid.id}')" class="bg-white rounded-full p-2 text-gray-500 hover:text-blue-600 shadow-sm border border-gray-200">✏️</button>
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-blue-50 to-white"></div>
+                        <div class="flex justify-center mb-4 relative z-10">
+                            <img src="${kid.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+kid.display_name}" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-yellow-100 object-cover">
+                        </div>
+                        <h3 class="text-xl font-black text-gray-800 text-center mb-5 relative z-10">${kid.display_name}</h3>
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="bg-yellow-50 rounded-2xl p-3 border border-yellow-100">
+                                <p class="text-[10px] text-yellow-600 uppercase font-black tracking-widest mb-1">Ví Xu</p>
+                                <p class="text-2xl font-black text-yellow-500">${kid.current_coin}</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-2xl p-3 border border-blue-100">
+                                <p class="text-[10px] text-blue-600 uppercase font-black tracking-widest mb-1">Level / XP</p>
+                                <p class="text-2xl font-black text-blue-500">${kid.total_earned_score}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('kids-grid').innerHTML = html || '<p class="text-gray-500 col-span-full text-center py-8">Gia đình chưa có bé nào.</p>';
+            } catch (error) {
+                console.error("Error loading kids:", error);
+            }
+        }
+
+        function renderAvatarPicker(pickerId, urlInputId, currentUrl = null) {
+            const seeds = ['Bin', 'Na', 'Felix', 'Bella', 'Charlie', 'Molly', 'Coco', 'Buster'];
+            const grid = document.getElementById(pickerId);
+            grid.innerHTML = '';
+            
+            let selectedUrl = currentUrl;
+            
+            if (!selectedUrl) {
+                const initialSeed = seeds[Math.floor(Math.random() * seeds.length)];
+                selectedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${initialSeed}`;
+            }
+            document.getElementById(urlInputId).value = selectedUrl;
+
+            seeds.forEach(seed => {
+                const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = `w-14 h-14 rounded-full cursor-pointer border-2 transition-all hover:scale-110`;
+                
+                if (url === selectedUrl) {
+                    img.classList.add('border-blue-500', 'shadow-md', 'scale-110');
+                } else {
+                    img.classList.add('border-transparent');
+                }
+                
+                img.onclick = () => {
+                    document.getElementById(urlInputId).value = url;
+                    Array.from(grid.children).forEach(c => {
+                        c.classList.remove('border-blue-500', 'shadow-md', 'scale-110');
+                        c.classList.add('border-transparent');
+                    });
+                    img.classList.remove('border-transparent');
+                    img.classList.add('border-blue-500', 'shadow-md', 'scale-110');
+                };
+                
+                grid.appendChild(img);
             });
         }
 
-        async function handleAction(logId, action) {
-            const card = document.getElementById(`card-${logId}`);
-            
-            // 1. Optimistic UI Update (Animate out)
-            if (action === 'APPROVE') {
-                card.classList.add('swipe-out-right');
-            } else {
-                card.classList.add('swipe-out-left');
-            }
+        async function createKid(event) {
+            event.preventDefault();
+            const name = document.getElementById('kid-name').value;
+            const avatarUrl = document.getElementById('kid-avatar-url').value;
 
             try {
-                // 2. Call API
-                const response = await fetch(`${API_BASE}/quests/${logId}/verify`, {
+                const res = await fetch(`${API_BASE}/parent/kids`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: action, comment: action === 'APPROVE' ? "Good job!" : "Try again" })
+                    body: JSON.stringify({ display_name: name, avatar_url: avatarUrl }) 
                 });
 
-                if (!response.ok) {
-                    throw new Error('Action failed');
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Thêm con thất bại');
                 }
 
-                // 3. Remove from DOM after animation
-                setTimeout(() => {
-                    card.style.display = 'none';
-                    card.remove();
-                    // Update count
-                    const currentCount = parseInt(document.getElementById('badge-count').innerText) || 0;
-                    updateBadge(Math.max(0, currentCount - 1));
-                    
-                    // Show empty state if needed
-                    const container = document.getElementById('pending-tasks-container');
-                    if (container.children.length === 0) {
-                        renderPendingTasks([]);
-                    }
-                }, 300);
-
+                closeModal('create-kid-modal');
+                document.getElementById('kid-form').reset();
+                loadKids();
+                if(currentTab === 'overview') loadOverview();
             } catch (error) {
-                console.error(error);
-                alert("Có lỗi xảy ra, vui lòng thử lại!");
-                card.classList.remove('swipe-out-right', 'swipe-out-left'); // Revert animation
+                alert('❌ Lỗi: ' + error.message);
             }
         }
 
-        function updateBadge(count) {
-            const badge = document.getElementById('badge-count');
-            const label = document.getElementById('pending-count-label');
-            
-            if (count > 0) {
-                badge.innerText = count;
-                badge.classList.remove('hidden');
-                label.innerText = `⏳ Có ${count} việc đang chờ duyệt`;
-                label.className = "text-sm text-red-500 font-medium mt-1";
-            } else {
-                badge.classList.add('hidden');
-                label.innerText = "✅ Đã duyệt hết việc!";
-                label.className = "text-sm text-green-500 font-medium mt-1";
-            }
-        }
+        async function updateKid(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-kid-id').value;
+            const name = document.getElementById('edit-kid-name').value;
+            const avatarUrl = document.getElementById('edit-kid-avatar-url').value;
 
-        async function fetchPendingRedemptions() {
             try {
-                const response = await fetch(`${API_BASE}/parent/pending-redemptions`);
-                if (!response.ok) throw new Error('Failed to fetch pending redemptions');
-                const logs = await response.json();
-                renderPendingRedemptions(logs);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('pending-redemptions-container').innerHTML =
-                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
-            }
-        }
-
-        function renderPendingRedemptions(redemptions) {
-            const container = document.getElementById('pending-redemptions-container');
-            container.innerHTML = '';
-
-            if (redemptions.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 opacity-50">
-                        <span class="text-4xl block mb-2">🎉</span>
-                        <p>Không có quà nào cần giao.</p>
-                    </div>`;
-                return;
-            }
-
-            redemptions.forEach(log => {
-                const card = document.createElement('div');
-                card.id = `redeem-card-${log.redemption_id}`;
-                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
-
-                const timeStr = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-
-                card.innerHTML = `
-                    <div class="p-4 flex justify-between items-center bg-purple-50">
-                        <div class="flex items-center gap-3">
-                            <img src="${log.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + log.kid_name}" class="w-10 h-10 rounded-full bg-white border border-purple-200">
-                            <div>
-                                <p class="font-bold text-gray-800">${log.kid_name}</p>
-                                <p class="text-xs text-gray-500">${timeStr} • ${log.reward_name}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-purple-700">-${log.points_cost} Xu</p>
-                        </div>
-                    </div>
-                    <div class="flex divide-x border-t">
-                        <button onclick="deliverReward('${log.redemption_id}')" class="flex-1 py-3 text-green-600 font-bold hover:bg-green-50 flex justify-center items-center gap-2 transition-colors">
-                            <span class="text-xl">✓</span> Đã đưa quà
-                        </button>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-        }
-
-        async function deliverReward(redemptionId) {
-            const card = document.getElementById(`redeem-card-${redemptionId}`);
-            try {
-                const response = await fetch(`${API_BASE}/rewards/delivery/${redemptionId}`, {
+                const res = await fetch(`${API_BASE}/parent/kids/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: 'DELIVERED' })
+                    body: JSON.stringify({ display_name: name, avatar_url: avatarUrl }) 
                 });
 
-                if (!response.ok) {
-                    const err = await response.json().catch(() => ({}));
-                    throw new Error(err.detail || 'Delivery failed');
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Sửa thất bại');
                 }
 
-                if (card) {
-                    card.style.display = 'none';
-                    card.remove();
-                }
-
-                fetchPendingRedemptions();
+                closeModal('edit-kid-modal');
+                loadKids();
             } catch (error) {
-                console.error(error);
-                alert('Có lỗi khi xác nhận giao quà. Vui lòng thử lại!');
+                alert('❌ Lỗi: ' + error.message);
             }
         }
 
-        async function fetchFamilyTasks() {
+        async function loadTasks() {
             try {
-                const response = await fetch(`${API_BASE}/parent/tasks`);
-                if (!response.ok) throw new Error('Failed to fetch family tasks');
-                const tasks = await response.json();
-                renderFamilyTasks(tasks);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('family-tasks-container').innerHTML =
-                    '<div class="text-center text-red-500">Lỗi kết nối! Vui lòng thử lại.</div>';
-            }
-        }
+                const res = await fetch(`${API_BASE}/parent/tasks`);
+                const tasks = await res.json();
 
-        function renderFamilyTasks(tasks) {
-            const container = document.getElementById('family-tasks-container');
-            container.innerHTML = '';
-
-            if (tasks.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 opacity-50">
-                        <span class="text-4xl block mb-2">🧩</span>
-                        <p>Chưa có nhiệm vụ nào.</p>
-                    </div>`;
-                return;
-            }
-
-            tasks.forEach(task => {
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all";
-
-                card.innerHTML = `
-                    <div class="p-4 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="text-3xl bg-gray-100 p-2 rounded-lg">📝</div>
+                const html = tasks.map(task => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:bg-gray-50 transition-colors gap-4">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl bg-gray-100 p-3 rounded-2xl border border-gray-200">${getIcon(task.name)}</div>
                             <div>
-                                <p class="font-bold text-gray-800">${task.name}</p>
-                                <p class="text-xs text-gray-500">${task.points_reward} Xu • ${new Date(task.created_at).toLocaleDateString('vi-VN')}</p>
+                                <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">${task.name}</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="bg-blue-50 text-blue-700 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-blue-100">💰 ${task.points_reward} Xu</span>
+                                    <span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">${task.category}</span>
+                                    <span class="bg-yellow-50 text-yellow-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-yellow-100">${task.verification_type}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold ${task.is_active ? 'text-green-600' : 'text-gray-500'}">
-                                ${task.is_active ? 'Đang bật' : 'Tạm tắt'}
-                            </span>
-                            <button onclick="toggleTask('${task.id}')" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-xl text-sm active:scale-95 transition-transform">
-                                Tắt/Bật
+                        <div class="flex w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <button onclick="toggleTask('${task.id}')" class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${task.is_active ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}">
+                                ${task.is_active ? 'Tạm dừng' : 'Bật lại'}
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors">
+                                🗑️
                             </button>
                         </div>
                     </div>
-                `;
+                `).join('');
 
-                container.appendChild(card);
-            });
+                document.getElementById('tasks-list').innerHTML = html || '<p class="text-gray-400 text-center py-10 italic">Chưa có nhiệm vụ nào. Bố mẹ hãy giao việc cho các con nhé!</p>';
+            } catch (error) {
+                console.error("Error loading tasks:", error);
+            }
+        }
+
+        async function loadRewards() {
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards`);
+                const rewards = await res.json();
+
+                const html = rewards.map(reward => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:bg-gray-50 transition-colors gap-4">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl bg-purple-50 p-3 rounded-2xl border border-purple-100">${getIcon(reward.name)}</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">${reward.name}</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-200">💎 ${reward.points_cost} Xu</span>
+                                    ${reward.stock_limit !== null ? `<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Kho: ${reward.stock_limit}</span>` : '<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Vô hạn</span>'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <button onclick="toggleReward('${reward.id}')" class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${reward.is_active ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}">
+                                ${reward.is_active ? 'Ẩn đi' : 'Bán lại'}
+                            </button>
+                            <button onclick="deleteReward('${reward.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('rewards-list').innerHTML = html || '<p class="text-gray-400 text-center py-10 italic">Cửa hàng đang trống. Thêm quà để tạo động lực cho con nhé!</p>';
+            } catch (error) {
+                console.error("Error loading rewards:", error);
+            }
+        }
+
+        async function loadPending() {
+            try {
+                const [tasksRes, rewardsRes] = await Promise.all([
+                    fetch(`${API_BASE}/parent/pending-tasks`),
+                    fetch(`${API_BASE}/parent/pending-redemptions`)
+                ]);
+
+                const pendingTasks = await tasksRes.json();
+                const pendingRewards = await rewardsRes.json();
+
+                // Update badge
+                const totalPending = pendingTasks.length + pendingRewards.length;
+                const badge = document.getElementById('pending-badge');
+                if (totalPending > 0) {
+                    badge.textContent = totalPending;
+                    badge.classList.remove('hidden-section');
+                } else {
+                    badge.classList.add('hidden-section');
+                }
+
+                // Render pending tasks
+                const tasksHtml = pendingTasks.map(p => `
+                    <div class="p-0 bg-white border border-blue-100 rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row">
+                        ${p.proof_image_url ? `<div class="md:w-1/3 h-64 md:h-auto bg-gray-900 relative"><img src="${p.proof_image_url}" class="w-full h-full object-contain"><div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">📷 Ảnh báo cáo</div></div>` : '<div class="md:w-32 bg-gray-50 flex items-center justify-center border-r border-gray-100 p-4"><span class="text-4xl opacity-30">👀</span></div>'}
+                        
+                        <div class="p-5 flex-1 flex flex-col justify-center">
+                            <div class="flex items-center gap-3 mb-3">
+                                <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-blue-50">
+                                <div>
+                                    <p class="font-black text-gray-800">${p.kid_name}</p>
+                                    <p class="text-sm font-medium text-gray-600">${p.task_name}</p>
+                                </div>
+                                <div class="ml-auto bg-blue-50 border border-blue-200 text-blue-700 font-black px-3 py-1 rounded-lg">
+                                    +${p.points_reward} Xu
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2 mt-auto pt-4 border-t border-gray-100">
+                                <button onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name.replace(/'/g, "\\'")}', '${p.kid_avatar}', '${p.proof_image_url || ''}')" class="w-full py-3 text-sm font-black bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200">
+                                    Tiến hành Duyệt
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('pending-tasks-full').innerHTML = tasksHtml || '<div class="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300"><span class="text-5xl block mb-2">🎉</span><p class="text-gray-500 font-medium">Tuyệt vời! Không có bài tập nào tồn đọng.</p></div>';
+
+                // Render pending rewards
+                const rewardsHtml = pendingRewards.map(p => `
+                    <div class="p-5 bg-white border border-purple-100 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-4">
+                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-14 h-14 rounded-full border-2 border-purple-100 bg-purple-50 p-1">
+                            <div>
+                                <p class="font-black text-gray-800 text-lg">${p.kid_name}</p>
+                                <p class="text-sm text-gray-600">Đòi nợ: <span class="font-bold text-purple-700">${p.reward_name}</span></p>
+                                <p class="text-xs font-bold text-gray-400 mt-1">Đã trừ ${p.points_cost} Xu khỏi ví</p>
+                            </div>
+                        </div>
+                        <button onclick="confirmDelivery('${p.redemption_id}')" class="w-full sm:w-auto px-8 py-3 text-sm font-black bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors shadow-md shadow-purple-200 transform active:scale-95">
+                            Giao quà xong!
+                        </button>
+                    </div>
+                `).join('');
+                document.getElementById('pending-rewards-full').innerHTML = rewardsHtml || '<div class="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300"><span class="text-5xl block mb-2">😴</span><p class="text-gray-500 font-medium">Các bé chưa mua sắm gì.</p></div>';
+
+            } catch (error) {
+                console.error("Error loading pending data:", error);
+            }
+        }
+
+        // --- Task Actions ---
+        async function createTask(event) {
+            event.preventDefault();
+            const icon = document.getElementById('task-icon').value;
+            const nameRaw = document.getElementById('task-name').value;
+            const name = `${icon} ${nameRaw}`; // Prepend icon to name for simplicity in DB
+            const points = document.getElementById('task-points').value;
+            const category = document.getElementById('task-category').value;
+            const verificationType = document.querySelector('input[name="verification"]:checked').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name, 
+                        points_reward: parseInt(points),
+                        category: category,
+                        verification_type: verificationType
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Tạo thất bại');
+                }
+
+                closeModal('create-task-modal');
+                document.getElementById('task-form').reset();
+                loadTasks();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
         }
 
         async function toggleTask(taskId) {
             try {
-                const response = await fetch(`${API_BASE}/parent/tasks/${taskId}/toggle`, {
-                    method: 'PUT'
-                });
-                if (!response.ok) {
-                    const err = await response.json().catch(() => ({}));
-                    throw new Error(err.detail || 'Toggle failed');
-                }
-                await fetchFamilyTasks();
+                const res = await fetch(`${API_BASE}/parent/tasks/${taskId}/toggle`, { method: 'PUT' });
+                if (!res.ok) throw new Error('Lỗi cập nhật');
+                loadTasks();
             } catch (error) {
-                console.error(error);
-                alert('Có lỗi khi bật/tắt nhiệm vụ. Vui lòng thử lại!');
+                alert('❌ Lỗi: ' + error.message);
             }
         }
 
-        // --- Tab Switching Logic ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-blue-600');
-                el.querySelector('span:last-child').classList.remove('font-bold');
-                el.classList.add('text-gray-400');
-                el.querySelector('span:last-child').classList.add('font-medium');
-            });
-
-            document.getElementById('tab-' + tabId).classList.add('active');
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('text-gray-400');
-            activeBtn.classList.add('text-blue-600');
-            activeBtn.querySelector('span:last-child').classList.remove('font-medium');
-            activeBtn.querySelector('span:last-child').classList.add('font-bold');
-
-            if (tabId === 'config') fetchFamilyTasks();
-            if (tabId === 'redeem') fetchPendingRedemptions();
+        async function deleteTask(taskId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa nhiệm vụ này? Hành động này không thể hoàn tác (nhưng dữ liệu cũ vẫn được giữ lại trong lịch sử).')) return;
+            try {
+                const res = await fetch(`${API_BASE}/parent/tasks/${taskId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Lỗi xóa');
+                loadTasks();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
         }
 
-        // --- Initialization ---
+        // --- Reward Actions ---
+        async function createReward(event) {
+            event.preventDefault();
+            const icon = document.getElementById('reward-icon').value;
+            const nameRaw = document.getElementById('reward-name').value;
+            const name = `${icon} ${nameRaw}`;
+            const cost = document.getElementById('reward-cost').value;
+            const stockStr = document.getElementById('reward-stock').value;
+            const stock = stockStr ? parseInt(stockStr) : null;
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, points_cost: parseInt(cost), stock_limit: stock })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Tạo thất bại');
+                }
+
+                closeModal('create-reward-modal');
+                document.getElementById('reward-form').reset();
+                loadRewards();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function toggleReward(rewardId) {
+            try {
+                const listRes = await fetch(`${API_BASE}/parent/rewards`);
+                const list = await listRes.json();
+                const reward = list.find(r => r.id === rewardId);
+                
+                if(!reward) throw new Error("Không tìm thấy phần thưởng");
+
+                const updateRes = await fetch(`${API_BASE}/parent/rewards/${rewardId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_active: !reward.is_active })
+                });
+
+                if (!updateRes.ok) throw new Error('Lỗi cập nhật');
+                loadRewards();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function deleteReward(rewardId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa phần thưởng này?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards/${rewardId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Lỗi xóa');
+                loadRewards();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        // --- Approval Actions (Modal) ---
+        function openApproveModal(logId, kidName, taskName, kidAvatar, proofUrl) {
+            document.getElementById('approve-log-id').value = logId;
+            document.getElementById('approve-kid-name').innerText = kidName;
+            document.getElementById('approve-task-name').innerText = taskName;
+            
+            const avatarEl = document.getElementById('approve-kid-avatar');
+            avatarEl.src = kidAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${kidName}`;
+            
+            const imgContainer = document.getElementById('approve-image-container');
+            const imgEl = document.getElementById('approve-image');
+            
+            if (proofUrl && proofUrl !== 'null' && proofUrl !== '') {
+                imgEl.src = proofUrl;
+                imgContainer.classList.remove('hidden-section');
+            } else {
+                imgContainer.classList.add('hidden-section');
+            }
+            
+            // Randomly suggest a praise
+            const praises = ["Giỏi quá con yêu!", "Tiếp tục phát huy nhé!", "Bố mẹ rất tự hào về con!", "Làm rất tốt! 🌟", "Tuyệt vời ông mặt trời!"];
+            document.getElementById('approve-comment').value = praises[Math.floor(Math.random() * praises.length)];
+            
+            document.getElementById('approve-modal').classList.remove('hidden-section');
+        }
+
+        async function submitApproval(action) {
+            const logId = document.getElementById('approve-log-id').value;
+            let comment = document.getElementById('approve-comment').value;
+
+            if (action === 'REJECT' && !comment) {
+                comment = prompt('Bạn nên ghi rõ lý do để con biết cách sửa (Ví dụ: Chăn chưa gấp vuông vắn):');
+                if (comment === null) return; // Cancelled
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/tasks/${logId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, comment: comment })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Lỗi xử lý');
+                }
+                
+                closeModal('approve-modal');
+                // Refresh data
+                loadPending();
+                if(currentTab === 'overview') loadOverview();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function confirmDelivery(redemptionId) {
+            if(!confirm('Xác nhận bạn đã thực sự giao món quà này cho bé?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards/${redemptionId}/confirm`, { method: 'POST' });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Lỗi xác nhận');
+                }
+                
+                // Refresh data
+                loadPending();
+                if(currentTab === 'overview') loadOverview();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        // --- Utils ---
+        function getIcon(name) {
+            // Check if name already starts with an emoji (basic check)
+            const firstChar = name.trim().charAt(0);
+            const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
+            if (emojiRegex.test(name)) return ''; // We don't add extra if it already has one
+
+            const map = {
+                'Đánh răng': '🪥', 'Gấp chăn': '🛏️', 'Học': '📚', 'Rửa': '🍽️',
+                'Quét': '🧹', 'Chơi': '🎮', 'Kẹo': '🍬', 'TV': '📺', 'Sách': '📖'
+            };
+            for (const key in map) {
+                if (name.includes(key)) return map[key];
+            }
+            return '✨';
+        }
+
+        function showCreateKidModal() {
+            renderAvatarPicker('kid-avatar-picker', 'kid-avatar-url');
+            document.getElementById('create-kid-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('kid-name').focus(), 100);
+        }
+        
+        function showEditKidModal(kidId) {
+            const kid = allKids.find(k => k.id === kidId);
+            if(!kid) return;
+            
+            document.getElementById('edit-kid-id').value = kid.id;
+            document.getElementById('edit-kid-name').value = kid.display_name;
+            renderAvatarPicker('edit-kid-avatar-picker', 'edit-kid-avatar-url', kid.avatar_url);
+            
+            document.getElementById('edit-kid-modal').classList.remove('hidden-section');
+        }
+
+        function showCreateTaskModal() {
+            document.getElementById('create-task-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('task-name').focus(), 100);
+        }
+
+        function showCreateRewardModal() {
+            document.getElementById('create-reward-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('reward-name').focus(), 100);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden-section');
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = ['create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'create-reward-modal', 'approve-modal'];
+            modals.forEach(id => {
+                const modal = document.getElementById(id);
+                if (event.target == modal) {
+                    closeModal(id);
+                }
+            });
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/v1/auth/logout', { method: 'POST' });
+            } catch(e) {}
+            localStorage.removeItem('kidcoin_device_id'); 
+            window.location.href = '/login';
+        }
+
+        async function fetchCurrentUser() {
+            try {
+                // Static display for demo
+                document.getElementById('current-user').textContent = "Bố/Mẹ (Admin)";
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchPendingTasks();
+            fetchCurrentUser();
+            loadOverview();
         });
     </script>
 </body>

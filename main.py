@@ -13,9 +13,11 @@ from app.api.v1 import rewards as rewards_router
 from app.api.v1 import clubs as clubs_router
 from app.api.v1 import parent as parent_router
 from app.api.v1 import auth as auth_router
+from app.api.v1 import upload as upload_router # Added
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
+from app.core.migrations import run_migrations # Added
 
 # Import all models to ensure they are registered with Base
 from app.models.user_family import Family, User, Role
@@ -24,18 +26,21 @@ from app.models.logs_transactions import TaskLog, Transaction, RedemptionLog
 from app.models.social import Club, ClubMember
 from app.models.audit import AuditLog
 from app.models.devices import FamilyDevice
-from app.services.task_proof_cleanup import scheduler_loop
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-cleanup_stop_event = threading.Event()
-cleanup_thread = None
 
-# Create tables
+# Run migrations first
+try:
+    run_migrations()
+except Exception as e:
+    logger.error(f"Migration failed: {e}")
+
+# Create tables if not exist (Fallback)
 try:
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully.")
+    logger.info("Database tables verified.")
 except Exception as e:
     logger.error(f"Error creating database tables: {e}")
 
@@ -47,6 +52,8 @@ app.add_middleware(RequestContextMiddleware)
 # Mount static files
 if not os.path.exists("app/static"):
     os.makedirs("app/static")
+if not os.path.exists("app/static/uploads"):
+    os.makedirs("app/static/uploads")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Templates
@@ -62,6 +69,7 @@ app.include_router(rewards_router.router, prefix="/api/v1/rewards", tags=["Rewar
 app.include_router(clubs_router.router, prefix="/api/v1/clubs", tags=["Clubs"])
 app.include_router(parent_router.router, prefix="/api/v1/parent", tags=["Parent"])
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(upload_router.router, prefix="/api/v1/upload", tags=["Upload"]) # Added
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
@@ -113,12 +121,12 @@ def seed_initial_data():
         db.add(kid2)
 
         # 4. Create Master Tasks (Dữ liệu mồi)
-        from app.models.tasks_rewards import MasterTask, Category, FamilyTask
+        from app.models.tasks_rewards import MasterTask, Category, FamilyTask, VerificationType
         
         tasks = [
-            MasterTask(name="Đánh răng", category=Category.CHORE, suggested_value=5, icon_url="🪥"),
-            MasterTask(name="Gấp chăn màn", category=Category.CHORE, suggested_value=10, icon_url="🛏️"),
-            MasterTask(name="Làm bài tập", category=Category.STUDY, suggested_value=20, icon_url="📚"),
+            MasterTask(name="Đánh răng", category=Category.PERSONAL, suggested_value=5, icon_url="🪥", verification_type=VerificationType.AUTO_APPROVE),
+            MasterTask(name="Gấp chăn màn", category=Category.CHORE, suggested_value=10, icon_url="🛏️", verification_type=VerificationType.REQUIRE_PHOTO),
+            MasterTask(name="Làm bài tập", category=Category.STUDY, suggested_value=20, icon_url="📚", verification_type=VerificationType.REQUIRE_PARENT_CHECK),
         ]
         db.add_all(tasks)
         db.flush() # to get IDs
@@ -130,6 +138,8 @@ def seed_initial_data():
                 master_task_id=mt.id,
                 name=mt.name,
                 points_reward=mt.suggested_value,
+                category=mt.category,
+                verification_type=mt.verification_type,
                 is_active=True
             )
             db.add(ft)
@@ -150,29 +160,6 @@ def seed_initial_data():
         db.rollback()
     finally:
         db.close()
-
-
-@app.on_event("startup")
-def start_daily_cleanup_scheduler():
-    global cleanup_thread
-    if cleanup_thread and cleanup_thread.is_alive():
-        return
-
-    cleanup_stop_event.clear()
-    cleanup_thread = threading.Thread(
-        target=scheduler_loop,
-        args=(cleanup_stop_event,),
-        daemon=True,
-        name="task-proof-cleanup-scheduler",
-    )
-    cleanup_thread.start()
-    logger.info("Started daily cleanup scheduler (runs at 01:00 every day).")
-
-
-@app.on_event("shutdown")
-def stop_daily_cleanup_scheduler():
-    cleanup_stop_event.set()
-    logger.info("Stopped daily cleanup scheduler.")
 
 # --- Webpage Routes ---
 
@@ -199,6 +186,22 @@ async def read_root(request: Request, user_id: Optional[str] = Cookie(None)):
         return RedirectResponse("/kid")
     
     # Parent Dashboard
+    return RedirectResponse("/parent")
+
+@app.get("/parent", response_class=HTMLResponse)
+async def read_parent_dashboard(request: Request, user_id: Optional[str] = Cookie(None)):
+    if not user_id:
+        return RedirectResponse("/login")
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.id == user_id).first()
+    db.close()
+
+    if not user or user.role != Role.PARENT:
+        response = RedirectResponse("/login")
+        response.delete_cookie("user_id")
+        return response
+
     return templates.TemplateResponse("parent_dashboard.html", {"request": request})
 
 @app.get("/kid", response_class=HTMLResponse)

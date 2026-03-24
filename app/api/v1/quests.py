@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
-from app.models.tasks_rewards import FamilyTask
+from app.models.tasks_rewards import FamilyTask, VerificationType
 from app.models.logs_transactions import TaskLog, TaskStatus
 from app.models.user_family import User
 from app.models.audit import AuditStatus
@@ -45,7 +45,9 @@ async def get_daily_quests(
             points_reward=task.points_reward,
             status=log.status if log else None,
             proof_image_url=log.proof_image_url if log else None,
-            created_at=log.created_at if log else None
+            created_at=log.created_at if log else None,
+            verification_type=task.verification_type.value if task.verification_type else None,
+            parent_comment=log.parent_comment if log else None # Include comment for kid to see
         )
         quests.append(quest_item)
         
@@ -71,7 +73,11 @@ async def submit_quest(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found or inactive")
 
-    # 2. Check if already submitted today
+    # 2. Check Verification Requirements
+    if task.verification_type == VerificationType.REQUIRE_PHOTO and not request.proof_image_url:
+         raise HTTPException(status_code=400, detail="Ảnh minh chứng là bắt buộc cho nhiệm vụ này.")
+
+    # 3. Check if already submitted today
     today_start = datetime.combine(date.today(), datetime.min.time())
     existing_log = db.query(TaskLog).filter(
         TaskLog.family_task_id == task.id,
@@ -83,26 +89,54 @@ async def submit_quest(
     if existing_log and existing_log.status != TaskStatus.REJECTED:
         raise HTTPException(status_code=400, detail="Task already submitted today")
 
-    # 3. Create Task Log
+    # 4. Determine initial status based on VerificationType
+    initial_status = TaskStatus.PENDING_APPROVAL
+    if task.verification_type == VerificationType.AUTO_APPROVE:
+        initial_status = TaskStatus.APPROVED
+
+    # 5. Create Task Log
     try:
         new_log = TaskLog(
             kid_id=current_user.id,
             family_task_id=task.id,
-            status=TaskStatus.PENDING_APPROVAL,
+            status=initial_status,
             proof_image_url=request.proof_image_url
         )
-        db.add(new_log)
+        
+        if initial_status == TaskStatus.APPROVED:
+            new_log.resolved_at = datetime.now()
+            
+            # Auto-create transaction and update balance
+            from app.models.logs_transactions import Transaction, TransactionType
+            
+            transaction = Transaction(
+                kid_id=current_user.id,
+                amount=task.points_reward,
+                transaction_type=TransactionType.TASK_COMPLETION,
+                reference_id=new_log.id, # We don't have ID yet, need to flush
+                description=f"Auto-approved: {task.name}"
+            )
+            db.add(new_log)
+            db.flush()
+            transaction.reference_id = new_log.id
+            db.add(transaction)
+            
+            current_user.current_coin += task.points_reward
+            current_user.total_earned_score += task.points_reward
+        else:
+             db.add(new_log)
+
         db.commit()
         db.refresh(new_log)
 
-        # 4. Audit Log
+        # 6. Audit Log
         AuditService.log(
             db=db,
             action="SUBMIT_QUEST",
             resource_type="TaskLog",
             resource_id=str(new_log.id),
             status=AuditStatus.SUCCESS,
-            details={"task_name": task.name}
+            details={"task_name": task.name, "auto_approved": initial_status == TaskStatus.APPROVED}
         )
         
         return quest_schemas.QuestItem(
@@ -112,7 +146,8 @@ async def submit_quest(
             points_reward=task.points_reward,
             status=new_log.status,
             proof_image_url=new_log.proof_image_url,
-            created_at=new_log.created_at
+            created_at=new_log.created_at,
+            verification_type=task.verification_type.value
         )
     except Exception as e:
         db.rollback()
@@ -154,6 +189,7 @@ async def verify_quest(
         
         if request.action == "APPROVE":
             log.status = TaskStatus.APPROVED
+            log.parent_comment = request.comment # Save praise
             
             # Transaction: Add Coin & XP
             task = db.query(FamilyTask).get(log.family_task_id)
@@ -185,6 +221,7 @@ async def verify_quest(
             
         elif request.action == "REJECT":
             log.status = TaskStatus.REJECTED
+            log.parent_comment = request.comment # Save reject reason
             AuditService.log(
                 db=db,
                 action="REJECT_QUEST",

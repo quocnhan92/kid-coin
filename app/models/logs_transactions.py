@@ -41,6 +41,7 @@ class TaskLog(Base):
     
     status = Column(Enum(TaskStatus), default=TaskStatus.PENDING_APPROVAL)
     proof_image_url = Column(String(255), nullable=True)
+    parent_comment = Column(String(500), nullable=True) # Added to store reject/approve reason
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 

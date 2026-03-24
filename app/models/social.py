@@ -22,7 +22,7 @@ class Club(Base):
 
     creator_family = relationship("Family", back_populates="clubs")
     members = relationship("ClubMember", back_populates="club")
-    tasks = relationship("ClubTask", back_populates="club") # Added
+    tasks = relationship("ClubTask", back_populates="club")
 
 class ClubMember(Base):
     __tablename__ = "club_members"

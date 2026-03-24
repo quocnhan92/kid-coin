@@ -173,9 +173,12 @@ async def quick_login(
         details={"device": device.device_name}
     )
 
+    redirect_url = "/parent" if user.role == Role.PARENT else "/kid"
+
     return {
         "message": f"Chào mừng {user.display_name}!",
-        "redirect_url": "/kid" if user.role == Role.KID else "/"
+        "role": user.role.value,
+        "redirect_url": redirect_url
     }
 
 @router.post("/logout")

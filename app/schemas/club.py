@@ -33,3 +33,18 @@ class ClubMember(BaseModel):
 class Leaderboard(BaseModel):
     club_name: str
     members: List[ClubMember]
+
+class ClubTaskResponse(BaseModel):
+    id: UUID
+    club_id: UUID
+    name: str
+    points_reward: int
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ClubTaskCreateRequest(BaseModel):
+    name: str
+    points_reward: int

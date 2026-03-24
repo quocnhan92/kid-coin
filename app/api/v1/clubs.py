@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.social import Club, ClubMember
+from app.models.club_tasks import ClubTask
 from app.models.user_family import User
 from app.services.audit import AuditService, AuditStatus
 from app.schemas import club as club_schemas
@@ -124,3 +125,67 @@ async def get_leaderboard(
         "club_name": club.name,
         "members": members
     }
+
+@router.post("/{club_id}/tasks", response_model=club_schemas.ClubTaskResponse)
+async def create_club_task(
+    club_id: str,
+    request: club_schemas.ClubTaskCreateRequest,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    PARENT: Create a task for a club.
+    """
+    club = db.query(Club).get(club_id)
+    if not club:
+        raise HTTPException(status_code=404, detail="Club not found")
+
+    if club.creator_family_id != current_user.family_id:
+        raise HTTPException(status_code=403, detail="Only club creator can add tasks")
+
+    try:
+        new_task = ClubTask(
+            club_id=club_id,
+            creator_family_id=current_user.family_id,
+            name=request.name,
+            points_reward=request.points_reward,
+            is_active=True
+        )
+        db.add(new_task)
+        db.commit()
+        db.refresh(new_task)
+
+        AuditService.log(
+            db=db,
+            action="CREATE_CLUB_TASK",
+            resource_type="ClubTask",
+            resource_id=str(new_task.id),
+            status=AuditStatus.SUCCESS
+        )
+
+        return new_task
+    except Exception as e:
+        db.rollback()
+        AuditService.log_failed(db=db, action="CREATE_CLUB_TASK", resource_type="ClubTask", error=e)
+        raise HTTPException(status_code=500, detail="Could not create club task")
+
+@router.get("/{club_id}/tasks", response_model=list[club_schemas.ClubTaskResponse])
+async def get_club_tasks(
+    club_id: str,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Get all active tasks for a club.
+    """
+    club = db.query(Club).get(club_id)
+    if not club:
+        raise HTTPException(status_code=404, detail="Club not found")
+
+    tasks = db.query(ClubTask).filter(
+        ClubTask.club_id == club_id,
+        ClubTask.is_active == True,
+        ClubTask.is_deleted == False
+    ).all()
+
+    return tasks

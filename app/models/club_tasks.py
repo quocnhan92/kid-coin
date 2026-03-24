@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime, Index
+from sqlalchemy import Column, String, BigInteger, Boolean, ForeignKey, DateTime, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -16,9 +16,9 @@ class ClubTask(Base):
     club_id = Column(UUID(as_uuid=True), ForeignKey("clubs.id"), nullable=False)
     creator_family_id = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     name = Column(String(100), nullable=False)
-    suggested_points = Column(Integer, nullable=False)
-    deadline = Column(DateTime(timezone=True), nullable=True)
+    points_reward = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, default=True)
+    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     club = relationship("Club", back_populates="tasks")

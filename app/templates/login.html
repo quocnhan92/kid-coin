@@ -53,7 +53,7 @@
                 </div>
                 <div>
                     <label for="password" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Mật khẩu</label>
-                    <input type="password" id="password" value="1234" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-800 placeholder-gray-400" placeholder="••••">
+                    <input type="password" id="password" value="1234" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-800 placeholder-gray-400" placeholder="•��••">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-4">
                     Kết nối ngay
@@ -109,11 +109,27 @@
 
         // --- View Switching ---
         function showView(viewId) {
-            ['view-select-user', 'view-register-device', 'view-enter-pin', 'loading-view'].forEach(id => {
-                document.getElementById(id).classList.add('hidden-view');
+            console.log('🔄 showView called with:', viewId);
+
+            // Hide all views
+            const allViews = ['view-select-user', 'view-register-device', 'view-enter-pin', 'loading-view'];
+            allViews.forEach(id => {
+                const view = document.getElementById(id);
+                if (view) {
+                    view.style.display = 'none';
+                    console.log(`  ✓ Hid ${id}`);
+                }
             });
-            document.getElementById(viewId).classList.remove('hidden-view');
-            
+
+            // Show target view
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.style.display = 'flex';
+                console.log(`  ✓ Showed ${viewId}`);
+            } else {
+                console.error(`  ❌ View ${viewId} not found!`);
+            }
+
             // Auto focus for register view
             if(viewId === 'view-register-device') {
                 setTimeout(() => document.getElementById('username').focus(), 100);
@@ -181,36 +197,80 @@
         }
 
         async function quickLogin(user) {
+            console.log('=== quickLogin called ===');
+            console.log('User:', user);
+            console.log('User role:', user.role);
+            console.log('Is parent?:', user.role === 'PARENT');
+
             if (user.role === 'PARENT') {
+                console.log('✅ Detected PARENT role - showing PIN entry');
                 selectedUserForPin = user;
                 // Pre-fill avatar
-                document.getElementById('pin-avatar').src = user.avatar_url;
+                const avatarImg = document.getElementById('pin-avatar');
+                console.log('Setting avatar src to:', user.avatar_url);
+                avatarImg.src = user.avatar_url;
                 clearPin();
                 showView('view-enter-pin');
+                console.log('✅ PIN entry view shown');
                 return;
             }
             // Kid login
+            console.log('✅ Kid login - calling performQuickLogin');
             await performQuickLogin(user.id);
         }
 
         async function performQuickLogin(userId, pin = null) {
+            console.log('=== performQuickLogin called ===');
+            console.log('userId:', userId);
+            console.log('pin:', pin ? '****' : 'null');
+            console.log('deviceId:', deviceId);
+
             try {
+                const body = {
+                    user_id: userId,
+                    device_id: deviceId,
+                    pin: pin
+                };
+                console.log('📤 Sending request body:', body);
+
                 const response = await fetch(`${API_BASE}/quick-login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        device_id: deviceId,
-                        pin: pin
-                    })
+                    body: JSON.stringify(body)
                 });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Đăng nhập thất bại');
 
-                window.location.href = data.redirect_url;
+                console.log('📥 Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ API returned error:', errorData);
+                    throw new Error(errorData.detail || 'Đăng nhập thất bại');
+                }
+
+                const data = await response.json();
+                console.log('✅ Login response:', data);
+                console.log('Response keys:', Object.keys(data));
+
+                // Ensure redirect_url exists
+                if (!data.redirect_url) {
+                    console.error('❌ No redirect_url in response');
+                    throw new Error('Không nhận được URL chuyển hướng từ server');
+                }
+
+                // Redirect based on role
+                const redirectUrl = data.redirect_url || (data.role === 'PARENT' ? '/parent' : '/kid');
+                console.log('🔗 Redirecting to:', redirectUrl);
+
+                // Use location.href for more reliable redirect
+                console.log('⏳ Setting window.location.href...');
+                window.location.href = redirectUrl;
 
             } catch (error) {
-                alert(error.message);
+                console.error('❌ Login error:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                alert('❌ Lỗi đăng nhập: ' + error.message);
                 if (pin) clearPin();
             }
         }

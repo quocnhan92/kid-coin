@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from app.models.logs_transactions import TaskStatus
+from app.models.tasks_rewards import VerificationType
 
 class QuestBase(BaseModel):
     name: str
@@ -10,11 +11,12 @@ class QuestBase(BaseModel):
     icon_url: Optional[str] = None
 
 class QuestItem(QuestBase):
-    id: UUID
+    id: Optional[UUID] = None
     task_id: UUID
     status: Optional[TaskStatus] = None # None means not started
     proof_image_url: Optional[str] = None
     created_at: Optional[datetime] = None
+    verification_type: Optional[str] = None
 
     class Config:
         from_attributes = True
