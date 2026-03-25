@@ -9,6 +9,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from uuid import UUID
 from app.services.audit import AuditService, AuditStatus
+from app.models.audit import AuditLog
 
 router = APIRouter()
 
@@ -101,6 +102,22 @@ class UpdateRewardRequest(BaseModel):
 class ApproveTaskRequest(BaseModel):
     action: str  # APPROVE or REJECT
     comment: Optional[str] = None
+
+class AuditLogResponse(BaseModel):
+    id: UUID
+    action: str
+    status: str
+    resource_type: str
+    display_name: Optional[str]
+    details: Optional[dict]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class AuditLogPaginatedResponse(BaseModel):
+    total: int
+    logs: List[AuditLogResponse]
 
 @router.get("/pending-tasks", response_model=List[PendingTaskResponse])
 async def get_pending_tasks(
@@ -844,3 +861,46 @@ async def get_master_rewards(
         }
         for reward in rewards
     ]
+
+@router.get("/audit-logs", response_model=AuditLogPaginatedResponse)
+async def get_audit_logs(
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Get audit logs for the family with server-side filtering and pagination.
+    """
+    # Join with User to get only logs related to this family
+    query = db.query(AuditLog, User).join(
+        User, AuditLog.user_id == User.id
+    ).filter(
+        User.family_id == current_user.family_id
+    )
+
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (AuditLog.action.ilike(search_term)) |
+            (AuditLog.resource_type.ilike(search_term)) |
+            (User.display_name.ilike(search_term))
+        )
+
+    total_count = query.count()
+    logs = query.order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
+
+    response_logs = []
+    for log, user in logs:
+        response_logs.append(AuditLogResponse(
+            id=log.id,
+            action=log.action,
+            status=log.status,
+            resource_type=log.resource_type,
+            display_name=user.display_name,
+            details=log.details,
+            created_at=log.created_at
+        ))
+        
+    return {"total": total_count, "logs": response_logs}
