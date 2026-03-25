@@ -18,6 +18,11 @@ services:
       resources:
         limits:
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     image: postgres:15-alpine
@@ -31,13 +36,19 @@ services:
       - POSTGRES_DB=kidcoin_db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kidcoin_user -d kidcoin_db"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 3
+      start_period: 20s
     deploy:
       resources:
         limits:
           memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
