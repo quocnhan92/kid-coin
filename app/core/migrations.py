@@ -13,12 +13,16 @@ def run_migrations():
     inspector = inspect(engine)
     
     with engine.connect() as conn:
-        # Check users table for total_earned_score
+        # Check users table for total_earned_score and is_deleted
         if inspector.has_table("users"):
             columns = [col['name'] for col in inspector.get_columns("users")]
             if "total_earned_score" not in columns:
                 logger.info("Adding 'total_earned_score' to 'users' table...")
                 conn.execute(text("ALTER TABLE users ADD COLUMN total_earned_score BIGINT DEFAULT 0"))
+                conn.commit()
+            if "is_deleted" not in columns:
+                logger.info("Adding 'is_deleted' to 'users' table...")
+                conn.execute(text("ALTER TABLE users ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE"))
                 conn.commit()
 
         # Check family_tasks table for category and verification_type

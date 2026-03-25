@@ -4,6 +4,7 @@ from app.core.database import SessionLocal
 from app.models.user_family import User, Role, Family
 from app.core import context
 from uuid import UUID
+from app.core.security import decode_access_token
 
 # Dependency to get DB session
 def get_db():
@@ -14,23 +15,25 @@ def get_db():
         db.close()
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
-    # 1. Try to get user_id from Cookie
-    user_id = request.cookies.get("user_id")
+    # 1. Try to get token from Cookie
+    token = request.cookies.get("access_token")
     
-    # 2. If no cookie, check for "Authorization" header (Bearer token) - simplified for now
-    if not user_id:
+    # 2. If no cookie, check for "Authorization" header (Bearer token)
+    if not token:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
-            user_id = auth_header.split(" ")[1]
+            token = auth_header.split(" ")[1]
 
     user = None
-    if user_id:
-        try:
-            # Validate UUID format
-            UUID(user_id)
-            user = db.query(User).filter(User.id == user_id).first()
-        except ValueError:
-            pass # Invalid UUID
+    if token:
+        payload = decode_access_token(token)
+        if payload and "sub" in payload:
+            user_id = payload["sub"]
+            try:
+                UUID(user_id) # Validate format
+                user = db.query(User).filter(User.id == user_id).first()
+            except ValueError:
+                pass
 
     # 3. If still no user, Auto-Seed/Fallback (ONLY FOR DEV)
     if not user:

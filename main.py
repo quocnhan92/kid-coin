@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 import logging
 import os
 import threading
+from sqlalchemy.orm import Session # Added missing import
 from app.core.database import engine, Base, SessionLocal
 from app.api.v1 import system as system_router
 from app.api.v1 import users as users_router
@@ -13,11 +14,12 @@ from app.api.v1 import rewards as rewards_router
 from app.api.v1 import clubs as clubs_router
 from app.api.v1 import parent as parent_router
 from app.api.v1 import auth as auth_router
-from app.api.v1 import upload as upload_router # Added
+from app.api.v1 import upload as upload_router
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
-from app.core.migrations import run_migrations # Added
+from app.core.migrations import run_migrations
+from app.core.security import decode_access_token
 
 # Import all models to ensure they are registered with Base
 from app.models.user_family import Family, User, Role
@@ -69,7 +71,7 @@ app.include_router(rewards_router.router, prefix="/api/v1/rewards", tags=["Rewar
 app.include_router(clubs_router.router, prefix="/api/v1/clubs", tags=["Clubs"])
 app.include_router(parent_router.router, prefix="/api/v1/parent", tags=["Parent"])
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Auth"])
-app.include_router(upload_router.router, prefix="/api/v1/upload", tags=["Upload"]) # Added
+app.include_router(upload_router.router, prefix="/api/v1/upload", tags=["Upload"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
@@ -161,6 +163,15 @@ def seed_initial_data():
     finally:
         db.close()
 
+# --- Helper to extract user from JWT cookie ---
+def get_user_from_cookie(access_token: Optional[str], db: Session) -> Optional[User]:
+    if not access_token:
+        return None
+    payload = decode_access_token(access_token)
+    if payload and "sub" in payload:
+        return db.query(User).filter(User.id == payload["sub"]).first()
+    return None
+
 # --- Webpage Routes ---
 
 @app.get("/login", response_class=HTMLResponse)
@@ -168,18 +179,17 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, user_id: Optional[str] = Cookie(None)):
-    if not user_id:
+async def read_root(request: Request, access_token: Optional[str] = Cookie(None)):
+    if not access_token:
         return RedirectResponse("/login")
     
-    # Check Role to redirect to correct dashboard
     db = SessionLocal()
-    user = db.query(User).filter(User.id == user_id).first()
+    user = get_user_from_cookie(access_token, db)
     db.close()
     
     if not user:
          response = RedirectResponse("/login")
-         response.delete_cookie("user_id")
+         response.delete_cookie("access_token")
          return response
 
     if user.role == Role.KID:
@@ -189,25 +199,35 @@ async def read_root(request: Request, user_id: Optional[str] = Cookie(None)):
     return RedirectResponse("/parent")
 
 @app.get("/parent", response_class=HTMLResponse)
-async def read_parent_dashboard(request: Request, user_id: Optional[str] = Cookie(None)):
-    if not user_id:
+async def read_parent_dashboard(request: Request, access_token: Optional[str] = Cookie(None)):
+    if not access_token:
         return RedirectResponse("/login")
 
     db = SessionLocal()
-    user = db.query(User).filter(User.id == user_id).first()
+    user = get_user_from_cookie(access_token, db)
     db.close()
 
     if not user or user.role != Role.PARENT:
         response = RedirectResponse("/login")
-        response.delete_cookie("user_id")
+        response.delete_cookie("access_token")
         return response
 
     return templates.TemplateResponse("parent_dashboard.html", {"request": request})
 
 @app.get("/kid", response_class=HTMLResponse)
-async def read_kid_dashboard(request: Request, user_id: Optional[str] = Cookie(None)):
-    if not user_id:
+async def read_kid_dashboard(request: Request, access_token: Optional[str] = Cookie(None)):
+    if not access_token:
         return RedirectResponse("/login")
+        
+    db = SessionLocal()
+    user = get_user_from_cookie(access_token, db)
+    db.close()
+    
+    if not user:
+        response = RedirectResponse("/login")
+        response.delete_cookie("access_token")
+        return response
+        
     return templates.TemplateResponse("kid_dashboard.html", {"request": request})
 
 if __name__ == "__main__":

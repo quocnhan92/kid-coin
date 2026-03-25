@@ -6,7 +6,7 @@ from app.models.devices import FamilyDevice
 from app.schemas import auth as auth_schemas
 from app.services.audit import AuditService, AuditStatus
 from uuid import UUID
-import uuid
+from app.core.security import create_access_token
 
 router = APIRouter()
 
@@ -157,8 +157,9 @@ async def quick_login(
              )
              raise HTTPException(status_code=401, detail="Mã PIN không đúng!")
 
-    # 4. Login Success
-    response.set_cookie(key="user_id", value=str(user.id), httponly=True)
+    # 4. Login Success - ISSUE JWT TOKEN
+    access_token = create_access_token(subject=str(user.id))
+    response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=30*24*60*60)
     
     # Audit
     AuditService.log(
@@ -183,5 +184,5 @@ async def quick_login(
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("user_id")
+    response.delete_cookie("access_token")
     return {"message": "Đã đăng xuất"}
