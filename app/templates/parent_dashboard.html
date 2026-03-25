@@ -325,6 +325,59 @@
         </div>
     </div>
 
+    <!-- Modal: Sửa Nhiệm vụ -->
+    <div id="edit-task-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-gray-800 mb-6">Sửa nhiệm vụ 📝</h2>
+            <form id="edit-task-form" onsubmit="updateTask(event)" class="space-y-5">
+                <input type="hidden" id="edit-task-id">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên việc (có thể thêm icon ở đầu)</label>
+                    <input type="text" id="edit-task-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng (Xu)</label>
+                        <input type="number" id="edit-task-points" required min="1" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Nhóm</label>
+                        <select id="edit-task-category" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
+                            <option value="Việc nhà">Việc nhà</option>
+                            <option value="Học tập">Học tập</option>
+                            <option value="Cá nhân">Cá nhân</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Yêu cầu báo cáo</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Cần chụp ảnh" class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">📸 Bắt buộc chụp ảnh</span>
+                        </label>
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Bố mẹ kiểm tra trực tiếp" class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">👀 Bố mẹ tự đi kiểm tra</span>
+                        </label>
+                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Tự động duyệt" class="w-5 h-5 text-blue-600">
+                            <span class="ml-3 font-medium">⚡ Tự động cộng tiền luôn</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('edit-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal: Tạo Quà thưởng -->
     <div id="create-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
@@ -361,6 +414,36 @@
                 <div class="flex gap-3 pt-4">
                     <button type="button" onclick="closeModal('create-reward-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
                     <button type="submit" class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Lên kệ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Sửa Quà thưởng -->
+    <div id="edit-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-purple-800 mb-6">Sửa thông tin quà 🎁</h2>
+            <form id="edit-reward-form" onsubmit="updateReward(event)" class="space-y-5">
+                <input type="hidden" id="edit-reward-id">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên món quà</label>
+                    <input type="text" id="edit-reward-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Giá bán (Xu)</label>
+                        <input type="number" id="edit-reward-cost" required min="1" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Số lượng kho</label>
+                        <input type="number" id="edit-reward-stock" min="1" placeholder="Vô hạn" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('edit-reward-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
                 </div>
             </form>
         </div>
@@ -406,6 +489,8 @@
         const API_BASE = '/api/v1';
         let currentTab = 'overview';
         let allKids = [];
+        let allTasks = [];
+        let allRewards = [];
 
         // --- Tab Management ---
         function switchTab(tab) {
@@ -472,7 +557,7 @@
 
                 // Show recent pending tasks
                 const recentTasksHtml = pendingTasks.slice(0, 3).map(p => `
-                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors" onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name}', '${p.kid_avatar}', '${p.proof_image_url || ''}')">
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors" onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name.replace(/'/g, "\\'")}', '${p.kid_avatar}', '${p.proof_image_url || ''}')">
                         <div class="flex items-center gap-3">
                             <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                             <div>
@@ -515,8 +600,9 @@
 
                 const html = allKids.map(kid => `
                     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button onclick="showEditKidModal('${kid.id}')" class="bg-white rounded-full p-2 text-gray-500 hover:text-blue-600 shadow-sm border border-gray-200">✏️</button>
+                        <div class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                             <button onclick="showEditKidModal('${kid.id}')" class="bg-white rounded-full p-2 text-gray-500 hover:text-blue-600 shadow-sm border border-gray-200" title="Sửa">✏️</button>
+                             <button onclick="deleteKid('${kid.id}', '${kid.display_name}')" class="bg-white rounded-full p-2 text-gray-500 hover:text-red-600 shadow-sm border border-gray-200" title="Xóa">🗑️</button>
                         </div>
                         <div class="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-blue-50 to-white"></div>
                         <div class="flex justify-center mb-4 relative z-10">
@@ -542,8 +628,10 @@
             }
         }
 
+        // --- Kid Actions ---
+
         function renderAvatarPicker(pickerId, urlInputId, currentUrl = null) {
-            const seeds = ['Bin', 'Na', 'Felix', 'Bella', 'Charlie', 'Molly', 'Coco', 'Buster'];
+            const seeds = ['Bin', 'Na', 'Felix', 'Bella', 'Charlie', 'Molly', 'Coco', 'Buster', 'Max', 'Luna'];
             const grid = document.getElementById(pickerId);
             grid.innerHTML = '';
             
@@ -579,31 +667,6 @@
                 
                 grid.appendChild(img);
             });
-        }
-        
-        async function createAdmin(event) {
-            event.preventDefault();
-            const name = document.getElementById('admin-name').value;
-            const username = document.getElementById('admin-username').value;
-
-            try {
-                const res = await fetch(`${API_BASE}/parent/admins`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ display_name: name, username: username }) 
-                });
-
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Thêm Quản trị viên thất bại');
-                }
-
-                alert('Đã thêm Quản trị viên thành công!');
-                closeModal('create-admin-modal');
-                document.getElementById('admin-form').reset();
-            } catch (error) {
-                alert('❌ Lỗi: ' + error.message);
-            }
         }
 
         async function createKid(event) {
@@ -657,12 +720,24 @@
             }
         }
 
+        async function deleteKid(id, name) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa thành viên "${name}" không? Toàn bộ số dư sẽ bị đóng băng.`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/parent/kids/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Lỗi xóa thành viên');
+                loadKids();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        // --- Task Actions ---
         async function loadTasks() {
             try {
                 const res = await fetch(`${API_BASE}/parent/tasks`);
-                const tasks = await res.json();
+                allTasks = await res.json();
 
-                const html = tasks.map(task => `
+                const html = allTasks.map(task => `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:bg-gray-50 transition-colors gap-4">
                         <div class="flex items-start gap-4">
                             <div class="text-3xl bg-gray-100 p-3 rounded-2xl border border-gray-200">${getIcon(task.name)}</div>
@@ -679,6 +754,9 @@
                             <button onclick="toggleTask('${task.id}')" class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${task.is_active ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}">
                                 ${task.is_active ? 'Tạm dừng' : 'Bật lại'}
                             </button>
+                            <button onclick="showEditTaskModal('${task.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-blue-100 text-blue-500 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                                ✏️
+                            </button>
                             <button onclick="deleteTask('${task.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors">
                                 🗑️
                             </button>
@@ -692,111 +770,6 @@
             }
         }
 
-        async function loadRewards() {
-            try {
-                const res = await fetch(`${API_BASE}/parent/rewards`);
-                const rewards = await res.json();
-
-                const html = rewards.map(reward => `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:bg-gray-50 transition-colors gap-4">
-                        <div class="flex items-start gap-4">
-                            <div class="text-3xl bg-purple-50 p-3 rounded-2xl border border-purple-100">${getIcon(reward.name)}</div>
-                            <div>
-                                <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">${reward.name}</h3>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-200">💎 ${reward.points_cost} Xu</span>
-                                    ${reward.stock_limit !== null ? `<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Kho: ${reward.stock_limit}</span>` : '<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Vô hạn</span>'}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
-                            <button onclick="toggleReward('${reward.id}')" class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${reward.is_active ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}">
-                                ${reward.is_active ? 'Ẩn đi' : 'Bán lại'}
-                            </button>
-                            <button onclick="deleteReward('${reward.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-
-                document.getElementById('rewards-list').innerHTML = html || '<p class="text-gray-400 text-center py-10 italic">Cửa hàng đang trống. Thêm quà để tạo động lực cho con nhé!</p>';
-            } catch (error) {
-                console.error("Error loading rewards:", error);
-            }
-        }
-
-        async function loadPending() {
-            try {
-                const [tasksRes, rewardsRes] = await Promise.all([
-                    fetch(`${API_BASE}/parent/pending-tasks`),
-                    fetch(`${API_BASE}/parent/pending-redemptions`)
-                ]);
-
-                const pendingTasks = await tasksRes.json();
-                const pendingRewards = await rewardsRes.json();
-
-                // Update badge
-                const totalPending = pendingTasks.length + pendingRewards.length;
-                const badge = document.getElementById('pending-badge');
-                if (totalPending > 0) {
-                    badge.textContent = totalPending;
-                    badge.classList.remove('hidden-section');
-                } else {
-                    badge.classList.add('hidden-section');
-                }
-
-                // Render pending tasks
-                const tasksHtml = pendingTasks.map(p => `
-                    <div class="p-0 bg-white border border-blue-100 rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row">
-                        ${p.proof_image_url ? `<div class="md:w-1/3 h-64 md:h-auto bg-gray-900 relative"><img src="${p.proof_image_url}" class="w-full h-full object-contain"><div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">📷 Ảnh báo cáo</div></div>` : '<div class="md:w-32 bg-gray-50 flex items-center justify-center border-r border-gray-100 p-4"><span class="text-4xl opacity-30">👀</span></div>'}
-                        
-                        <div class="p-5 flex-1 flex flex-col justify-center">
-                            <div class="flex items-center gap-3 mb-3">
-                                <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-blue-50">
-                                <div>
-                                    <p class="font-black text-gray-800">${p.kid_name}</p>
-                                    <p class="text-sm font-medium text-gray-600">${p.task_name}</p>
-                                </div>
-                                <div class="ml-auto bg-blue-50 border border-blue-200 text-blue-700 font-black px-3 py-1 rounded-lg">
-                                    +${p.points_reward} Xu
-                                </div>
-                            </div>
-                            
-                            <div class="flex gap-2 mt-auto pt-4 border-t border-gray-100">
-                                <button onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name.replace(/'/g, "\\'")}', '${p.kid_avatar}', '${p.proof_image_url || ''}')" class="w-full py-3 text-sm font-black bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200">
-                                    Tiến hành Duyệt
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                document.getElementById('pending-tasks-full').innerHTML = tasksHtml || '<div class="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300"><span class="text-5xl block mb-2">🎉</span><p class="text-gray-500 font-medium">Tuyệt vời! Không có bài tập nào tồn đọng.</p></div>';
-
-                // Render pending rewards
-                const rewardsHtml = pendingRewards.map(p => `
-                    <div class="p-5 bg-white border border-purple-100 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div class="flex items-center gap-4">
-                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-14 h-14 rounded-full border-2 border-purple-100 bg-purple-50 p-1">
-                            <div>
-                                <p class="font-black text-gray-800 text-lg">${p.kid_name}</p>
-                                <p class="text-sm text-gray-600">Đòi nợ: <span class="font-bold text-purple-700">${p.reward_name}</span></p>
-                                <p class="text-xs font-bold text-gray-400 mt-1">Đã trừ ${p.points_cost} Xu khỏi ví</p>
-                            </div>
-                        </div>
-                        <button onclick="confirmDelivery('${p.redemption_id}')" class="w-full sm:w-auto px-8 py-3 text-sm font-black bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors shadow-md shadow-purple-200 transform active:scale-95">
-                            Giao quà xong!
-                        </button>
-                    </div>
-                `).join('');
-                document.getElementById('pending-rewards-full').innerHTML = rewardsHtml || '<div class="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300"><span class="text-5xl block mb-2">😴</span><p class="text-gray-500 font-medium">Các bé chưa mua sắm gì.</p></div>';
-
-            } catch (error) {
-                console.error("Error loading pending data:", error);
-            }
-        }
-
-        // --- Task Actions ---
         async function createTask(event) {
             event.preventDefault();
             const icon = document.getElementById('task-icon').value;
@@ -831,6 +804,38 @@
             }
         }
 
+        async function updateTask(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-task-id').value;
+            const name = document.getElementById('edit-task-name').value;
+            const points = document.getElementById('edit-task-points').value;
+            const category = document.getElementById('edit-task-category').value;
+            const verificationType = document.querySelector('input[name="edit-verification"]:checked').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name, 
+                        points_reward: parseInt(points),
+                        category: category,
+                        verification_type: verificationType
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Cập nhật thất bại');
+                }
+
+                closeModal('edit-task-modal');
+                loadTasks();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
         async function toggleTask(taskId) {
             try {
                 const res = await fetch(`${API_BASE}/parent/tasks/${taskId}/toggle`, { method: 'PUT' });
@@ -853,6 +858,43 @@
         }
 
         // --- Reward Actions ---
+        async function loadRewards() {
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards`);
+                allRewards = await res.json();
+
+                const html = allRewards.map(reward => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:bg-gray-50 transition-colors gap-4">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl bg-purple-50 p-3 rounded-2xl border border-purple-100">${getIcon(reward.name)}</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">${reward.name}</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="bg-purple-100 text-purple-800 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-200">💎 ${reward.points_cost} Xu</span>
+                                    ${reward.stock_limit !== null ? `<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Kho: ${reward.stock_limit}</span>` : '<span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-gray-200">Vô hạn</span>'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <button onclick="toggleReward('${reward.id}')" class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${reward.is_active ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}">
+                                ${reward.is_active ? 'Ẩn đi' : 'Bán lại'}
+                            </button>
+                            <button onclick="showEditRewardModal('${reward.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-blue-100 text-blue-500 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                                ✏️
+                            </button>
+                            <button onclick="deleteReward('${reward.id}')" class="px-3 py-2 text-sm font-bold bg-white border-2 border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('rewards-list').innerHTML = html || '<p class="text-gray-400 text-center py-10 italic">Cửa hàng đang trống. Thêm quà để tạo động lực cho con nhé!</p>';
+            } catch (error) {
+                console.error("Error loading rewards:", error);
+            }
+        }
+
         async function createReward(event) {
             event.preventDefault();
             const icon = document.getElementById('reward-icon').value;
@@ -882,12 +924,36 @@
             }
         }
 
+        async function updateReward(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-reward-id').value;
+            const name = document.getElementById('edit-reward-name').value;
+            const cost = document.getElementById('edit-reward-cost').value;
+            const stockStr = document.getElementById('edit-reward-stock').value;
+            const stock = stockStr ? parseInt(stockStr) : null;
+
+            try {
+                const res = await fetch(`${API_BASE}/parent/rewards/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, points_cost: parseInt(cost), stock_limit: stock })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Cập nhật thất bại');
+                }
+
+                closeModal('edit-reward-modal');
+                loadRewards();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
         async function toggleReward(rewardId) {
             try {
-                const listRes = await fetch(`${API_BASE}/parent/rewards`);
-                const list = await listRes.json();
-                const reward = list.find(r => r.id === rewardId);
-                
+                const reward = allRewards.find(r => r.id === rewardId);
                 if(!reward) throw new Error("Không tìm thấy phần thưởng");
 
                 const updateRes = await fetch(`${API_BASE}/parent/rewards/${rewardId}`, {
@@ -1030,10 +1096,43 @@
             document.getElementById('create-task-modal').classList.remove('hidden-section');
             setTimeout(()=>document.getElementById('task-name').focus(), 100);
         }
+        
+        function showEditTaskModal(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if(!task) return;
+            
+            document.getElementById('edit-task-id').value = task.id;
+            document.getElementById('edit-task-name').value = task.name;
+            document.getElementById('edit-task-points').value = task.points_reward;
+            document.getElementById('edit-task-category').value = task.category;
+            
+            // Check correct radio button
+            const radios = document.getElementsByName('edit-verification');
+            for(let i = 0; i < radios.length; i++) {
+                if(radios[i].value === task.verification_type) {
+                    radios[i].checked = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('edit-task-modal').classList.remove('hidden-section');
+        }
 
         function showCreateRewardModal() {
             document.getElementById('create-reward-modal').classList.remove('hidden-section');
             setTimeout(()=>document.getElementById('reward-name').focus(), 100);
+        }
+        
+        function showEditRewardModal(rewardId) {
+            const reward = allRewards.find(r => r.id === rewardId);
+            if(!reward) return;
+            
+            document.getElementById('edit-reward-id').value = reward.id;
+            document.getElementById('edit-reward-name').value = reward.name;
+            document.getElementById('edit-reward-cost').value = reward.points_cost;
+            document.getElementById('edit-reward-stock').value = reward.stock_limit || '';
+            
+            document.getElementById('edit-reward-modal').classList.remove('hidden-section');
         }
 
         function closeModal(modalId) {
@@ -1042,7 +1141,7 @@
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'create-reward-modal', 'approve-modal'];
+            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal'];
             modals.forEach(id => {
                 const modal = document.getElementById(id);
                 if (event.target == modal) {

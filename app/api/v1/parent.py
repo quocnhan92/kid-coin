@@ -212,7 +212,8 @@ async def get_kids(
     """
     kids = db.query(User).filter(
         User.family_id == current_user.family_id,
-        User.role == Role.KID
+        User.role == Role.KID,
+        User.is_deleted == False # Added soft delete filter
     ).all()
     
     return [
@@ -276,7 +277,8 @@ async def get_kid_detail(
     kid = db.query(User).filter(
         User.id == kid_id,
         User.family_id == current_user.family_id,
-        User.role == Role.KID
+        User.role == Role.KID,
+        User.is_deleted == False
     ).first()
 
     if not kid:
@@ -297,7 +299,8 @@ async def update_kid(
     kid = db.query(User).filter(
         User.id == kid_id,
         User.family_id == current_user.family_id,
-        User.role == Role.KID
+        User.role == Role.KID,
+        User.is_deleted == False
     ).first()
 
     if not kid:
@@ -325,6 +328,43 @@ async def update_kid(
         db.rollback()
         AuditService.log_failed(db=db, action="UPDATE_KID_PROFILE", resource_type="User", error=e)
         raise HTTPException(status_code=500, detail="Could not update kid")
+
+@router.delete("/kids/{kid_id}")
+async def delete_kid(
+    kid_id: UUID,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Soft delete a kid from the family.
+    """
+    kid = db.query(User).filter(
+        User.id == kid_id,
+        User.family_id == current_user.family_id,
+        User.role == Role.KID,
+        User.is_deleted == False
+    ).first()
+
+    if not kid:
+        raise HTTPException(status_code=404, detail="Kid not found")
+
+    try:
+        kid.is_deleted = True
+        db.commit()
+
+        AuditService.log(
+            db=db,
+            action="DELETE_KID",
+            resource_type="User",
+            resource_id=str(kid.id),
+            status=AuditStatus.SUCCESS
+        )
+
+        return {"status": "success", "message": "Kid deleted"}
+    except Exception as e:
+        db.rollback()
+        AuditService.log_failed(db=db, action="DELETE_KID", resource_type="User", error=e)
+        raise HTTPException(status_code=500, detail="Could not delete kid")
 
 @router.post("/admins")
 async def create_admin(

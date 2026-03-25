@@ -43,6 +43,7 @@ class User(Base):
     avatar_url = Column(String(255), nullable=True)
     current_coin = Column(BigInteger, default=0) # Changed to BigInteger
     total_earned_score = Column(BigInteger, default=0) # Added field, BigInteger
+    is_deleted = Column(Boolean, default=False) # Soft delete flag
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     family = relationship("Family", back_populates="users")
