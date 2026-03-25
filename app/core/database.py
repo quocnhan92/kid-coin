@@ -31,7 +31,7 @@ def get_engine_with_retry(url, retries=5, delay=2):
     raise Exception("Connect Database Error, Retried 3 round")
 
 # Khởi tạo engine với cơ chế retry
-engine = get_engine_with_retry(DATABASE_URL, retries=5, delay=2)
+engine = get_engine_with_retry(DATABASE_URL, retries=5, delay=5)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
