@@ -74,9 +74,25 @@ async def register_device(
     ).first()
 
     if not parent:
-        parent = db.query(User).filter(User.role == Role.PARENT).first()
-        if not parent:
-             raise HTTPException(status_code=400, detail="Không tìm thấy tài khoản Bố mẹ nào.")
+        # If the username doesn't match any existing parent, create a new family + parent account
+        # so the device can be registered to that new family.
+        from uuid import uuid4
+        # Create a new family with a default PIN (consider prompting user to change later)
+        default_pin = "1234"
+        new_family = Family(id=uuid4(), name=f"Gia đình {payload.username}", parent_pin=default_pin)
+        db.add(new_family)
+        db.flush()
+
+        parent = User(
+            id=uuid4(),
+            family_id=new_family.id,
+            role=Role.PARENT,
+            display_name=payload.username,
+            username=payload.username,
+            avatar_url=f"https://api.dicebear.com/7.x/avataaars/svg?seed={payload.username}"
+        )
+        db.add(parent)
+        db.flush()
 
     # 2. Tạo hoặc Cập nhật Device
     existing_device = db.query(FamilyDevice).filter(FamilyDevice.device_token == payload.device_id).first()

@@ -15,6 +15,7 @@ from app.api.v1 import clubs as clubs_router
 from app.api.v1 import parent as parent_router
 from app.api.v1 import auth as auth_router
 from app.api.v1 import upload as upload_router
+from app.api.v1 import notifications as notifications_router
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
@@ -28,6 +29,7 @@ from app.models.logs_transactions import TaskLog, Transaction, RedemptionLog
 from app.models.social import Club, ClubMember
 from app.models.audit import AuditLog
 from app.models.devices import FamilyDevice
+from app.models.notifications import Notification
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +74,7 @@ app.include_router(clubs_router.router, prefix="/api/v1/clubs", tags=["Clubs"])
 app.include_router(parent_router.router, prefix="/api/v1/parent", tags=["Parent"])
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(upload_router.router, prefix="/api/v1/upload", tags=["Upload"])
+app.include_router(notifications_router.router, prefix="/api/v1/notifications", tags=["Notifications"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")

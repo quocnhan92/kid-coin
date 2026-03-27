@@ -16,6 +16,36 @@ def get_users(db: Session = Depends(deps.get_db)):
     users = db.query(User).all()
     return users
 
+@router.get("/search")
+def search_users(
+    q: str,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    PARENT: Search for other parent users by display_name or username to invite them to clubs.
+    """
+    from sqlalchemy import or_
+    
+    users = db.query(User).filter(
+        User.role == deps.Role.PARENT,
+        User.id != current_user.id,
+        or_(
+            User.display_name.ilike(f"%{q}%"),
+            User.username.ilike(f"%{q}%")
+        )
+    ).limit(20).all()
+    
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "display_name": u.display_name,
+            "avatar_url": u.avatar_url,
+            "role": u.role
+        } for u in users
+    ]
+
 @router.get("/me")
 def get_me(current_user: User = Depends(deps.get_current_user)):
     return {

@@ -209,8 +209,33 @@ Nhiệm vụ do Trưởng nhóm (Cô giáo/Phụ huynh tạo nhóm) "phát loa" 
 | Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả & Chú mục (Index) |
 | --- | --- | --- | --- |
 | `club_id` | `UUID` | FK -> `clubs.id` | Thuộc nhóm nào. |
-| `kid_id` | `UUID` | FK -> `users.id` | Bé nào tham gia. |
+| `user_id` | `UUID` | FK -> `users.id` | Thành viên tham gia (Bố/Mẹ/Con). |
+| `role` | `VARCHAR` | NOT NULL | `ADMIN` hoặc `MEMBER`. Hành xử tác vụ quản lý. |
 | `joined_at` | `TIMESTAMP` | Default `NOW()` | Ngày gia nhập. |
+
+### Bảng: `club_invitations` (Lời mời vào Nhóm)
+Dùng để gửi và duyệt lời mời gia nhập câu lạc bộ, đặc biệt với cơ chế "ủy quyền": Lời mời gửi đến các con (KID) sẽ tự động được điều hướng về chờ cha mẹ (PARENT) duyệt.
+
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính của lời mời |
+| `club_id` | `UUID` | FK -> `clubs.id` | Lời mời của nhóm nào. |
+| `invited_user_id` | `UUID` | FK -> `users.id` | Người được mời (KID hoặc PARENT). |
+| `inviter_id` | `UUID` | FK -> `users.id` | Người mời (Chỉ định ADMIN). |
+| `status` | `VARCHAR(20)`| NOT NULL | `PENDING`, `ACCEPTED`, `REJECTED`. |
+
+### Bảng: `notifications` (Hệ thống Chuông thông báo)
+Lưu trữ thông báo hệ thống và lời mời, được đồng bộ qua chuông góc màn hình (`🔔Notification Bell`). Xử lý luồng: Mời con -> Gửi chuông cho Bố Mẹ để duyệt.
+
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| --- | --- | --- | --- |
+| `id` | `UUID` | PK | Khóa chính thông báo. |
+| `user_id` | `UUID` | FK -> `users.id` | Người nhận thông báo. |
+| `type` | `VARCHAR(50)` | NOT NULL | `SYSTEM`, `CLUB_INVITE`, `KID_CLUB_INVITE`, `TASK_ASSIGNED`. |
+| `title` & `content` | `VARCHAR` | NOT NULL | Nội dung hiển thị ngắn gọn. |
+| `reference_id` | `VARCHAR` | Nullable | Lưu ID liên quan (VD: `invitation_id` để trigger hàm Duyệt). |
+| `is_read` | `BOOLEAN` | Default `FALSE` | Trạng thái hiển thị chấm đỏ Unread. |
+| `created_at` | `TIMESTAMP` | Default `NOW()` | Thời gian xuất bản. |
 
 ---
 
@@ -242,7 +267,14 @@ Nhiệm vụ do Trưởng nhóm (Cô giáo/Phụ huynh tạo nhóm) "phát loa" 
 
 * `POST /api/v1/clubs` *(Role: PARENT)*: Tạo nhóm, sinh `invite_code`.
 * `POST /api/v1/clubs/join` *(Role: PARENT)*: Nhập `invite_code` để join các bé nhà mình vào nhóm.
-* `GET /api/v1/clubs/{club_id}/leaderboard` *(Role: PARENT/KID)*: Lấy bảng xếp hạng. Tính toán dựa trên `total_earned_score` (XP) hoặc `SUM(amount)` của tuần hiện tại.
+* `POST /api/v1/clubs/{club_id}/invite` *(Role: ADMIN)*: Mời User bất kỳ trong hệ thống. Nếu là KID, hệ thống tạo Ticket thông báo chờ PARENT duyệt.
+* `PUT /api/v1/clubs/{club_id}/invitations/{invitation_id}/respond` *(Role: PARENT)*: Phụ huynh quyết định `ACCEPT` hoặc `REJECT` thay cho con cái.
+* `GET /api/v1/clubs/{club_id}/leaderboard` *(Role: PARENT/KID)*: Lấy bảng xếp hạng. Sắp xếp theo `total_earned_score` để đối chiếu thi đua.
+
+### 3.4. Nhóm API Giao tiếp & Thông báo (Notifications)
+* `GET /api/v1/notifications` *(Role: PARENT/KID)*: Tải dữ liệu đẩy (Polling) cho giao diện Dropdown Chuông 🔔.
+* `PUT /api/v1/notifications/{id}/read` *(Role: PARENT/KID)*: Đánh dấu đã đọc một thông báo.
+* `PUT /api/v1/notifications/read-all` *(Role: PARENT/KID)*: Làm sạch số lượng báo đỏ.
 
 ---
 

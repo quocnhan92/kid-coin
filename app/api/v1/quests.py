@@ -129,6 +129,26 @@ async def submit_quest(
         db.commit()
         db.refresh(new_log)
 
+        # 5b. Generate Notification to Parents if PENDING_APPROVAL
+        if initial_status == TaskStatus.PENDING_APPROVAL:
+            try:
+                from app.models.notifications import Notification, NotificationType
+                parents = db.query(User).filter(User.family_id == current_user.family_id, User.role == deps.Role.PARENT).all()
+                for p in parents:
+                    notif = Notification(
+                        user_id=p.id,
+                        type=NotificationType.SYSTEM,
+                        title="Nhiệm vụ mới chờ duyệt",
+                        content=f"{current_user.display_name} vừa nộp báo cáo '{task.name}'. Hãy kiểm tra nhé!",
+                        reference_id=str(new_log.id),
+                        action_data={"tab": "pending"}
+                    )
+                    db.add(notif)
+                db.commit()
+            except Exception as e:
+                import logging
+                logging.error(f"Failed to send notification for task submission: {e}")
+
         # 6. Audit Log
         AuditService.log(
             db=db,
@@ -186,13 +206,14 @@ async def verify_quest(
     # 2. Process Approval/Rejection
     try:
         log.resolved_at = datetime.now()
+        task = db.query(FamilyTask).get(log.family_task_id)
+        from app.models.notifications import Notification, NotificationType
         
         if request.action == "APPROVE":
             log.status = TaskStatus.APPROVED
             log.parent_comment = request.comment # Save praise
             
             # Transaction: Add Coin & XP
-            task = db.query(FamilyTask).get(log.family_task_id)
             points = task.points_reward
             
             from app.models.logs_transactions import Transaction, TransactionType
@@ -210,6 +231,25 @@ async def verify_quest(
             kid.current_coin += points
             kid.total_earned_score += points
             
+            # Notification to Kid
+            kid_notif = Notification(
+                user_id=kid.id,
+                type=NotificationType.SYSTEM,
+                title="Tuyệt vời quá! 🎉",
+                content=f"Bố/mẹ đã chấm điểm '{task.name}'. Lời khen: {request.comment}",
+                reference_id=str(log.id),
+                action_data={
+                    "tab": "quests", 
+                    "show_praise_modal": True, 
+                    "task_id": str(task.id), 
+                    "points_awarded": points, 
+                    "parent_comment": request.comment, 
+                    "status": "APPROVED",
+                    "task_name": task.name
+                }
+            )
+            db.add(kid_notif)
+            
             AuditService.log(
                 db=db,
                 action="APPROVE_QUEST",
@@ -222,6 +262,24 @@ async def verify_quest(
         elif request.action == "REJECT":
             log.status = TaskStatus.REJECTED
             log.parent_comment = request.comment # Save reject reason
+            
+            kid_notif = Notification(
+                user_id=kid.id,
+                type=NotificationType.SYSTEM,
+                title="Cần cố gắng thêm! 💪",
+                content=f"Bố/mẹ chưa duyệt '{task.name}'. Lời nhắn: {request.comment}",
+                reference_id=str(log.id),
+                action_data={
+                    "tab": "quests", 
+                    "show_praise_modal": True, 
+                    "task_id": str(task.id), 
+                    "parent_comment": request.comment, 
+                    "status": "REJECTED",
+                    "task_name": task.name
+                }
+            )
+            db.add(kid_notif)
+            
             AuditService.log(
                 db=db,
                 action="REJECT_QUEST",

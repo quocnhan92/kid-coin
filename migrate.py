@@ -62,6 +62,46 @@ def run_migration():
             # as it requires dropping/recreating constraints.
             conn.commit()
 
+        # Check clubs table
+        if not column_exists('clubs', 'invite_code'):
+            logger.info("Adding 'invite_code' to 'clubs' table...")
+            conn.execute(text("ALTER TABLE clubs ADD COLUMN invite_code VARCHAR(20) UNIQUE NOT NULL"))
+            conn.commit()
+
+        if not column_exists('clubs', 'is_active'):
+            logger.info("Adding 'is_active' to 'clubs' table...")
+            conn.execute(text("ALTER TABLE clubs ADD COLUMN is_active BOOLEAN DEFAULT TRUE"))
+            conn.commit()
+
+        # Check club_members table
+        if not inspect(engine).has_table('club_members'):
+            logger.info("Creating 'club_members' table...")
+            conn.execute(text("""
+                CREATE TABLE club_members (
+                    club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+                    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    role VARCHAR(50) NOT NULL DEFAULT 'MEMBER',
+                    joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    PRIMARY KEY (club_id, user_id)
+                )
+            """))
+            conn.commit()
+
+        # Check club_invitations table
+        if not inspect(engine).has_table('club_invitations'):
+            logger.info("Creating 'club_invitations' table...")
+            conn.execute(text("""
+                CREATE TABLE club_invitations (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
+                    invited_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    inviter_id UUID NULL REFERENCES users(id) ON DELETE SET NULL,
+                    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                )
+            """))
+            conn.commit()
+
     logger.info("Migration check completed.")
 
 if __name__ == "__main__":

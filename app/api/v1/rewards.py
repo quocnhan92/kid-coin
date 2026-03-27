@@ -79,6 +79,26 @@ async def redeem_reward(
 
         db.commit()
         
+        # 6. Generate Notification to Parents
+        try:
+            from app.models.notifications import Notification, NotificationType
+            parents = db.query(User).filter(User.family_id == current_user.family_id, User.role == deps.Role.PARENT).all()
+            for p in parents:
+                notif = Notification(
+                    user_id=p.id,
+                    type=NotificationType.SYSTEM,
+                    title="Đổi quà mới 🎁",
+                    content=f"{current_user.display_name} vừa đổi món quà '{reward.name}'. Bạn hãy chuẩn bị quà nhé!",
+                    reference_id=str(redemption.id),
+                    action_data={"tab": "pending", "kid_id": str(current_user.id)}
+                )
+                db.add(notif)
+            db.commit()
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to send notification for reward redemption: {e}")
+
+
         AuditService.log(
             db=db,
             action="REDEEM_REWARD",
@@ -136,6 +156,23 @@ async def deliver_reward(
         
         db.commit()
         
+        try:
+            from app.models.notifications import Notification, NotificationType
+            reward = db.query(FamilyReward).get(log.reward_id)
+            kid_notif = Notification(
+                user_id=kid.id,
+                type=NotificationType.SYSTEM,
+                title="Quà đã về! 🎁",
+                content=f"Bố/mẹ đã giao cho bạn món quà '{reward.name}'. Bạn đã nhận được chưa?",
+                reference_id=str(log.id),
+                action_data={"tab": "shop", "show_delivery_modal": True, "reward_name": reward.name}
+            )
+            db.add(kid_notif)
+            db.commit()
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to send delivery notification to kid: {e}")
+
         AuditService.log(
             db=db,
             action="DELIVER_REWARD",

@@ -27,6 +27,23 @@
                 <h1 class="text-xl font-bold text-gray-800 hidden sm:block">KidCoin</h1>
             </div>
             <div class="flex items-center gap-4">
+                <!-- Notifications Bell -->
+                <div class="relative cursor-pointer" onclick="toggleNotificationDropdown()" id="notification-bell">
+                    <span class="text-2xl hover:opacity-80 transition-opacity block">🔔</span>
+                    <span id="notification-badge" class="hidden-section absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
+                    
+                    <!-- Dropdown -->
+                    <div id="notification-dropdown" class="hidden-section absolute right-0 mt-3 w-[320px] sm:w-[380px] bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="font-black text-gray-800 text-sm">Thông báo</h3>
+                            <button onclick="event.stopPropagation(); markAllNotificationsRead()" class="text-xs text-blue-600 font-bold hover:text-blue-800">Đánh dấu đã đọc</button>
+                        </div>
+                        <div id="notification-list" class="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
+                            <div class="p-6 text-center text-gray-400 text-sm">Đang tải...</div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="/kid" class="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-bold border border-yellow-200 hidden md:block">
                     🎮 Thi đua cùng con
                 </a>
@@ -61,6 +78,9 @@
             </button>
             <button onclick="switchTab('rewards')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 🎁 Cửa hàng
+            </button>
+            <button onclick="switchTab('clubs')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+                🏆 Câu lạc bộ
             </button>
             <button onclick="switchTab('pending')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors relative">
                 ⏳ Chờ duyệt
@@ -159,6 +179,74 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div id="rewards-list" class="divide-y divide-gray-100">
                     <p class="text-gray-500 text-center py-8">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Câu lạc bộ -->
+        <div id="clubs" class="tab-content hidden-section fade-in">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-2xl font-black text-gray-800">Cộng đồng & Nhóm</h2>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="showJoinClubModal()" class="flex-1 sm:flex-none px-4 py-3 bg-white text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors font-bold shadow-sm">
+                        🔗 Nhập mã
+                    </button>
+                    <button onclick="showCreateClubModal()" class="flex-1 sm:flex-none px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                        ➕ Tạo nhóm mới
+                    </button>
+                </div>
+            </div>
+            
+            <div id="clubs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <p class="text-gray-500 text-center py-8 col-span-full">Đang tải danh sách nhóm...</p>
+            </div>
+
+            <!-- Leaderboard & Tasks section (hidden by default) -->
+            <div id="club-detail-section" class="hidden-section mt-8 space-y-6">
+                <!-- Header -->
+                <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h3 id="lb-club-name" class="text-xl font-black text-blue-800">Chi tiết nhóm</h3>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button id="btn-invite-parent" onclick="showInviteModal()" class="hidden-section px-4 py-2 border border-blue-200 bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 rounded-xl transition-colors">✉️ Mời người mới</button>
+                        <button onclick="closeClubDetail()" class="text-gray-500 font-bold hover:text-gray-800 px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">✕ Thoát ra</button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Leaderboard -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
+                        <h4 class="font-bold text-gray-700 mb-4 flex items-center gap-2 text-lg">🏆 Bảng Xếp Hạng Top XP</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left">
+                                <thead>
+                                    <tr class="text-gray-400 text-xs uppercase tracking-wide border-b border-gray-100">
+                                        <th class="py-3 font-bold w-12 text-center">Hạng</th>
+                                        <th class="py-3 font-bold">Thành viên</th>
+                                        <th class="py-3 font-bold text-center">Vai trò</th>
+                                        <th class="py-3 font-bold text-right">Tổng XP</th>
+                                        <th class="py-3 font-bold text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-list" class="divide-y divide-gray-50">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Club Tasks -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-yellow-200 p-6 flex flex-col h-full lg:max-h-[600px]">
+                        <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-100">
+                            <h4 class="font-bold text-gray-700 flex items-center gap-2 text-lg">🎯 Việc cần cày</h4>
+                            <button id="btn-create-club-task" onclick="showCreateClubTaskModal()" class="hidden-section px-4 py-2 bg-yellow-400 text-yellow-900 font-black rounded-xl hover:bg-yellow-500 shadow-sm transition-all transform active:scale-95 text-sm">
+                                ➕ Giao cấu hình khó
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto pr-2 tab-scroll pb-4">
+                            <div id="club-tasks-list" class="space-y-3">
+                                <p class="text-gray-500 py-6 text-center text-sm">Đang phân công công việc...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -521,21 +609,234 @@
             </div>
         </div>
     </div>
+    <!-- Modal: Nhận lời mời nhóm -->
+    <div id="club-approve-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-[60] p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in-up border-4 border-blue-400">
+            <div class="bg-blue-600 p-4 text-white text-center rounded-t-2xl">
+                <h3 class="font-black text-xl flex items-center justify-center gap-2">Yêu Cầu Tham Gia Nhóm 📬</h3>
+            </div>
+            <div class="p-6 text-center space-y-4 bg-blue-50">
+                <div class="text-6xl mb-2 animate-bounce mt-2">🏅</div>
+                <p class="text-gray-700 text-lg font-medium leading-relaxed">
+                    Bé <span class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200" id="cam-kid-name"></span><br>
+                    vừa được mời tham gia nhóm<br>
+                    <span class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200 mt-1 inline-block" id="cam-club-name"></span>
+                </p>
+                <p class="text-sm text-gray-500 font-bold italic mt-4">Bạn có duyệt cho con trải nghiệm không?</p>
+                
+                <input type="hidden" id="cam-club-id">
+                <input type="hidden" id="cam-invitation-id">
+                <input type="hidden" id="cam-notif-id">
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('club-approve-modal')" class="flex-1 py-3 bg-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-300">Nhắc Sau</button>
+                    <button type="button" onclick="approveClubInviteFromModal('REJECT')" class="flex-1 py-3 bg-red-100 text-red-600 font-bold rounded-xl hover:bg-red-200">Từ Chối</button>
+                    <button type="button" onclick="approveClubInviteFromModal('ACCEPT')" class="flex-[1.5] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all text-lg">Đồng Ý!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Tạo Câu lạc bộ -->
+    <div id="create-club-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-blue-800 mb-6">Tạo Nhóm / Câu lạc bộ 🏆</h2>
+            <form onsubmit="createClub(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhóm</label>
+                    <input type="text" id="club-name" required placeholder="VD: Hội làm việc nhà Lớp 3A" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Mã mời tùy chọn (để trống sẽ tự tạo)</label>
+                    <input type="text" id="club-custom-code" placeholder="VD: LOP3A2024" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono uppercase">
+                    <p class="text-xs text-gray-500 mt-1">Viết liền không dấu. Mã này dùng để gửi cho các phụ huynh khác.</p>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-club-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo Nhóm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal: Tham gia Câu lạc bộ -->
+    <div id="join-club-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-blue-800 mb-6">Tham gia Nhóm 🔗</h2>
+            <p class="text-sm text-gray-600 mb-4">Nhập mã mời và chọn các thành viên trong nhà sẽ tham gia thi đua.</p>
+            <form onsubmit="joinClub(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Mã mời (Invite Code)</label>
+                    <input type="text" id="join-club-code" required placeholder="VD: TEAM-A1B2" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono font-bold tracking-widest text-center uppercase">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chọn người tham gia</label>
+                    <div id="join-club-members-select" class="space-y-2 border-2 border-gray-100 p-3 rounded-xl max-h-48 overflow-y-auto">
+                        <!-- JS generated list of checkboxes -->
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('join-club-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tham gia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    </div>
+
+    <!-- Modal: Tạo Nhiệm vụ Câu lạc bộ -->
+    <div id="create-club-task-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">Giao việc nhóm 🏆📝</h2>
+            <form id="club-task-form" onsubmit="createClubTask(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhiệm vụ</label>
+                    <input type="text" id="club-task-name" required placeholder="VD: 🎯 Cày Level Học Tiếng Anh" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Lời dặn (Tùy chọn)</label>
+                    <textarea id="club-task-desc" rows="2" placeholder="Yêu cầu cụ thể..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng XP</label>
+                        <div class="relative">
+                            <input type="number" id="club-task-points" required min="1" placeholder="100" class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Hạn chót (Tùy chọn)</label>
+                        <input type="date" id="club-task-due" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4 border-t border-gray-100 mt-4">
+                    <button type="button" onclick="closeModal('create-club-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Bỏ qua</button>
+                    <button type="submit" class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu việc & Phát đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Sửa Nhiệm vụ Câu lạc bộ -->
+    <div id="edit-club-task-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">Chỉnh sửa việc ✏️</h2>
+            <form id="edit-club-task-form" onsubmit="updateClubTask(event)" class="space-y-4">
+                <input type="hidden" id="edit-club-task-id">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhiệm vụ</label>
+                    <input type="text" id="edit-club-task-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Lời dặn</label>
+                    <textarea id="edit-club-task-desc" rows="2" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng XP</label>
+                        <input type="number" id="edit-club-task-points" required min="1" class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Hạn chót</label>
+                        <input type="date" id="edit-club-task-due" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
+                    </div>
+                </div>
+                <label class="flex items-center gap-3 pt-2 cursor-pointer p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                    <input type="checkbox" id="edit-club-task-active" class="w-5 h-5 text-blue-600 rounded">
+                    <span class="font-bold text-gray-700">Đang hoạt động (Khóa sẽ tàng hình trên màn của bé)</span>
+                </label>
+                <div class="flex gap-3 pt-4 border-t border-gray-100 mt-4">
+                    <button type="button" onclick="closeModal('edit-club-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit" class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu Cập Nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Mời Phụ Huynh -->
+    <div id="invite-parent-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] flex flex-col pt-8">
+            <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2">Mời Phụ Huynh ✉️</h2>
+            <div class="mb-4">
+                <div class="relative">
+                    <input type="text" id="invite-search-input" placeholder="Nhập tên hoặc username..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium pb-3" onkeydown="if(event.key === 'Enter') searchUsersForInvite()">
+                    <button onclick="searchUsersForInvite()" class="absolute right-2 top-2 bottom-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-lg font-bold hover:bg-blue-200 transition-colors">Tìm</button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto mb-4 border border-gray-100 rounded-xl bg-gray-50 min-h-[200px]">
+                <div id="invite-search-results" class="divide-y divide-gray-100">
+                    <p class="text-gray-400 py-6 text-center text-sm">Gõ tên tìm kiếm để mời vào nhóm...</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
+                <button type="button" onclick="closeModal('invite-parent-modal')" class="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
 
 
     <script>
         const API_BASE = '/api/v1';
         let currentTab = 'overview';
+        let currentOpenedClubId = null; // Context hook
         let allKids = [];
         let allTasks = [];
         let allRewards = [];
+        let currentFamilyId = null;
+        let currentUserId = null;
 
-        // Declare pagination variables ONLY ONCE
         let auditSkip = 0;
         const auditLimit = 20;
 
+        // --- Safe fetch helper with better logging ---
+        async function fetchJsonSafe(url, opts = {}) {
+            console.debug('[fetchJsonSafe] fetching', url, opts && opts.method ? opts.method : 'GET');
+            let res;
+            try {
+                res = await fetch(url, opts);
+            } catch (networkErr) {
+                console.error('[fetchJsonSafe] network error for', url, networkErr);
+                throw new Error('Network error: ' + networkErr.message);
+            }
+
+            let text;
+            try {
+                text = await res.text();
+            } catch (readErr) {
+                console.error('[fetchJsonSafe] failed to read response text', url, readErr);
+                throw new Error('Failed to read response');
+            }
+
+            // Try to parse JSON
+            try {
+                const data = text ? JSON.parse(text) : null;
+                if (!res.ok) {
+                    const msg = (data && (data.detail || data.message)) ? (data.detail || data.message) : `HTTP ${res.status} ${res.statusText}`;
+                    console.error('[fetchJsonSafe] HTTP error', res.status, res.statusText, 'body:', data || text);
+                    throw new Error(msg);
+                }
+                return data;
+            } catch (parseErr) {
+                // Not JSON
+                console.warn('[fetchJsonSafe] response not JSON for', url, 'status', res.status);
+                console.debug('[fetchJsonSafe] response body (first 1000 chars):', text ? text.slice(0,1000) : '<empty>');
+                if (!res.ok) {
+                    throw new Error(`Server error ${res.status}: ${res.statusText}`);
+                }
+                // If OK but not JSON, return raw text (callers should handle)
+                return text;
+            }
+        }
+
         // --- Tab Management ---
         function switchTab(tab) {
+            console.debug('[switchTab] switching to', tab);
             currentTab = tab;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-section'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -554,37 +855,53 @@
         }
 
         async function loadTabData(tab) {
-            if (tab === 'overview') {
-                await loadOverview();
-            } else if (tab === 'kids') {
-                await loadKids();
-            } else if (tab === 'tasks') {
-                await loadTasks();
-            } else if (tab === 'rewards') {
-                await loadRewards();
-            } else if (tab === 'pending') {
-                await loadPending();
-            } else if (tab === 'audit') {
-                resetAndLoadAudit();
+            try {
+                if (tab === 'overview') {
+                    await loadOverview();
+                } else if (tab === 'kids') {
+                    await loadKids();
+                } else if (tab === 'tasks') {
+                    await loadTasks();
+                } else if (tab === 'rewards') {
+                    await loadRewards();
+                } else if (tab === 'pending') {
+                    await loadPending();
+                } else if (tab === 'audit') {
+                    resetAndLoadAudit();
+                } else if (tab === 'clubs') {
+                    await loadClubs();
+                }
+            } catch (e) {
+                console.error('[loadTabData] error loading tab', tab, e);
+                // show user friendly message in tab area
+                const el = document.getElementById(tab);
+                if (el) {
+                    const msg = document.createElement('div');
+                    msg.className = 'p-6 bg-red-50 text-red-600 rounded-xl border border-red-100';
+                    msg.textContent = 'Không thể tải dữ liệu. Kiểm tra console để biết thêm chi tiết.';
+                    el.innerHTML = '';
+                    el.appendChild(msg);
+                }
             }
         }
 
         // --- Load Data Functions ---
         async function loadOverview() {
             try {
+                console.debug('[loadOverview] loading overview data');
                 const [kidsRes, tasksRes, pendingTasksRes, pendingRewardsRes] = await Promise.all([
-                    fetch(`${API_BASE}/parent/kids`),
-                    fetch(`${API_BASE}/parent/tasks`),
-                    fetch(`${API_BASE}/parent/pending-tasks`),
-                    fetch(`${API_BASE}/parent/pending-redemptions`)
+                    fetchJsonSafe(`${API_BASE}/parent/kids`),
+                    fetchJsonSafe(`${API_BASE}/parent/tasks`),
+                    fetchJsonSafe(`${API_BASE}/parent/pending-tasks`),
+                    fetchJsonSafe(`${API_BASE}/parent/pending-redemptions`)
                 ]);
 
-                const kids = await kidsRes.json();
-                const tasks = await tasksRes.json();
-                const pendingTasks = await pendingTasksRes.json();
-                const pendingRewards = await pendingRewardsRes.json();
+                const kids = kidsRes || [];
+                const tasks = tasksRes || [];
+                const pendingTasks = pendingTasksRes || [];
+                const pendingRewards = pendingRewardsRes || [];
 
-                const totalPending = pendingTasks.length + pendingRewards.length;
+                const totalPending = (pendingTasks.length || 0) + (pendingRewards.length || 0);
 
                 document.getElementById('total-kids').textContent = kids.length;
                 document.getElementById('total-tasks').textContent = tasks.filter(t => t.is_active).length;
@@ -634,13 +951,18 @@
 
             } catch (error) {
                 console.error("Error loading overview:", error);
+                const container = document.getElementById('overview');
+                if (container) {
+                    container.innerHTML = '<div class="p-6 bg-red-50 rounded-xl border border-red-100 text-red-600">Lỗi tải mục Tổng quan. Mở console để biết chi tiết.</div>';
+                }
             }
         }
 
         async function loadKids() {
             try {
-                const res = await fetch(`${API_BASE}/parent/kids`);
-                allKids = await res.json();
+                console.debug('[loadKids] fetching kids');
+                const res = await fetchJsonSafe(`${API_BASE}/parent/kids`);
+                allKids = res || [];
 
                 const html = allKids.map(kid => `
                     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -655,11 +977,11 @@
                         <h3 class="text-xl font-black text-gray-800 text-center mb-5 relative z-10">${kid.display_name}</h3>
                         <div class="grid grid-cols-2 gap-3 text-center">
                             <div class="bg-yellow-50 rounded-2xl p-3 border border-yellow-100">
-                                <p class="text-[10px] text-yellow-600 uppercase font-black tracking-widest mb-1">Ví Xu</p>
+                                <p class="text-[10px] text-yellow-600 uppercase font-black tracking-wider mb-1">Ví Xu</p>
                                 <p class="text-2xl font-black text-yellow-500">${kid.current_coin}</p>
                             </div>
                             <div class="bg-blue-50 rounded-2xl p-3 border border-blue-100">
-                                <p class="text-[10px] text-blue-600 uppercase font-black tracking-widest mb-1">Level / XP</p>
+                                <p class="text-[10px] text-blue-600 uppercase font-black tracking-wider mb-1">Level / XP</p>
                                 <p class="text-2xl font-black text-blue-500">${kid.total_earned_score}</p>
                             </div>
                         </div>
@@ -669,6 +991,7 @@
                 document.getElementById('kids-grid').innerHTML = html || '<p class="text-gray-500 col-span-full text-center py-8">Gia đình chưa có bé nào.</p>';
             } catch (error) {
                 console.error("Error loading kids:", error);
+                document.getElementById('kids-grid').innerHTML = '<p class="text-red-500 text-center col-span-full py-8">Lỗi tải danh sách thành viên. Xem console để biết chi tiết.</p>';
             }
         }
 
@@ -1172,6 +1495,513 @@
                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">${error.message}</td></tr>`;
             }
         }
+        
+        // --- Club Actions ---
+        async function loadClubs() {
+            try {
+                console.debug('[loadClubs] loading clubs from', `${API_BASE}/clubs/me`);
+                const data = await fetchJsonSafe(`${API_BASE}/clubs/me`);
+
+                // Some backends might return an object with { clubs: [...] }
+                let clubs = [];
+                if (Array.isArray(data)) {
+                    clubs = data;
+                } else if (data && Array.isArray(data.clubs)) {
+                    clubs = data.clubs;
+                } else if (data && data.length === 0) {
+                    clubs = [];
+                } else if (!data) {
+                    clubs = [];
+                } else {
+                    console.warn('[loadClubs] unexpected response shape for /clubs/me', data);
+                    // Show helpful message
+                    document.getElementById('clubs-grid').innerHTML = '<p class="text-red-500 col-span-full text-center py-8">Server returned unexpected data. Xem console.</p>';
+                    return;
+                }
+
+                const html = clubs.map(club => `
+                    <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 hover:shadow-md transition-shadow cursor-pointer relative" onclick="openClubDetail('${club.id}', '${club.name}')">
+                        <div class="flex items-center gap-4">
+                            <div class="text-4xl bg-blue-50 p-3 rounded-full">🏆</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">${club.name}</h3>
+                                <p class="text-xs text-gray-500">Mã mời: <span class="font-mono font-bold text-blue-600 tracking-wider">${club.invite_code}</span></p>
+                            </div>
+                        </div>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300">❯</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('clubs-grid').innerHTML = html || '<p class="text-gray-500 col-span-full text-center py-8">Bạn chưa tham gia hoặc tạo nhóm nào.</p>';
+            } catch (error) {
+                console.error("Error loading clubs:", error);
+                document.getElementById('clubs-grid').innerHTML = `<p class="text-red-500 col-span-full text-center py-8">Lỗi tải danh sách nhóm: ${error.message}</p>`;
+            }
+        }
+
+        function showCreateClubModal() {
+            document.getElementById('create-club-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('club-name').focus(), 100);
+        }
+
+        // --- Notification Modal ---
+        function approveClubInviteFromModal(action) {
+            const clubId = document.getElementById('cam-club-id').value;
+            const invitationId = document.getElementById('cam-invitation-id').value;
+            const notifId = document.getElementById('cam-notif-id').value;
+            respondClubNotice(clubId, invitationId, action, notifId);
+        }
+
+        async function createClub(event) {
+            event.preventDefault();
+            const name = document.getElementById('club-name').value;
+            const customCode = document.getElementById('club-custom-code').value;
+            
+            try {
+                const payload = { name: name, is_active: true };
+                if (customCode) payload.custom_invite_code = customCode.toUpperCase();
+                
+                const res = await fetch(`${API_BASE}/clubs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Tạo nhóm thất bại');
+                
+                closeModal('create-club-modal');
+                document.getElementById('club-name').value = '';
+                document.getElementById('club-custom-code').value = '';
+                loadClubs();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        function showJoinClubModal() {
+            if (allKids.length === 0) {
+                // If kids not loaded yet, load them first for the selection
+                fetch(`${API_BASE}/parent/kids`).then(res => res.json()).then(data => {
+                    allKids = data;
+                    renderJoinClubMembers();
+                });
+            } else {
+                renderJoinClubMembers();
+            }
+            document.getElementById('join-club-modal').classList.remove('hidden-section');
+            setTimeout(()=>document.getElementById('join-club-code').focus(), 100);
+        }
+        
+        function renderJoinClubMembers() {
+            const container = document.getElementById('join-club-members-select');
+            
+            // Add self (parent)
+            let html = `
+                <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input type="checkbox" value="${currentUserId}" class="w-4 h-4 text-blue-600 rounded member-join-checkbox">
+                    <span class="ml-2 font-medium text-gray-700">Tôi (Admin)</span>
+                </label>
+            `;
+            
+            // Add kids
+            html += allKids.map(kid => `
+                <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input type="checkbox" value="${kid.id}" checked class="w-4 h-4 text-blue-600 rounded member-join-checkbox">
+                    <span class="ml-2 font-medium text-gray-700">${kid.display_name}</span>
+                </label>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        async function joinClub(event) {
+            event.preventDefault();
+            const code = document.getElementById('join-club-code').value;
+            
+            const checkboxes = document.querySelectorAll('.member-join-checkbox:checked');
+            const userIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (userIds.length === 0) {
+                alert("Vui lòng chọn ít nhất một người tham gia.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/clubs/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ invite_code: code, user_ids: userIds })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Tham gia thất bại');
+                
+                alert('✅ ' + data.message);
+                closeModal('join-club-modal');
+                document.getElementById('join-club-code').value = '';
+                loadClubs();
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        let isCurrentClubAdmin = false;
+
+        async function openClubDetail(clubId, clubName) {
+            currentOpenedClubId = clubId;
+            document.getElementById('clubs-grid').classList.add('hidden-section');
+            const section = document.getElementById('club-detail-section');
+            section.classList.remove('hidden-section');
+            
+            document.getElementById('lb-club-name').innerText = `Thông tin nhóm: ${clubName}`;
+            const tbody = document.getElementById('leaderboard-list');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-6">Đang tải...</td></tr>';
+            
+            // Hide create task and invite buttons initially
+            document.getElementById('btn-create-club-task').classList.add('hidden-section');
+            document.getElementById('btn-invite-parent').classList.add('hidden-section');
+            
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/leaderboard`);
+                if(!res.ok) throw new Error("Failed to load");
+                const data = await res.json();
+                
+                // Determine if current user is admin of this club
+                const meInClub = data.members.find(m => m.user_id === currentUserId);
+                isCurrentClubAdmin = meInClub && meInClub.role === 'ADMIN';
+                
+                if (isCurrentClubAdmin) {
+                    document.getElementById('btn-create-club-task').classList.remove('hidden-section');
+                    document.getElementById('btn-invite-parent').classList.remove('hidden-section');
+                }
+                
+                if(data.members.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Nhóm chưa có thành viên.</td></tr>';
+                } else {
+                    tbody.innerHTML = data.members.map((m, idx) => {
+                        let rank = `<span class="text-gray-400 font-bold">${idx + 1}</span>`;
+                        if (idx === 0) rank = '🥇';
+                        if (idx === 1) rank = '🥈';
+                        if (idx === 2) rank = '🥉';
+                        
+                        const isMe = m.user_id === currentUserId;
+                        const roleBadge = m.role === 'ADMIN' ? '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Admin</span>' : '';
+                        
+                        // Only Admin can remove members, but cannot remove self this way
+                        const canDelete = isCurrentClubAdmin && !isMe;
+                        
+                        let adminActions = '';
+                        if (canDelete) {
+                            adminActions += `<button onclick="removeClubMember('${clubId}', '${m.user_id}')" title="Xóa" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 font-bold border border-red-100">Xoá</button>`;
+                            
+                            // Let admin promote/demote parents
+                            if (m.user_global_role === 'PARENT') {
+                                if (m.role === 'MEMBER') {
+                                    adminActions += `<button onclick="changeClubRole('${clubId}', '${m.user_id}', 'ADMIN')" title="Thăng cấp Admin" class="ml-2 text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-100 font-bold border border-yellow-200">👑 Thăng cấp</button>`;
+                                } else if (m.role === 'ADMIN') {
+                                    adminActions += `<button onclick="changeClubRole('${clubId}', '${m.user_id}', 'MEMBER')" title="Giáng cấp xuống Member" class="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200 font-bold border border-gray-200">⬇️ Giáng cấp</button>`;
+                                }
+                            }
+                        }
+                        
+                        return `
+                            <tr class="${isMe ? 'bg-yellow-50' : 'hover:bg-gray-50'}">
+                                <td class="py-3 text-center text-xl">${rank}</td>
+                                <td class="py-3">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${m.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+m.display_name}" class="w-8 h-8 rounded-full border border-gray-200">
+                                        <div>
+                                            <span class="font-bold text-gray-800 text-sm">${m.display_name} ${isMe ? '(Bạn)' : ''}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-center">${roleBadge}</td>
+                                <td class="py-3 text-right font-black text-blue-600">${m.total_earned_score}</td>
+                                <td class="py-3 text-center">
+                                    ${adminActions}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+                
+                // Load tasks for this club
+                loadClubTasks(clubId);
+                
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-6">Không có quyền xem hoặc lỗi.</td></tr>`;
+            }
+        }
+
+        async function changeClubRole(clubId, userId, newRole) {
+            if(!confirm(`Xác nhận ${newRole === 'ADMIN' ? 'thăng cấp' : 'giáng cấp'} người này?`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/members/${userId}/role`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_role: newRole })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Lỗi cập nhật quyền');
+                
+                openClubDetail(clubId, document.getElementById('lb-club-name').innerText.replace('Thông tin nhóm: ', ''));
+            } catch (e) {
+                alert('❌ Lỗi: ' + e.message);
+            }
+        }
+
+        // --- Invite Logic ---
+        function showInviteModal() {
+            document.getElementById('invite-parent-modal').classList.remove('hidden-section');
+            document.getElementById('invite-search-input').value = '';
+            document.getElementById('invite-search-results').innerHTML = '<p class="text-gray-400 py-6 text-center text-sm">Gõ tên tìm kiếm để mời vào nhóm...</p>';
+            setTimeout(() => document.getElementById('invite-search-input').focus(), 100);
+        }
+
+        async function searchUsersForInvite() {
+            const query = document.getElementById('invite-search-input').value.trim();
+            const container = document.getElementById('invite-search-results');
+            if (query.length < 2) {
+                container.innerHTML = '<p class="text-gray-400 py-6 text-center text-sm">Vui lòng nhập ít nhất 2 ký tự.</p>';
+                return;
+            }
+            container.innerHTML = '<p class="text-gray-500 py-6 text-center text-sm">Đang tìm kiếm...</p>';
+            try {
+                const res = await fetch(`${API_BASE}/users/search?q=${encodeURIComponent(query)}`);
+                if (!res.ok) throw new Error('Failed to search users');
+                const users = await res.json();
+
+                if (users.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 py-6 text-center text-sm">Không tìm thấy tài khoản Phụ huynh nào.</p>';
+                    return;
+                }
+
+                container.innerHTML = users.map(user => `
+                    <div class="px-4 py-3 hover:bg-blue-50 flex items-center justify-between transition-colors">
+                        <div class="flex items-center gap-3">
+                            <img src="${user.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.display_name}" class="w-10 h-10 rounded-full border border-gray-200 bg-white">
+                            <div>
+                                <p class="font-bold text-gray-800">${user.display_name}</p>
+                                <p class="text-xs text-gray-500">@${user.username}</p>
+                            </div>
+                        </div>
+                        <button onclick="inviteUserToClub('${user.id}')" class="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-sm transition-colors">Mời</button>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-500 py-6 text-center text-sm">Đã có lỗi xảy ra.</p>';
+            }
+        }
+
+        async function inviteUserToClub(userId) {
+            if (!currentOpenedClubId) return;
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${currentOpenedClubId}/invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, role: 'MEMBER' })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Lỗi gửi lời mời');
+                
+                alert('✅ Đã gửi lời mời thành công!');
+                closeModal('invite-parent-modal');
+            } catch (e) {
+                alert('❌ Lỗi: ' + e.message);
+            }
+        }
+
+        function closeClubDetail() {
+            document.getElementById('club-detail-section').classList.add('hidden-section');
+            document.getElementById('clubs-grid').classList.remove('hidden-section');
+            currentOpenedClubId = null;
+            isCurrentClubAdmin = false;
+        }
+
+        async function removeClubMember(clubId, userId) {
+            if(!confirm("Xác nhận xóa thành viên này khỏi nhóm?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/members/${userId}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Không thể xóa');
+                }
+                openClubDetail(clubId, document.getElementById('lb-club-name').innerText.replace('Thông tin nhóm: ', '')); // Refresh
+            } catch (e) {
+                alert('❌ Lỗi: ' + e.message);
+            }
+        }
+
+        // --- Club Tasks Logic ---
+        let clubTasksData = [];
+
+        async function loadClubTasks(clubId) {
+            const container = document.getElementById('club-tasks-list');
+            container.innerHTML = '<p class="text-gray-500 py-6 text-center text-sm">Đang tải nhiệm vụ...</p>';
+            
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/tasks`);
+                if(!res.ok) throw new Error("Failed to load tasks");
+                const tasks = await res.json();
+                clubTasksData = tasks;
+                
+                if(tasks.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 py-6 text-center text-sm italic">Oa, Nhóm này chưa có nhiệm vụ nào cả!</p>';
+                    return;
+                }
+
+                container.innerHTML = tasks.map(t => {
+                    const isActive = t.is_active;
+                    const dueBadge = t.due_date ? `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-bold ml-2">⏳ ${new Date(t.due_date).toLocaleDateString('vi-VN')}</span>` : '';
+                    const opacityClass = isActive ? '' : 'opacity-60 grayscale';
+                    
+                    let adminButtons = '';
+                    if (isCurrentClubAdmin) {
+                        adminButtons = `
+                            <div class="flex flex-col gap-1 sm:flex-row mt-2 sm:mt-0">
+                                <button onclick="showEditClubTaskModal('${t.id}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg transition-colors border border-gray-200">Sửa</button>
+                                <button onclick="deleteClubTask('${clubId}', '${t.id}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg transition-colors border border-red-100">Xóa</button>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-all ${opacityClass} ${isActive ? 'border-yellow-200' : 'border-gray-200'}">
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
+                                <div>
+                                    <div class="flex items-center mb-1">
+                                        <h4 class="font-bold text-gray-800 ${!isActive ? 'line-through text-gray-400' : ''}">${t.name}</h4>
+                                        ${dueBadge}
+                                        ${!isActive ? '<span class="ml-2 bg-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded-md font-bold">Bị khóa</span>' : ''}
+                                    </div>
+                                    ${t.description ? `<p class="text-xs text-gray-500 mb-2 leading-relaxed whitespace-pre-wrap">${t.description}</p>` : ''}
+                                    <div class="inline-flex items-center text-xs font-black text-white bg-gradient-to-r from-yellow-400 to-orange-400 px-3 py-1 rounded-full shadow-sm mt-1">
+                                        💎 +${t.points_reward} XP
+                                    </div>
+                                </div>
+                                ${adminButtons}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch(e) {
+                container.innerHTML = '<p class="text-red-500 py-6 text-center text-sm">Lỗi kết nối khi tải nhiệm vụ.</p>';
+            }
+        }
+
+        function showCreateClubTaskModal() {
+            document.getElementById('create-club-task-modal').classList.remove('hidden-section');
+            document.getElementById('club-task-form').reset();
+            setTimeout(()=>document.getElementById('club-task-name').focus(), 100);
+        }
+
+        async function createClubTask(event) {
+            event.preventDefault();
+            if(!currentOpenedClubId) return;
+            
+            const payload = {
+                name: document.getElementById('club-task-name').value,
+                description: document.getElementById('club-task-desc').value || null,
+                points_reward: parseInt(document.getElementById('club-task-points').value),
+                is_active: true
+            };
+            
+            const due = document.getElementById('club-task-due').value;
+            if(due) {
+                payload.due_date = new Date(due).toISOString();
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${currentOpenedClubId}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Lỗi tạo task');
+                }
+                closeModal('create-club-task-modal');
+                loadClubTasks(currentOpenedClubId);
+            } catch(e) {
+                alert("❌ Lỗi: " + e.message);
+            }
+        }
+
+        function showEditClubTaskModal(taskId) {
+            const task = clubTasksData.find(t => t.id === taskId);
+            if(!task) return;
+            
+            document.getElementById('edit-club-task-id').value = task.id;
+            document.getElementById('edit-club-task-name').value = task.name;
+            document.getElementById('edit-club-task-desc').value = task.description || '';
+            document.getElementById('edit-club-task-points').value = task.points_reward;
+            document.getElementById('edit-club-task-active').checked = task.is_active;
+            
+            if(task.due_date) {
+                // Ensure correct date format for input[type="date"]
+                document.getElementById('edit-club-task-due').value = new Date(task.due_date).toISOString().split('T')[0];
+            } else {
+                document.getElementById('edit-club-task-due').value = '';
+            }
+            
+            document.getElementById('edit-club-task-modal').classList.remove('hidden-section');
+        }
+
+        async function updateClubTask(event) {
+            event.preventDefault();
+            if(!currentOpenedClubId) return;
+            const taskId = document.getElementById('edit-club-task-id').value;
+            
+            const payload = {
+                name: document.getElementById('edit-club-task-name').value,
+                description: document.getElementById('edit-club-task-desc').value || null,
+                points_reward: parseInt(document.getElementById('edit-club-task-points').value),
+                is_active: document.getElementById('edit-club-task-active').checked
+            };
+            
+            const due = document.getElementById('edit-club-task-due').value;
+            if(due) {
+                payload.due_date = new Date(due).toISOString();
+            } else {
+                payload.due_date = null;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${currentOpenedClubId}/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Lỗi cập nhật');
+                }
+                closeModal('edit-club-task-modal');
+                loadClubTasks(currentOpenedClubId);
+            } catch(e) {
+                alert("❌ Lỗi: " + e.message);
+            }
+        }
+
+        async function deleteClubTask(clubId, taskId) {
+            if(!confirm("⚠️ Hành động này sẽ khóa (xoá tạm thời) nhiệm vụ để bé không thấy nữa. \nBạn có chắc chắn?")) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/tasks/${taskId}`, {
+                    method: 'DELETE'
+                });
+                if(!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Lỗi xoá tác vụ');
+                }
+                loadClubTasks(clubId);
+            } catch(e) {
+                alert("❌ Lỗi: " + e.message);
+            }
+        }
 
         // --- Utils ---
         function getIcon(name) {
@@ -1261,7 +2091,7 @@
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal'];
+            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal', 'create-club-modal', 'join-club-modal'];
             modals.forEach(id => {
                 const modal = document.getElementById(id);
                 if (event.target == modal) {
@@ -1280,15 +2110,18 @@
 
         async function fetchCurrentUser() {
             try {
-                const response = await fetch(`${API_BASE}/users/me`);
-                if (response.ok) {
-                    const me = await response.json();
+                console.debug('[fetchCurrentUser] calling', `${API_BASE}/users/me`);
+                const response = await fetchJsonSafe(`${API_BASE}/users/me`);
+                if (response && response.id) {
+                    const me = response;
+                    currentUserId = me.id;
                     document.getElementById('current-user').textContent = me.display_name + " (Quản trị)";
                 } else {
                     document.getElementById('current-user').textContent = "Bố/Mẹ (Quản trị viên)";
                 }
             } catch (error) {
-                console.error(error);
+                console.error('[fetchCurrentUser] error', error);
+                document.getElementById('current-user').textContent = "Bố/Mẹ (Quản trị viên)";
             }
         }
 
@@ -1301,9 +2134,168 @@
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchCurrentUser();
-            loadOverview();
+            try {
+                console.debug('[DOMContentLoaded] init parent dashboard');
+                fetchCurrentUser();
+                loadOverview();
+            } catch(e) {
+                console.error('[DOMContentLoaded] initialization error', e);
+            }
         });
+        // Notifications Logic
+        let isNotificationOpen = false;
+        let currentNotifications = [];
+
+        async function fetchNotifications() {
+            try {
+                const res = await fetch(`${API_BASE}/notifications`);
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                const badge = document.getElementById('notification-badge');
+                if (data.unread_count > 0) {
+                    badge.innerText = data.unread_count > 9 ? '9+' : data.unread_count;
+                    badge.classList.remove('hidden-section');
+                } else {
+                    badge.classList.add('hidden-section');
+                }
+                
+                currentNotifications = data.items;
+                renderNotifications(data.items);
+            } catch(e) {
+                console.error("Failed to load notifications");
+            }
+        }
+
+        function toggleNotificationDropdown() {
+            isNotificationOpen = !isNotificationOpen;
+            const dropdown = document.getElementById('notification-dropdown');
+            if(isNotificationOpen) {
+                dropdown.classList.remove('hidden-section');
+                fetchNotifications();
+            } else {
+                dropdown.classList.add('hidden-section');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const bell = document.getElementById('notification-bell');
+            if (bell && !bell.contains(event.target) && isNotificationOpen) {
+                toggleNotificationDropdown();
+            }
+        });
+
+        function renderNotifications(items) {
+            const list = document.getElementById('notification-list');
+            if(items.length === 0) {
+                list.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Bạn không có thông báo nào</div>';
+                return;
+            }
+            
+            list.innerHTML = items.map(n => {
+                const isUnread = !n.is_read;
+                const bgClass = isUnread ? 'bg-blue-50/40' : 'bg-white';
+                const dotClass = isUnread ? '<div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>' : '<div class="w-2 h-2 flex-shrink-0"></div>';
+
+                
+                let actionHtml = '';
+                if (n.action_data && n.action_data.show_club_approve_modal) {
+                    actionHtml = `<div class="mt-2 text-xs font-bold text-blue-600 block">Bấm để xem chi tiết 👉</div>`;
+                }
+
+                return `
+                <div class="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-l-4 ${isUnread ? 'border-blue-500' : 'border-transparent'} ${bgClass}" onclick="handleNotificationClick('${n.id}')">
+                    <div class="flex gap-3">
+                        ${dotClass}
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-gray-800">${n.title}</h4>
+                            <p class="text-[13px] text-gray-600 mt-1 leading-relaxed">${n.content}</p>
+                            <span class="text-[10px] text-gray-400 mt-2 block">${new Date(n.created_at).toLocaleString('vi-VN')}</span>
+                            ${actionHtml}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function handleNotificationClick(id) {
+            const n = currentNotifications.find(x => x.id === id);
+            if(!n) return;
+            
+            // Mark read
+            if (!n.is_read) {
+                await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
+                n.is_read = true;
+                renderNotifications(currentNotifications);
+                
+                const badge = document.getElementById('notification-badge');
+                let curCount = parseInt(badge.innerText) || 0;
+                if (curCount > 0) curCount--;
+                if(curCount > 0) {
+                    badge.innerText = curCount;
+                } else {
+                    badge.classList.add('hidden-section');
+                }
+            }
+            
+            toggleNotificationDropdown(); // Close dropdown
+            
+            // Execute navigation
+            if (n.action_data?.tab) {
+                switchTab(n.action_data.tab);
+            }
+            
+            // Execute specific actions based on metadata
+            if (n.action_data?.show_club_approve_modal) {
+                document.getElementById('cam-club-id').value = n.action_data.club_id;
+                document.getElementById('cam-invitation-id').value = n.action_data.invitation_id;
+                document.getElementById('cam-notif-id').value = n.id;
+                document.getElementById('cam-kid-name').innerText = n.action_data.kid_name || '...';
+                document.getElementById('cam-club-name').innerText = n.action_data.club_name || '...';
+                document.getElementById('club-approve-modal').classList.remove('hidden-section');
+            }
+        }
+
+        async function markNotificationRead(id) {
+            try {
+                await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
+                fetchNotifications();
+            } catch(e){}
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await fetch(`${API_BASE}/notifications/read-all`, { method: 'PUT' });
+                fetchNotifications();
+            } catch(e){}
+        }
+
+        async function respondClubNotice(clubId, invitationId, action, notifId) {
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/invitations/${invitationId}/respond`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Lỗi thao tác');
+                
+                alert(`✅ Đã ${action === 'ACCEPT' ? 'Duyệt' : 'Từ chối'} thành công!`);
+                closeModal('club-approve-modal');
+                
+                // Nếu đang mở tab Club, reload
+                if(currentTab === 'clubs' && currentOpenedClubId === clubId) {
+                    openClubDetail(clubId, document.getElementById('lb-club-name').innerText.replace('Thông tin nhóm: ', ''));
+                }
+
+            } catch (e) {
+                alert('❌ Lỗi: ' + e.message);
+            }
+        }
+
+        // Initialize polling and fetching
+        setInterval(fetchNotifications, 30000);
     </script>
 </body>
 </html>
+

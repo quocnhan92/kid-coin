@@ -50,5 +50,5 @@ class User(Base):
     logs = relationship("TaskLog", back_populates="kid")
     redemption_logs = relationship("RedemptionLog", back_populates="kid")
     transactions = relationship("Transaction", back_populates="kid")
-    club_memberships = relationship("ClubMember", back_populates="kid")
+    club_memberships = relationship("ClubMember", back_populates="user", cascade="all, delete-orphan") # Updated back_populates to user
     audit_logs = relationship("AuditLog", back_populates="user")

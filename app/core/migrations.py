@@ -95,4 +95,48 @@ def run_migrations():
                  conn.execute(text("ALTER TABLE audit_logs ADD COLUMN device_info JSON"))
                  conn.commit()
 
+        # Check clubs table
+        if inspector.has_table("clubs"):
+            columns = [col['name'] for col in inspector.get_columns("clubs")]
+            if "description" not in columns:
+                logger.info("Adding 'description' to 'clubs' table...")
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN description VARCHAR(500)"))
+                conn.commit()
+            if "updated_at" not in columns:
+                logger.info("Adding 'updated_at' to 'clubs' table...")
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE"))
+                conn.commit()
+            if "deleted_at" not in columns:
+                logger.info("Adding 'deleted_at' to 'clubs' table...")
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE"))
+                conn.commit()
+
+        # Check club_members table
+        if inspector.has_table("club_members"):
+            columns = [col['name'] for col in inspector.get_columns("club_members")]
+            if "updated_at" not in columns:
+                logger.info("Adding 'updated_at' to 'club_members' table...")
+                conn.execute(text("ALTER TABLE club_members ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE"))
+                conn.commit()
+
+        # Check club_invitations table
+        if inspector.has_table("club_invitations"):
+            columns = [col['name'] for col in inspector.get_columns("club_invitations")]
+            if "updated_at" not in columns:
+                logger.info("Adding 'updated_at' to 'club_invitations' table...")
+                conn.execute(text("ALTER TABLE club_invitations ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE"))
+                conn.commit()
+
+        # Check club_tasks table
+        if inspector.has_table("club_tasks"):
+            columns = [col['name'] for col in inspector.get_columns("club_tasks")]
+            if "description" not in columns:
+                logger.info("Adding 'description' to 'club_tasks' table...")
+                conn.execute(text("ALTER TABLE club_tasks ADD COLUMN description VARCHAR(500)"))
+                conn.commit()
+            if "due_date" not in columns:
+                logger.info("Adding 'due_date' to 'club_tasks' table...")
+                conn.execute(text("ALTER TABLE club_tasks ADD COLUMN due_date TIMESTAMP WITH TIME ZONE"))
+                conn.commit()
+
     logger.info("Custom DB migrations completed.")

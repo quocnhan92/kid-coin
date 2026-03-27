@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidCoin - Làm Việc Tốt</title>
+    <title>KidCoin - Bé Làm Việc Tốt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
@@ -19,7 +19,7 @@
     <div class="bg-white w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-yellow-400">
 
         <!-- Header -->
-        <div class="bg-yellow-300 px-6 py-6 border-b-4 border-yellow-400 shadow-sm flex justify-between items-center z-10 rounded-b-3xl">
+        <div class="bg-yellow-300 px-6 py-6 border-b-4 border-yellow-400 shadow-sm flex justify-between items-center z-40 rounded-b-3xl relative">
             <div>
                 <h1 class="text-2xl font-extrabold text-yellow-900 drop-shadow-sm flex items-center gap-2">
                     Chào <span id="kid-name-header">...</span>! 
@@ -31,9 +31,28 @@
                     <span class="text-xs font-bold text-yellow-800">Xu</span>
                 </div>
             </div>
-            <div class="relative cursor-pointer" onclick="showProfileModal()">
-                <img id="kid-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full border-4 border-white bg-yellow-100 shadow-md">
-                <div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow">✏️</div>
+            <div class="flex items-center gap-4">
+                <!-- Notifications Bell -->
+                <div class="relative cursor-pointer" onclick="toggleKidNotificationDropdown()" id="kid-notification-bell">
+                    <span class="text-3xl hover:opacity-80 transition-opacity block filter drop-shadow-sm">🔔</span>
+                    <span id="kid-notification-badge" class="hidden-section absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
+                    
+                    <!-- Dropdown -->
+                    <div id="kid-notification-dropdown" class="hidden-section absolute right-0 mt-3 w-[280px] sm:w-[320px] bg-white border-4 border-yellow-400 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
+                        <div class="p-3 border-b-2 border-yellow-100 flex justify-between items-center bg-yellow-50">
+                            <h3 class="font-black text-yellow-900 text-sm">Hòm thư nhỏ 📬</h3>
+                            <button onclick="event.stopPropagation(); markAllKidNotificationsRead()" class="text-[10px] text-yellow-700 font-bold bg-yellow-200 px-2 py-1 rounded-full hover:bg-yellow-300">Đã xem hết</button>
+                        </div>
+                        <div id="kid-notification-list" class="max-h-[300px] overflow-y-auto divide-y divide-gray-100">
+                            <div class="p-6 text-center text-gray-400 text-sm font-bold">Đang xem thư...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative cursor-pointer" onclick="showProfileModal()">
+                    <img id="kid-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full border-4 border-white bg-yellow-100 shadow-md">
+                    <div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow">✏️</div>
+                </div>
             </div>
         </div>
 
@@ -44,7 +63,6 @@
             <div id="tab-quests" class="tab-content active space-y-4">
                 <h2 class="text-lg font-black text-yellow-800 mb-2 uppercase tracking-wide">Việc hôm nay 📅</h2>
                 <div id="quest-list" class="space-y-3">
-                    <!-- Dynamic Quests Here -->
                     <div class="text-center text-gray-400 py-10">Đang tải nhiệm vụ...</div>
                 </div>
             </div>
@@ -53,7 +71,24 @@
             <div id="tab-shop" class="tab-content space-y-4">
                 <h2 class="text-lg font-black text-purple-800 mb-2 uppercase tracking-wide">Đổi Quà 🎁</h2>
                 <div id="shop-list" class="grid grid-cols-2 gap-3">
-                    <!-- Dynamic Rewards Here -->
+                </div>
+            </div>
+            
+            <!-- Tab: Clubs (Thi đua) -->
+            <div id="tab-clubs" class="tab-content space-y-4">
+                <h2 class="text-lg font-black text-blue-800 mb-2 uppercase tracking-wide">Bảng xếp hạng 🏆</h2>
+                <div id="club-list" class="space-y-3">
+                    <div class="text-center text-gray-400 py-10">Đang tải nhóm...</div>
+                </div>
+                
+                <div id="club-detail" class="hidden-section">
+                    <button onclick="hideClubDetail()" class="text-blue-600 font-bold mb-4">⬅️ Quay lại danh sách</button>
+                    <h3 id="club-detail-name" class="text-xl font-black text-blue-900 mb-4 text-center">...</h3>
+                    <div class="bg-white rounded-2xl shadow-sm border border-blue-200 overflow-hidden">
+                        <div id="leaderboard-list" class="divide-y divide-blue-50">
+                            <!-- Leaderboard here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -61,18 +96,22 @@
 
         <!-- Bottom Navigation -->
         <div class="absolute bottom-0 w-full bg-white border-t-4 border-yellow-200 flex justify-around p-3 pb-6 rounded-t-3xl z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
-            <button onclick="switchTab('quests')" id="btn-quests" class="nav-btn text-yellow-600 flex flex-col items-center w-1/2 transform transition hover:scale-105">
+            <button onclick="switchTab('quests')" id="btn-quests" class="nav-btn text-yellow-600 flex flex-col items-center w-1/3 transform transition hover:scale-105">
                 <span class="text-4xl mb-1 filter drop-shadow-md">📝</span>
                 <span class="text-sm font-black">Nhiệm Vụ</span>
             </button>
-            <button onclick="switchTab('shop')" id="btn-shop" class="nav-btn text-gray-400 flex flex-col items-center w-1/2 transform transition hover:scale-105">
+            <button onclick="switchTab('shop')" id="btn-shop" class="nav-btn text-gray-400 flex flex-col items-center w-1/3 transform transition hover:scale-105">
                 <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🛒</span>
                 <span class="text-sm font-black">Cửa Hàng</span>
             </button>
-            <!-- Parent Return Button (only visible if role is PARENT) -->
-            <a href="/parent" id="btn-return-parent" class="hidden-section nav-btn text-blue-600 flex flex-col items-center w-1/3 transform transition hover:scale-105">
-                <span class="text-4xl mb-1 filter drop-shadow-md">⚙️</span>
-                <span class="text-sm font-black">Quản lý</span>
+            <button onclick="switchTab('clubs')" id="btn-clubs" class="nav-btn text-gray-400 flex flex-col items-center w-1/3 transform transition hover:scale-105">
+                <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🏆</span>
+                <span class="text-sm font-black">Thi Đua</span>
+            </button>
+            
+            <!-- Parent Return Button -->
+            <a href="/parent" id="btn-return-parent" class="hidden-section absolute -top-12 right-4 bg-gray-800 text-white rounded-full px-4 py-2 text-xs font-bold shadow-lg border-2 border-gray-600 hover:bg-gray-700">
+                ⚙️ Quản lý
             </a>
         </div>
 
@@ -110,6 +149,27 @@
         </div>
     </div>
 
+    <!-- Modal: Praise (Khen ngợi) -->
+    <div id="praise-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-[60] p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm border-4 border-green-400 relative overflow-hidden transform scale-100 transition-all duration-300">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none"></div>
+            <h2 id="praise-title" class="text-2xl font-black text-green-700 mb-2 text-center animate-bounce">Tuyệt vời! 🎉</h2>
+            
+            <div class="flex flex-col items-center my-6 space-y-4">
+                <div class="text-6xl" id="praise-icon">🌟</div>
+                <div class="bg-green-50 rounded-2xl p-4 border-2 border-green-200 shadow-inner w-full">
+                    <p id="praise-comment" class="text-center font-bold text-green-800 text-lg italic tracking-wide">"Good job!"</p>
+                </div>
+                
+                <div id="praise-points-box" class="bg-yellow-100 px-6 py-2 rounded-full border-2 border-yellow-400 shadow-md">
+                    <span class="text-yellow-600 font-extrabold text-xl">+<span id="praise-points">0</span> Xu</span>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeModal('praise-modal')" class="w-full py-3 bg-green-500 text-white font-black rounded-xl hover:bg-green-600 shadow-lg transform active:scale-95 text-lg">Yeahhh!</button>
+        </div>
+    </div>
+
     <!-- Overlay Loading -->
     <div id="loading-overlay" class="hidden-section fixed inset-0 bg-black/60 flex flex-col justify-center items-center z-[60]">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-yellow-400 mb-4"></div>
@@ -119,6 +179,7 @@
     <script>
         const API_BASE = '/api/v1';
         let pendingTaskUpload = null;
+        let currentUserId = null;
 
         // --- Logic ---
 
@@ -140,6 +201,7 @@
                 if (!response.ok) throw new Error('Failed to fetch user info');
                 const me = await response.json();
                 
+                currentUserId = me.id;
                 document.getElementById('coin-balance').innerText = me.current_coin;
                 
                 // Update kid name/avatar
@@ -157,11 +219,6 @@
                 // Show return button if parent
                 if (me.role === 'PARENT') {
                     document.getElementById('btn-return-parent').classList.remove('hidden-section');
-                    // Adjust widths
-                    document.getElementById('btn-quests').classList.remove('w-1/2');
-                    document.getElementById('btn-quests').classList.add('w-1/3');
-                    document.getElementById('btn-shop').classList.remove('w-1/2');
-                    document.getElementById('btn-shop').classList.add('w-1/3');
                 }
             } catch (error) {
                 console.error(error);
@@ -187,7 +244,6 @@
                 
                 let actionArea = '';
                 
-                // Trạng thái: Chưa làm hoặc Bị từ chối
                 if (!quest.status || isRejected) {
                     let reqText = quest.verification_type === 'Tự động duyệt' ? '⚡ Bấm là có điểm' : 
                                   quest.verification_type === 'Bố mẹ kiểm tra trực tiếp' ? '👀 Cần người ktra' : '📸 Cần chụp ảnh';
@@ -206,7 +262,6 @@
                     actionArea = `<div class="w-full text-right"><span class="text-green-500 font-bold text-sm bg-green-50 px-3 py-1 rounded-full border border-green-200">✅ Hoàn thành xuất sắc</span></div>`;
                 }
 
-                // Add comment section if exists
                 let commentHtml = '';
                 if (quest.parent_comment) {
                     if (isRejected) {
@@ -242,7 +297,6 @@
                 input.value = ''; // clear old
                 input.click(); // Mở camera
             } else {
-                // Tự động duyệt hoặc Bố mẹ ktra trực tiếp -> Không cần ảnh
                 submitTask(taskId, taskName, null, verificationType);
             }
         }
@@ -282,7 +336,6 @@
                         const attemptCompress = () => {
                             canvas.toBlob((blob) => {
                                 if (blob.size > targetSize && quality > 0.2) {
-                                    console.log(`Size ${blob.size} too large, reducing quality to ${quality - 0.15}`);
                                     quality -= 0.15;
                                     attemptCompress();
                                 } else {
@@ -355,6 +408,7 @@
             }
         }
 
+        // --- Shop Actions ---
         async function fetchRewards() {
             try {
                 const response = await fetch(`${API_BASE}/rewards/`);
@@ -414,7 +468,6 @@
                 const result = await response.json();
                 alert(`Đổi thành công! Nhớ nhắc người duyệt đưa quà nhé! 🎁\nSố dư mới: ${result.new_balance} Xu`);
                 
-                // Update Balance UI
                 document.getElementById('coin-balance').innerText = result.new_balance;
                 document.getElementById('coin-balance').parentElement.classList.add('coin-pop');
                 setTimeout(() => document.getElementById('coin-balance').parentElement.classList.remove('coin-pop'), 300);
@@ -422,6 +475,96 @@
             } catch (error) {
                 alert(error.message);
             }
+        }
+
+        // --- Club Actions ---
+        async function fetchClubs() {
+            try {
+                const response = await fetch(`${API_BASE}/clubs/me`);
+                if (!response.ok) throw new Error('Failed to fetch clubs');
+                const clubs = await response.json();
+                
+                const container = document.getElementById('club-list');
+                container.innerHTML = '';
+                
+                if (clubs.length === 0) {
+                     container.innerHTML = '<div class="text-center text-gray-500 mt-10">Bạn chưa tham gia nhóm nào. 🏁</div>';
+                     return;
+                }
+
+                clubs.forEach(club => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-2xl shadow-md border-2 border-blue-100 flex justify-between items-center cursor-pointer hover:bg-blue-50 transition-colors";
+                    card.onclick = () => loadClubDetail(club.id, club.name);
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl">🏅</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">${club.name}</h3>
+                                <p class="text-xs text-gray-500">Mã mời: <span class="font-bold font-mono text-gray-800 tracking-widest">${club.invite_code}</span></p>
+                            </div>
+                        </div>
+                        <div class="text-blue-500 font-bold text-xl">❯</div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error(error);
+                document.getElementById('club-list').innerHTML = '<div class="text-center text-red-500 font-bold">Lỗi tải dữ liệu!</div>';
+            }
+        }
+
+        async function loadClubDetail(clubId, clubName) {
+            document.getElementById('club-list').classList.add('hidden-section');
+            document.getElementById('club-detail').classList.remove('hidden-section');
+            document.getElementById('club-detail-name').innerText = clubName;
+            
+            const tbody = document.getElementById('leaderboard-list');
+            tbody.innerHTML = '<div class="text-center text-gray-500 py-6">Đang tải bảng xếp hạng...</div>';
+            
+            try {
+                const res = await fetch(`${API_BASE}/clubs/${clubId}/leaderboard`);
+                if(!res.ok) throw new Error("Failed to fetch leaderboard");
+                const data = await res.json();
+                
+                if(data.members.length === 0) {
+                    tbody.innerHTML = '<div class="text-center text-gray-500 py-6">Nhóm chưa có ai.</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.members.forEach((m, index) => {
+                    let rankIcon = `<span class="font-black text-gray-400 w-6 inline-block text-center">${index + 1}</span>`;
+                    if (index === 0) rankIcon = '🥇';
+                    if (index === 1) rankIcon = '🥈';
+                    if (index === 2) rankIcon = '🥉';
+                    
+                    const isMe = m.kid_id === currentUserId;
+                    
+                    html += `
+                        <div class="flex items-center justify-between p-4 ${isMe ? 'bg-yellow-50' : 'hover:bg-gray-50'}">
+                            <div class="flex items-center gap-3">
+                                <div class="text-2xl w-8 text-center">${rankIcon}</div>
+                                <img src="${m.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+m.display_name}" class="w-10 h-10 rounded-full border-2 ${isMe ? 'border-yellow-400' : 'border-white'} shadow-sm">
+                                <p class="font-bold ${isMe ? 'text-yellow-800' : 'text-gray-800'} text-sm sm:text-base">${m.display_name} ${isMe ? '(Bạn)' : ''}</p>
+                            </div>
+                            <div class="text-blue-600 font-black flex flex-col items-end">
+                                <span>${m.total_earned_score}</span>
+                                <span class="text-[10px] uppercase tracking-wider font-bold opacity-70">XP</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                tbody.innerHTML = html;
+                
+            } catch (e) {
+                tbody.innerHTML = `<div class="text-center text-red-500 py-6">${e.message}</div>`;
+            }
+        }
+
+        function hideClubDetail() {
+            document.getElementById('club-detail').classList.add('hidden-section');
+            document.getElementById('club-list').classList.remove('hidden-section');
         }
 
         // --- Profile Update ---
@@ -450,7 +593,7 @@
                 img.className = `w-14 h-14 rounded-full cursor-pointer border-4 transition-all ${isSelected ? 'border-yellow-500 scale-110 shadow-md' : 'border-transparent hover:border-yellow-200'}`;
                 img.onclick = () => {
                     document.getElementById('selected-avatar').value = url;
-                    renderAvatarGrid(); // re-render to update borders
+                    renderAvatarGrid();
                 };
                 grid.appendChild(img);
             });
@@ -458,9 +601,7 @@
 
         async function updateProfile(event) {
             event.preventDefault();
-            // Name is disabled, so we only update avatar
             const avatarUrl = document.getElementById('selected-avatar').value;
-
             try {
                 const res = await fetch(`${API_BASE}/users/me`, {
                     method: 'PUT',
@@ -472,29 +613,21 @@
                 
                 alert("Đổi ảnh thành công! ✨");
                 closeModal('profile-modal');
-                fetchMe(); // Refresh data
-
+                fetchMe();
             } catch(e) {
                 alert(e.message);
             }
         }
 
-
         function getIcon(name) {
+            const firstChar = name.trim().charAt(0);
+            const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
+            if (emojiRegex.test(name)) return ''; 
+
             const map = {
-                'Đánh răng': '🪥',
-                'Gấp chăn': '🛏️',
-                'Học bài': '📚',
-                'Toán': '📐',
-                'Rửa bát': '🍽️',
-                'Quét': '🧹',
-                'Chơi': '🎮',
-                'Kẹo': '🍬',
-                'TV': '📺',
-                'Kem': '🍦',
-                'Đi': '🚶',
-                'Ngủ': '😴',
-                'Sách': '📖'
+                'Đánh răng': '🪥', 'Gấp chăn': '🛏️', 'Học': '📚', 'Toán': '📐',
+                'Rửa': '🍽️', 'Quét': '🧹', 'Chơi': '🎮', 'Kẹo': '🍬',
+                'TV': '📺', 'Kem': '🍦', 'Đi': '🚶', 'Ngủ': '😴', 'Sách': '📖'
             };
             for (const key in map) {
                 if (name.includes(key)) return map[key];
@@ -519,11 +652,177 @@
             }
             
             if (tabId === 'shop') fetchRewards();
+            if (tabId === 'clubs') {
+                hideClubDetail();
+                fetchClubs();
+            }
+        }
+
+        // --- Notifications ---
+        let isKidNotifOpen = false;
+        let currentKidNotifications = [];
+
+        async function fetchKidNotifications() {
+            try {
+                const res = await fetch(`${API_BASE}/notifications`);
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                const badge = document.getElementById('kid-notification-badge');
+                if (data.unread_count > 0) {
+                    badge.innerText = data.unread_count > 9 ? '9+' : data.unread_count;
+                    badge.badgeCount = data.unread_count;
+                    badge.classList.remove('hidden-section');
+                } else {
+                    badge.classList.add('hidden-section');
+                }
+                
+                currentKidNotifications = data.items;
+                const list = document.getElementById('kid-notification-list');
+                if(data.items.length === 0) {
+                    list.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm font-bold">Hòm thư trống trơn 🧸</div>';
+                    return;
+                }
+                
+                list.innerHTML = data.items.map(n => {
+                    const isUnread = !n.is_read;
+                    const bgClass = isUnread ? 'bg-yellow-50' : 'bg-white';
+                    const icon = isUnread ? '🌟' : '⭐';
+                    
+                    return `
+                    <div class="p-3 hover:bg-yellow-50 cursor-pointer transition-colors ${bgClass}" onclick="handleKidNotificationClick('${n.id}')">
+                        <div class="flex gap-2 items-start">
+                            <div class="text-lg mt-0.5">${icon}</div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-black text-yellow-900">${n.title}</h4>
+                                <p class="text-xs text-gray-600 mt-1 font-medium leading-relaxed">${n.content}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {}
+        }
+
+
+        function toggleKidNotificationDropdown() {
+            isKidNotifOpen = !isKidNotifOpen;
+            const dropdown = document.getElementById('kid-notification-dropdown');
+            if(isKidNotifOpen) {
+                dropdown.classList.remove('hidden-section');
+                fetchKidNotifications();
+            } else {
+                dropdown.classList.add('hidden-section');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const bell = document.getElementById('kid-notification-bell');
+            if (bell && !bell.contains(event.target) && isKidNotifOpen) {
+                toggleKidNotificationDropdown();
+            }
+        });
+
+        async function handleKidNotificationClick(id) {
+            const n = currentKidNotifications.find(x => x.id === id);
+            if(!n) return;
+            
+            // Mark read
+            if (!n.is_read) {
+                await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
+                n.is_read = true;
+                
+                // Update badge locally
+                const badge = document.getElementById('kid-notification-badge');
+                let curCount = badge.badgeCount || 0;
+                if (curCount > 0) curCount--;
+                badge.badgeCount = curCount;
+                if(curCount > 0) {
+                    badge.innerText = curCount > 9 ? '9+' : curCount;
+                } else {
+                    badge.classList.add('hidden-section');
+                }
+                
+                // Re-render list
+                fetchKidNotifications(); // or manual DOM update
+            }
+            
+            toggleKidNotificationDropdown(); // Close dropdown
+            
+            // Execute navigation
+            if (n.action_data?.tab) {
+                switchTab(n.action_data.tab);
+            }
+            
+            // Execute Praise Modal
+            if (n.action_data?.show_praise_modal) {
+                const modal = document.getElementById('praise-modal');
+                const title = document.getElementById('praise-title');
+                const icon = document.getElementById('praise-icon');
+                const commentBox = document.getElementById('praise-comment');
+                const pBox = document.getElementById('praise-points-box');
+                
+                if (n.action_data.status === 'APPROVED') {
+                    modal.classList.remove('border-red-400');
+                    modal.classList.add('border-green-400');
+                    title.innerText = "Tuyệt vời! 🎉";
+                    title.className = "text-2xl font-black text-green-700 mb-2 text-center animate-bounce";
+                    icon.innerText = "🌟";
+                    commentBox.innerText = `"${n.action_data.parent_comment || 'Giỏi lắm!'}"`;
+                    commentBox.parentElement.className = "bg-green-50 rounded-2xl p-4 border-2 border-green-200 shadow-inner w-full";
+                    commentBox.className = "text-center font-bold text-green-800 text-lg italic tracking-wide";
+                    
+                    document.getElementById('praise-points').innerText = n.action_data.points_awarded;
+                    pBox.classList.remove('hidden-section');
+                } else {
+                    modal.classList.remove('border-green-400');
+                    modal.classList.add('border-red-400');
+                    title.innerText = "Cố gắng thêm! 💪";
+                    title.className = "text-2xl font-black text-red-700 mb-2 text-center";
+                    icon.innerText = "👀";
+                    commentBox.innerText = `"${n.action_data.parent_comment || 'Con làm lại nhé!'}"`;
+                    commentBox.parentElement.className = "bg-red-50 rounded-2xl p-4 border-2 border-red-200 shadow-inner w-full";
+                    commentBox.className = "text-center font-bold text-red-800 text-lg italic tracking-wide";
+                    
+                    pBox.classList.add('hidden-section');
+                }
+                
+                modal.classList.remove('hidden-section');
+            }
+            
+            // Display Gift Modal
+            if (n.action_data?.show_delivery_modal) {
+                const modal = document.getElementById('praise-modal');
+                const title = document.getElementById('praise-title');
+                const icon = document.getElementById('praise-icon');
+                const commentBox = document.getElementById('praise-comment');
+                const pBox = document.getElementById('praise-points-box');
+                
+                modal.classList.remove('border-red-400');
+                modal.classList.add('border-purple-400');
+                title.innerText = "Có Quà Nè! 🎁";
+                title.className = "text-2xl font-black text-purple-700 mb-2 text-center animate-bounce";
+                icon.innerText = "🧸";
+                commentBox.innerText = `Bố mẹ đã duyệt đưa quà "${n.action_data.reward_name}" cho con. Xin đi nào!`;
+                commentBox.parentElement.className = "bg-purple-50 rounded-2xl p-4 border-2 border-purple-200 shadow-inner w-full";
+                commentBox.className = "text-center font-bold text-purple-800 text-lg italic tracking-wide";
+                pBox.classList.add('hidden-section');
+                
+                modal.classList.remove('hidden-section');
+            }
+        }
+
+        async function markAllKidNotificationsRead() {
+            try {
+                await fetch(`${API_BASE}/notifications/read-all`, { method: 'PUT' });
+                fetchKidNotifications();
+            } catch(e){}
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchQuests();
             fetchMe();
+            fetchKidNotifications(); // Load right away
+            setInterval(fetchKidNotifications, 30000); // Polling
 
             const proofInput = document.getElementById('proof-image-input');
             proofInput.addEventListener('change', async (event) => {
@@ -531,13 +830,12 @@
                 if (!file || !pendingTaskUpload) return;
 
                 try {
-                    // Truyền File object vào submitTask, hàm submitTask sẽ tự động gọi nén và upload API
                     await submitTask(pendingTaskUpload.taskId, pendingTaskUpload.taskName, file, 'Cần chụp ảnh');
                 } catch (error) {
                     console.error(error);
                     alert(error.message || "Không thể xử lý ảnh.");
                 } finally {
-                    event.target.value = ''; // Reset input
+                    event.target.value = '';
                     pendingTaskUpload = null;
                 }
             });
