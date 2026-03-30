@@ -405,6 +405,7 @@ async def pick_master_task(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to pick task")
+@router.post("/propose-master", response_model=dict)
 async def propose_master_task(
     request: quest_schemas.QuestProposeRequest,
     current_user: User = Depends(deps.get_current_user),

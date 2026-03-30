@@ -855,7 +855,10 @@
                 fetchQuests();
                 fetchMasterSuggestions();
             }
-            if (tabId === 'shop') fetchRewards();
+            if (tabId === 'shop') {
+                fetchRewards();
+                fetchMasterRewardSuggestions();
+            }
             if (tabId === 'clubs') {
                 hideClubDetail();
                 fetchClubs();

@@ -247,7 +247,7 @@ async def propose_master_reward(
                 title="Con ước món quà mới! 🎁",
                 content=f"{current_user.display_name} vừa ước món quà '{master.name}'. Bạn hãy xem và thêm vào cửa hàng nhé!",
                 reference_id=str(master.id),
-                action_data={"tab": "shop", "master_reward_id": master.id, "suggested_name": master.name}
+                action_data={"tab": "rewards", "master_reward_id": master.id, "suggested_name": master.name}
             )
             db.add(notif)
         db.commit()

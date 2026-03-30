@@ -11,6 +11,7 @@ from uuid import UUID
 from app.services.audit import AuditService, AuditStatus
 from app.schemas import reward as reward_schemas
 from app.models.audit import AuditLog
+from app.models.notifications import Notification, NotificationType
 
 router = APIRouter()
 
@@ -811,6 +812,25 @@ async def approve_task(
                 details={"points_awarded": points}
             )
 
+            # Notification to Kid
+            kid_notif = Notification(
+                user_id=kid.id,
+                type=NotificationType.SYSTEM,
+                title="Tuyệt vời quá! 🎉",
+                content=f"Bố/mẹ đã chấm điểm '{task.name}'. Lời khen: {request.comment}",
+                reference_id=str(log.id),
+                action_data={
+                    "tab": "quests", 
+                    "show_praise_modal": True, 
+                    "task_id": str(task.id), 
+                    "points_awarded": points, 
+                    "parent_comment": request.comment, 
+                    "status": "APPROVED",
+                    "task_name": task.name
+                }
+            )
+            db.add(kid_notif)
+
         elif request.action.upper() == "REJECT":
             log.status = TaskStatus.REJECTED
             AuditService.log(
@@ -820,6 +840,25 @@ async def approve_task(
                 resource_id=str(log.id),
                 status=AuditStatus.SUCCESS
             )
+
+            # Notification to Kid
+            task = db.query(FamilyTask).get(log.family_task_id)
+            kid_notif = Notification(
+                user_id=kid.id,
+                type=NotificationType.SYSTEM,
+                title="Cần cố gắng thêm! 💪",
+                content=f"Bố/mẹ chưa duyệt '{task.name}'. Lời nhắn: {request.comment}",
+                reference_id=str(log.id),
+                action_data={
+                    "tab": "quests", 
+                    "show_praise_modal": True, 
+                    "task_id": str(task.id), 
+                    "parent_comment": request.comment, 
+                    "status": "REJECTED",
+                    "task_name": task.name
+                }
+            )
+            db.add(kid_notif)
 
         db.commit()
         return {"status": "success", "action": request.action}
@@ -884,6 +923,18 @@ async def confirm_reward_delivery(
             resource_id=str(log.id),
             status=AuditStatus.SUCCESS
         )
+
+        # Notification to Kid
+        reward = db.query(FamilyReward).get(log.reward_id)
+        kid_notif = Notification(
+            user_id=kid.id,
+            type=NotificationType.SYSTEM,
+            title="Quà đã về! 🎁",
+            content=f"Bố/mẹ đã giao cho bạn món quà '{reward.name}'. Bạn đã nhận được chưa?",
+            reference_id=str(log.id),
+            action_data={"tab": "shop", "show_delivery_modal": True, "reward_name": reward.name}
+        )
+        db.add(kid_notif)
 
         return {"status": "success", "message": "Reward marked as delivered"}
     except Exception as e:

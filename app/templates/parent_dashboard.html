@@ -1463,6 +1463,67 @@
             }
         }
 
+        async function loadPending() {
+            const taskContainer = document.getElementById('pending-tasks-full');
+            const rewardContainer = document.getElementById('pending-rewards-full');
+            
+            taskContainer.innerHTML = '<div class="text-center py-8 text-gray-500">Đang tải nhiệm vụ...</div>';
+            rewardContainer.innerHTML = '<div class="text-center py-8 text-gray-500">Đang tải yêu cầu đổi quà...</div>';
+
+            try {
+                const [tasks, rewards] = await Promise.all([
+                    fetchJsonSafe(`${API_BASE}/parent/pending-tasks`),
+                    fetchJsonSafe(`${API_BASE}/parent/pending-redemptions`)
+                ]);
+
+                // Render Pending Tasks
+                if (tasks.length === 0) {
+                    taskContainer.innerHTML = '<div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 font-medium whitespace-pre-wrap">Hiện không có nhiệm vụ nào chờ duyệt ☕</div>';
+                } else {
+                    taskContainer.innerHTML = tasks.map(t => `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-4 flex-1">
+                                <img src="${t.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + t.kid_name}" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">${t.task_name}</h4>
+                                    <p class="text-xs text-gray-500">Người nộp: <span class="font-bold text-gray-700">${t.kid_name}</span> • ${new Date(t.created_at).toLocaleString('vi-VN')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-yellow-600 font-black text-sm mr-2">+${t.points_reward}</span>
+                                <button onclick="openApproveModal('${t.log_id}', '${t.kid_name}', '${t.task_name}', '${t.kid_avatar}', '${t.proof_image_url}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors">Duyệt ngay</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Render Pending Rewards
+                if (rewards.length === 0) {
+                    rewardContainer.innerHTML = '<div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 font-medium whitespace-pre-wrap">Chưa có yêu cầu đổi quà nào cần giao 🎁</div>';
+                } else {
+                    rewardContainer.innerHTML = rewards.map(r => `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-4 flex-1">
+                                <img src="${r.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r.kid_name}" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">${r.reward_name}</h4>
+                                    <p class="text-xs text-gray-500">Bé đợi nhận: <span class="font-bold text-gray-700">${r.kid_name}</span> • ${new Date(r.created_at).toLocaleString('vi-VN')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-purple-600 font-black text-sm mr-2">-${r.points_cost}</span>
+                                <button onclick="confirmDelivery('${r.redemption_id}')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors">Giao quà</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('Error loading pending:', error);
+                taskContainer.innerHTML = '<div class="text-center text-red-500 font-bold p-4">Lỗi tải dữ liệu!</div>';
+            }
+        }
+
         async function createReward(event) {
             event.preventDefault();
             const icon = document.getElementById('reward-icon').value;

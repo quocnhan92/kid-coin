@@ -183,3 +183,304 @@
 | `app/templates/kid_dashboard.html` | UI Kid | switchTab shop thiếu gọi suggestions |
 | `app/models/tasks_rewards.py` | DB Models | OK |
 | `app/models/logs_transactions.py` | DB Models | CheckConstraint lưu ý ClubTask |
+
+---
+
+## [2026-03-30] ENTRY #6 — Critical Fixes & Logic Consolidation
+
+### Task vừa hoàn thành
+- **FIX BUG-01**: Khôi phục hàm `loadPending()` trong `parent_dashboard.html`. Tab "Chờ duyệt" đã hoạt động trở lại, hiển thị đầy đủ Nhiệm vụ và Quà tặng.
+- **FIX BUG-02**: Thêm `@router.post("/propose-master")` cho `propose_master_task` trong `quests.py`.
+- **CONSOLIDATE LOGIC**:
+    - Bổ sung Notification cho Kid khi Parent duyệt/từ chối task trong `parent.py`.
+    - Bổ sung Notification cho Kid khi Parent xác nhận giao quà trong `parent.py`.
+- **UX IMPROVEMENTS**:
+    - Sửa link notification của phần xin quà dẫn về đúng tab `rewards` (Quản lý phần thưởng) của phụ huynh.
+    - Tự động load danh sách quà gợi ý khi bé chuyển sang tab Cửa hàng.
+
+### Files đã thay đổi
+- `app/templates/parent_dashboard.html` — Thêm `loadPending()`.
+- `app/api/v1/quests.py` — Thêm decorator cho `propose_master_task`.
+- `app/api/v1/parent.py` — Bổ sung Notification logic trong `approve_task` và `confirm_reward_delivery`.
+- `app/api/v1/rewards.py` — Sửa `action_data` trong `propose_master_reward`.
+- `app/templates/kid_dashboard.html` — Cập nhật `switchTab` để fetch quà gợi ý.
+
+### Bước tiếp theo (Pending)
+- Giải quyết **LOGIC-02**: Pending tasks đang bỏ qua Club Tasks.
+- Giải quyết **LOGIC-04**: Race condition trong stock reward.
+- Xem xét các UX improvements còn lại (Wishlist cho bé, highlight task từ notification).
+
+---
+
+## [2026-03-30] ENTRY #7 — Thiết kế Hệ thống: Lịch sử Nhiệm vụ & Quà tặng
+
+> **Trạng thái: PLAN — Chưa triển khai. Chờ thực thi sau khi review.**
+
+### 1. Phân tích nhu cầu
+
+#### Phía Kid
+| Nhu cầu | Hiện trạng | Vấn đề |
+|---------|-----------|--------|
+| Xem lịch sử làm việc của mình | Chỉ có "Việc hôm nay" trong tab Nhiệm vụ | Không thấy lịch sử các ngày trước |
+| Xem quà đã đổi + trạng thái | Không có | Sau khi bấm "Đổi Ngay" trong Shop, không thấy gì |
+| Biết quà mình "xin" đã được duyệt chưa | Không có | Bấm "XIN QUÀ" xong là mất tích |
+
+#### Phía Parent
+| Nhu cầu | Hiện trạng | Vấn đề |
+|---------|-----------|--------|
+| Xem tiến độ từng bé theo ngày | Card bé chỉ có Xu + XP | Không thể xem task/reward của từng bé |
+| Duyệt/Giao ngay từ card bé | Không có | Phải vào tab "Chờ duyệt" riêng |
+| Lịch sử 30 ngày của bé | Không có | Chỉ có Audit Log chung |
+
+---
+
+### 2. Thiết kế API Backend (mới cần tạo)
+
+#### 2a. `GET /api/v1/quests/my-history` (cho Kid)
+**Mục đích:** Kid xem lịch sử tất cả nhiệm vụ đã nộp của mình (không chỉ hôm nay).
+
+```
+Query params: ?limit=20&offset=0
+Response schema:
+[
+  {
+    "log_id": "uuid",
+    "task_name": "Đánh răng",
+    "points_reward": 10,
+    "status": "APPROVED" | "PENDING_APPROVAL" | "REJECTED",
+    "parent_comment": "Giỏi lắm!",
+    "proof_image_url": "...",
+    "submitted_at": "2026-03-30T08:00:00",
+    "resolved_at": "2026-03-30T09:00:00"
+  }
+]
+```
+**File:** `app/api/v1/quests.py` — Query `TaskLog` theo `kid_id = current_user.id`, join `FamilyTask`, sort by `created_at desc`, giới hạn 30 ngày.
+
+#### 2b. `GET /api/v1/rewards/my-history` (cho Kid)
+**Mục đích:** Kid xem lịch sử quà đã đổi + trạng thái giao.
+
+```
+Query params: ?limit=20&offset=0
+Response schema:
+[
+  {
+    "redemption_id": "uuid",
+    "reward_name": "Xem TV 30 phút",
+    "points_cost": 50,
+    "status": "PENDING_DELIVERY" | "DELIVERED",
+    "redeemed_at": "2026-03-30T08:00:00",
+    "delivered_at": null | "2026-03-30T10:00:00"
+  }
+]
+```
+**File:** `app/api/v1/rewards.py` — Query `RedemptionLog` theo `kid_id = current_user.id`, join `FamilyReward`, sort `created_at desc`.
+
+#### 2c. `GET /api/v1/parent/kids/{kid_id}/task-history` (cho Parent)
+**Mục đích:** Parent xem lịch sử nhiệm vụ của một bé cụ thể.
+
+```
+Query params: ?days=30&limit=50
+Response schema: (giống 2a nhưng thêm kid info)
+```
+**File:** `app/api/v1/parent.py` — Giống `get_pending_tasks` nhưng bỏ filter status, thêm date range.
+
+#### 2d. `GET /api/v1/parent/kids/{kid_id}/reward-history` (cho Parent)
+**Mục đích:** Parent xem lịch sử quà của một bé cụ thể.
+
+```
+Query params: ?days=30&limit=50
+Response schema: (giống 2b)
+```
+**File:** `app/api/v1/parent.py`
+
+---
+
+### 3. Thiết kế Giao diện Kid Dashboard
+
+#### 3a. Tab mới: "Nhật ký 📜" (tab-history)
+
+**Vị trí:** Thêm tab thứ 4 vào nav bar dưới cùng (cạnh "Thi Đua").
+> ⚠️ Lưu ý: Nav bar hiện có 3 nút, khi thêm thứ 4 cần điều chỉnh khoảng cách (dùng `w-1/4` thay vì `w-1/3`).
+
+**Nav bar HTML (mới):**
+```html
+<button onclick="switchTab('history')" id="btn-history" class="nav-btn ...">
+    <span class="text-3xl mb-1">📜</span>
+    <span class="text-xs font-black">Nhật Ký</span>
+</button>
+```
+
+**Tab content (`tab-history`):**
+
+```
+┌─────────────────────────────────────┐
+│  📜 NHẬT KÝ CỦA BÉ                 │
+│                                     │
+│  [Tab: Nhiệm vụ] [Tab: Quà tặng]   │  ← Toggle tabs bên trong
+│  ─────────────────────────────────  │
+│                                     │
+│  [Nhiệm vụ tab active:]             │
+│  ┌─────────────────────────────┐    │
+│  │ 📚 Làm bài toán      +20xu │    │
+│  │ 30/03/2026             ✅  │    │← chip xanh = APPROVED
+│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐    │
+│  │ 🪥 Đánh răng         +5xu  │    │
+│  │ 30/03/2026       ⏳ waiting│    │← chip vàng = PENDING
+│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐    │
+│  │ 🛏️ Gấp chăn         +10xu  │    │
+│  │ 29/03/2026             ❌  │    │← chip đỏ = REJECTED
+│  │ 💬 "Con làm lại nhé!"      │    │← hiện comment nếu có
+│  └─────────────────────────────┘    │
+│                                     │
+│  [Quà tặng tab:]                    │
+│  ┌─────────────────────────────┐    │
+│  │ 📺 Xem TV 30 phút    -50xu │    │
+│  │ 30/03/2026     ⏳ chờ giao │    │← chip vàng
+│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐    │
+│  │ 🍦 Ăn kem            -80xu │    │
+│  │ 28/03/2026      ✅ đã nhận │    │← chip xanh
+│  └─────────────────────────────┘    │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Chip trạng thái (màu sắc chuẩn):**
+| Status | Màu | Text |
+|--------|-----|------|
+| APPROVED / DELIVERED | green-100 text-green-700 | ✅ Hoàn thành / ✅ Đã nhận |
+| PENDING_APPROVAL / PENDING_DELIVERY | yellow-100 text-yellow-700 | ⏳ Chờ duyệt / ⏳ Chờ giao |
+| REJECTED | red-100 text-red-700 | ❌ Bị từ chối |
+
+---
+
+### 4. Thiết kế Giao diện Parent — Kid Detail Drawer
+
+#### Cách mở:
+- Trong `loadKids()`, card bé có nút **"📋 Xem"** ở góc dưới phải (thêm vào sau 2 stats hiện tại).
+- Click nút → gọi `openKidDetailDrawer(kid.id, kid.display_name)`.
+
+#### Drawer HTML (thêm vào cuối body):
+```
+┌────────────────────────────────────────────┐
+│ ← [Đóng]    Hồ sơ: Bé Bin 👶              │  ← Fixed header
+│ ┌──────────────────────────────────────┐   │
+│ │  [📋 Nhiệm vụ]  [🎁 Lịch sử quà]   │   │  ← Toggle tabs
+│ └──────────────────────────────────────┘   │
+│                                            │
+│ [NHIỆM VỤ TAB - Cuộn được]                │
+│                                            │
+│ 📅 Hôm nay (30/03)                        │
+│ ┌────────────────────────────────────┐     │
+│ │ 📚 Làm bài toán                   │     │
+│ │ +20 xu          ⏳ Chờ duyệt      │     │
+│ │           [Duyệt ngay ✅] [❌]    │     │← action buttons
+│ └────────────────────────────────────┘     │
+│ ┌────────────────────────────────────┐     │
+│ │ 🪥 Đánh răng                      │     │
+│ │ +5 xu              ✅ Hoàn thành  │     │
+│ └────────────────────────────────────┘     │
+│                                            │
+│ 📅 29/03                                   │
+│ ┌────────────────────────────────────┐     │
+│ │ 🛏️ Gấp chăn                        │     │
+│ │ +10 xu              ❌ Bị từ chối │     │
+│ └────────────────────────────────────┘     │
+│                                            │
+│ [QUÀ TẶNG TAB]                            │
+│                                            │
+│ ┌────────────────────────────────────┐     │
+│ │ 📺 Xem TV 30 phút                  │     │
+│ │ -50 xu          📦 Chờ giao       │     │
+│ │              [Giao quà ngay 🎁]   │     │← action button
+│ └────────────────────────────────────┘     │
+└────────────────────────────────────────────┘
+```
+
+**Drawer design specs:**
+- Dạng: `fixed bottom-0 left-0 right-0` slide-up từ dưới, che 75% màn hình, có `overflow-y-auto`.
+- Backdrop: `fixed inset-0 bg-black/40` để đóng khi click ngoài.
+- Animate: `translate-y-full → translate-y-0` với CSS transition.
+- Trên mobile: full width, max-width none.
+- Trên desktop: `max-w-2xl mx-auto`.
+- Không dùng modal toàn màn hình để tránh mất context (có thể thấy dashboard phía sau).
+
+**Nhóm ngày:**
+- Group tasks/rewards theo ngày (`toLocaleDateString('vi-VN')`).
+- Section header cho mỗi ngày: `📅 30 tháng 3, 2026`.
+- Items trong ngày sort theo `created_at desc`.
+
+**Action buttons (inline):**
+- Task PENDING_APPROVAL → hiện [✅ Duyệt] [❌ Từ chối] → gọi `openApproveModal(log_id)`.
+- Reward PENDING_DELIVERY → hiện [🎁 Giao quà] → gọi `confirmDelivery(redemption_id)`.
+- Sau khi action → tự động refresh drawer content (không đóng drawer).
+
+---
+
+### 5. Schema Pydantic mới cần thêm
+
+**File:** `app/schemas/quest.py`
+```python
+class TaskHistoryItem(BaseModel):
+    log_id: UUID
+    task_name: str
+    points_reward: int
+    status: TaskStatus
+    parent_comment: Optional[str] = None
+    proof_image_url: Optional[str] = None
+    submitted_at: datetime
+    resolved_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+```
+
+**File:** `app/schemas/reward.py`
+```python
+class RedemptionHistoryItem(BaseModel):
+    redemption_id: UUID
+    reward_name: str
+    points_cost: int
+    status: RedemptionStatus
+    redeemed_at: datetime
+    delivered_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+```
+
+---
+
+### 6. Danh sách công việc thực thi (triển khai sau)
+
+**Backend (ưu tiên 1):**
+- [ ] Thêm schema `TaskHistoryItem` vào `app/schemas/quest.py`
+- [ ] Thêm schema `RedemptionHistoryItem` vào `app/schemas/reward.py`
+- [ ] Thêm `GET /quests/my-history` vào `quests.py`
+- [ ] Thêm `GET /rewards/my-history` vào `rewards.py`
+- [ ] Thêm `GET /parent/kids/{kid_id}/task-history` vào `parent.py`
+- [ ] Thêm `GET /parent/kids/{kid_id}/reward-history` vào `parent.py`
+
+**Frontend Kid (ưu tiên 2):**
+- [ ] Thêm tab "Nhật Ký 📜" vào bottom nav (điều chỉnh `w-1/3` → `w-1/4`)
+- [ ] Thêm HTML `tab-history` với inner tabs Nhiệm vụ / Quà tặng
+- [ ] Thêm JS `fetchMyTaskHistory()` và `renderTaskHistory()`
+- [ ] Thêm JS `fetchMyRewardHistory()` và `renderRewardHistory()`
+- [ ] Cập nhật `switchTab('history')` trong `switchTab()`
+
+**Frontend Parent (ưu tiên 3):**
+- [ ] Thêm nút "📋 Xem" vào card bé trong `loadKids()`
+- [ ] Thêm HTML Kid Detail Drawer (fixed bottom, slide-up)
+- [ ] Thêm JS `openKidDetailDrawer(kidId, kidName)`
+- [ ] Thêm JS `loadKidTaskHistory(kidId)` và `renderKidTaskHistory()`
+- [ ] Thêm JS `loadKidRewardHistory(kidId)` và `renderKidRewardHistory()`
+- [ ] Đảm bảo action buttons trong drawer gọi đúng `openApproveModal` / `confirmDelivery`
+
+### 7. Ghi chú kỹ thuật
+
+- `GET /quests/my-history` phải dùng `deps.require_role(Role.KID)` để tránh parent xem nhầm.
+- `GET /parent/kids/{kid_id}/task-history` phải verify `kid.family_id == current_user.family_id` để tránh cross-family data leak.
+- Drawer state cần biến `currentKidDetailId` để biết đang xem bé nào khi refresh sau action.
+- Sau khi `confirmDelivery()` từ drawer → gọi `loadKidRewardHistory(currentKidDetailId)` để refresh drawer, không cần reload toàn trang.
+
