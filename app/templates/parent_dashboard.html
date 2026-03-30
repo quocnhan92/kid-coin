@@ -16,6 +16,11 @@
         .tab-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .tab-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .tab-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .suggestion-scroll { display: flex; overflow-x: auto; gap: 0.75rem; padding-bottom: 0.5rem; scrollbar-width: none; }
+        .suggestion-scroll::-webkit-scrollbar { display: none; }
+        .suggestion-card { flex: 0 0 auto; width: 120px; text-align: center; cursor: pointer; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.75rem; transition: all 0.2s; }
+        .suggestion-card:hover { border-color: #3b82f6; background-color: #eff6ff; transform: translateY(-2px); }
+        .suggestion-card.active { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -143,7 +148,7 @@
         <!-- Tab: Quản lý Con -->
         <div id="kids" class="tab-content hidden-section fade-in">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 class="text-2xl font-black text-gray-800">Gia đình Cà Rốt</h2>
+                <div class="flex items-center gap-3"><h2 id="display-family-name" class="text-2xl font-black text-gray-800">Đang tải...</h2><button onclick="showEditFamilyModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Chỉnh sửa thông tin nhà">⚙️</button></div>
                 <button onclick="showCreateKidModal()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
                     ➕ Thêm thành viên
                 </button>
@@ -341,6 +346,11 @@
                 </div>
                 
                 <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Sinh nhật bé (để gợi ý việc phù hợp)</label>
+                    <input type="date" id="kid-birth-date" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                </div>
+
+                <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Chọn ảnh đại diện</label>
                     <div class="grid grid-cols-4 gap-2" id="kid-avatar-picker">
                         <!-- JS generated -->
@@ -368,6 +378,11 @@
                 </div>
                 
                 <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Sinh nhật bé</label>
+                    <input type="date" id="edit-kid-birth-date" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                </div>
+
+                <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Đổi ảnh đại diện</label>
                     <div class="grid grid-cols-4 gap-2" id="edit-kid-avatar-picker">
                         <!-- JS generated -->
@@ -386,7 +401,20 @@
     <!-- Modal: Tạo Nhiệm vụ -->
     <div id="create-task-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-black text-gray-800 mb-6">Giao việc mới 📝</h2>
+            <h2 class="text-2xl font-black text-gray-800 mb-4">Giao việc mới 📝</h2>
+            
+            <div class="mb-6">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Phát hành nhanh ⚡</p>
+                <div id="task-suggestions-list" class="suggestion-scroll">
+                    <!-- Loaded via JS -->
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                    </div>
+                </div>
+            </div>
+
             <form id="task-form" onsubmit="createTask(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên việc</label>
@@ -507,7 +535,28 @@
     <!-- Modal: Tạo Quà thưởng -->
     <div id="create-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
-            <h2 class="text-2xl font-black text-purple-800 mb-6">Đưa hàng lên kệ 🎁</h2>
+            <h2 class="text-2xl font-black text-purple-800 mb-4">Đưa hàng lên kệ 🎁</h2>
+            
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Gợi ý mồi 🍦</p>
+                    <div class="relative w-40">
+                        <input type="text" id="reward-suggestion-search" placeholder="Tìm quà..." 
+                               oninput="filterRewardSuggestions(this.value)"
+                               class="w-full pl-7 pr-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-purple-400 focus:bg-white transition-all">
+                        <span class="absolute left-2 top-1 text-gray-400">🔍</span>
+                    </div>
+                </div>
+                <div id="reward-suggestions-list" class="suggestion-scroll">
+                    <!-- Loaded via JS -->
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                        <div class="rounded-xl bg-gray-100 h-24 w-28"></div>
+                    </div>
+                </div>
+            </div>
+
             <form id="reward-form" onsubmit="createReward(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên món quà</label>
@@ -805,14 +854,8 @@
                 throw new Error('Network error: ' + networkErr.message);
             }
 
-            let text;
-            try {
-                text = await res.text();
-            } catch (readErr) {
-                console.error('[fetchJsonSafe] failed to read response text', url, readErr);
-                throw new Error('Failed to read response');
-            }
-
+            const text = await res.text();
+            
             // Try to parse JSON
             try {
                 const data = text ? JSON.parse(text) : null;
@@ -825,14 +868,162 @@
             } catch (parseErr) {
                 // Not JSON
                 console.warn('[fetchJsonSafe] response not JSON for', url, 'status', res.status);
-                console.debug('[fetchJsonSafe] response body (first 1000 chars):', text ? text.slice(0,1000) : '<empty>');
                 if (!res.ok) {
                     throw new Error(`Server error ${res.status}: ${res.statusText}`);
                 }
-                // If OK but not JSON, return raw text (callers should handle)
                 return text;
             }
         }
+
+        // --- Master Data Suggestions (NEW) ---
+        let masterTasks = [];
+        let masterRewards = [];
+        let selectedMasterTaskId = null;
+        let selectedMasterRewardId = null;
+
+        async function loadMasterSuggestions() {
+            try {
+                const [tasks, rewards] = await Promise.all([
+                    fetchJsonSafe(`${API_BASE}/parent/master-tasks`),
+                    fetchJsonSafe(`${API_BASE}/parent/master-rewards`)
+                ]);
+                masterTasks = tasks || [];
+                masterRewards = rewards || [];
+                renderMasterSuggestions();
+            } catch (e) {
+                console.error('Failed to load suggestions:', e);
+            }
+        }
+
+        function renderMasterSuggestions(rewardQuery = '') {
+            // Tasks
+            const taskContainer = document.getElementById('task-suggestions-list');
+            if (taskContainer) {
+                taskContainer.innerHTML = masterTasks.map(t => `
+                    <div class="suggestion-card" onclick="quickFillTask(${t.id})" id="mt-${t.id}">
+                        <div class="text-3xl mb-1">${t.icon_url || '✨'}</div>
+                        <p class="text-[10px] font-bold text-gray-600 truncate">${t.name}</p>
+                        <p class="text-[10px] text-blue-500 font-black">${t.suggested_value} Xu</p>
+                    </div>
+                `).join('');
+            }
+
+            // Rewards
+            const rewardContainer = document.getElementById('reward-suggestions-list');
+            if (rewardContainer) {
+                let filtered = masterRewards;
+                if (rewardQuery) {
+                    const q = rewardQuery.toLowerCase();
+                    filtered = masterRewards.filter(r => r.name.toLowerCase().includes(q));
+                }
+                
+                if (filtered.length === 0) {
+                    rewardContainer.innerHTML = '<div class="text-[10px] text-gray-400 italic py-4">Không tìm thấy...</div>';
+                    return;
+                }
+
+                rewardContainer.innerHTML = filtered.map(r => `
+                    <div class="suggestion-card" onclick="quickFillReward(${r.id})" id="mr-${r.id}">
+                        <div class="text-3xl mb-1">${r.icon_url || '🎁'}</div>
+                        <p class="text-[10px] font-bold text-gray-600 truncate">${r.name}</p>
+                        <p class="text-[10px] text-purple-500 font-black">${r.suggested_cost} Xu</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterRewardSuggestions(q) {
+            renderMasterSuggestions(q);
+        }
+
+        function quickFillTask(id) {
+            const task = masterTasks.find(t => t.id === id);
+            if (!task) return;
+
+            selectedMasterTaskId = id;
+            document.getElementById('task-name').value = task.name;
+            document.getElementById('task-points').value = task.suggested_value;
+            
+            // Set icon if matches
+            const iconSelect = document.getElementById('task-icon');
+            if (task.icon_url) {
+                let found = false;
+                for(let i=0; i<iconSelect.options.length; i++) {
+                    if(iconSelect.options[i].value === task.icon_url) {
+                        iconSelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    // Add new option if not exists
+                    const opt = document.createElement('option');
+                    opt.value = task.icon_url;
+                    opt.text = task.icon_url;
+                    iconSelect.add(opt);
+                    iconSelect.value = task.icon_url;
+                }
+            }
+            
+            // Map category
+            const catSelect = document.getElementById('task-category');
+            if (task.category) {
+                 for(let i=0; i<catSelect.options.length; i++) {
+                     if(catSelect.options[i].value === task.category || catSelect.options[i].text === task.category) {
+                         catSelect.selectedIndex = i;
+                         break;
+                     }
+                 }
+            }
+
+            // Map verification
+            const verifRadios = document.getElementsByName('verification');
+            verifRadios.forEach(r => {
+                if (r.value === task.verification_type) r.checked = true;
+            });
+
+            // Highlight
+            document.querySelectorAll('#task-suggestions-list .suggestion-card').forEach(el => el.classList.remove('active'));
+            document.getElementById(`mt-${id}`).classList.add('active');
+        }
+
+        function quickFillReward(id) {
+            const reward = masterRewards.find(r => r.id === id);
+            if (!reward) return;
+
+            selectedMasterRewardId = id;
+            document.getElementById('reward-name').value = reward.name;
+            document.getElementById('reward-cost').value = reward.suggested_cost;
+            
+            // Set icon if matches
+            const iconSelect = document.getElementById('reward-icon');
+            if (reward.icon_url) {
+                let found = false;
+                for(let i=0; i<iconSelect.options.length; i++) {
+                    if(iconSelect.options[i].value === reward.icon_url) {
+                        iconSelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    const opt = document.createElement('option');
+                    opt.value = reward.icon_url;
+                    opt.text = reward.icon_url;
+                    iconSelect.add(opt);
+                    iconSelect.value = reward.icon_url;
+                }
+            }
+
+            // Highlight
+            document.querySelectorAll('#reward-suggestions-list .suggestion-card').forEach(el => el.classList.remove('active'));
+            document.getElementById(`mr-${id}`).classList.add('active');
+        }
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', (event) => {
+            loadMasterSuggestions();
+        });
 
         // --- Tab Management ---
         function switchTab(tab) {
@@ -1040,12 +1231,17 @@
             event.preventDefault();
             const name = document.getElementById('kid-name').value;
             const avatarUrl = document.getElementById('kid-avatar-url').value;
+            const birthDate = document.getElementById('kid-birth-date').value;
 
             try {
                 const res = await fetch(`${API_BASE}/parent/kids`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ display_name: name, avatar_url: avatarUrl }) 
+                    body: JSON.stringify({ 
+                        display_name: name, 
+                        avatar_url: avatarUrl,
+                        birth_date: birthDate || null 
+                    }) 
                 });
 
                 if (!res.ok) {
@@ -1067,12 +1263,17 @@
             const id = document.getElementById('edit-kid-id').value;
             const name = document.getElementById('edit-kid-name').value;
             const avatarUrl = document.getElementById('edit-kid-avatar-url').value;
+            const birthDate = document.getElementById('edit-kid-birth-date').value;
 
             try {
                 const res = await fetch(`${API_BASE}/parent/kids/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ display_name: name, avatar_url: avatarUrl }) 
+                    body: JSON.stringify({ 
+                        display_name: name, 
+                        avatar_url: avatarUrl,
+                        birth_date: birthDate || null 
+                    }) 
                 });
 
                 if (!res.ok) {
@@ -2091,7 +2292,7 @@
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const modals = ['create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal', 'create-club-modal', 'join-club-modal'];
+            const modals = ['edit-family-modal', 'create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal', 'create-club-modal', 'join-club-modal'];
             modals.forEach(id => {
                 const modal = document.getElementById(id);
                 if (event.target == modal) {
@@ -2133,10 +2334,63 @@
         });
 
         // --- Init ---
+        
+        // --- Family Info Management ---
+        let currentFamily = null;
+
+        async function fetchFamilyInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/family`);
+                if (!response.ok) return;
+                currentFamily = await response.json();
+                
+                // Update UI
+                const familyNameEl = document.getElementById('display-family-name');
+                if (familyNameEl) familyNameEl.innerText = currentFamily.name;
+            } catch (error) {
+                console.error('Failed to fetch family info:', error);
+            }
+        }
+
+        function showEditFamilyModal() {
+            if (!currentFamily) return;
+            document.getElementById('family-form-name').value = currentFamily.name || '';
+            document.getElementById('family-form-address').value = currentFamily.address || '';
+            document.getElementById('family-form-info').value = currentFamily.extra_info || '';
+            document.getElementById('edit-family-modal').classList.remove('hidden-section');
+        }
+
+        async function handleUpdateFamily(event) {
+            event.preventDefault();
+            const name = document.getElementById('family-form-name').value;
+            const address = document.getElementById('family-form-address').value;
+            const extra_info = document.getElementById('family-form-info').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/family`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, address, extra_info })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Lỗi cập nhật');
+                }
+                
+                alert('✅ Đã cập nhật thông tin nhà thành công!');
+                closeModal('edit-family-modal');
+                fetchFamilyInfo(); // Refresh UI
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+    
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 console.debug('[DOMContentLoaded] init parent dashboard');
                 fetchCurrentUser();
+                fetchFamilyInfo();
                 loadOverview();
             } catch(e) {
                 console.error('[DOMContentLoaded] initialization error', e);
@@ -2296,6 +2550,35 @@
         // Initialize polling and fetching
         setInterval(fetchNotifications, 30000);
     </script>
+
+    <!-- Modal: Chỉnh sửa thông tin Nhà -->
+    <div id="edit-family-modal" class="hidden-section fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden fade-in border border-gray-100">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-black text-gray-800">🏠 Thông tin Nhà / Gia đình</h3>
+                <button onclick="closeModal('edit-family-modal')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="edit-family-form" onsubmit="handleUpdateFamily(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tên Nhà (Bắt buộc)</label>
+                    <input type="text" id="family-form-name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Địa chỉ (Không bắt buộc)</label>
+                    <input type="text" id="family-form-address" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: 123 Đường Láng, Hà Nội">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mô tả thêm / Lời chào</label>
+                    <textarea id="family-form-info" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: Chào mừng tới ngôi nhà hạnh phúc của chúng mình!"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('edit-family-modal')" class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
 </body>
 </html>
 

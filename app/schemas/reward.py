@@ -30,3 +30,17 @@ class RewardRedeemedResponse(BaseModel):
 
 class DeliveryRequest(BaseModel):
     status: str # DELIVERED
+
+class MasterRewardResponse(BaseModel):
+    id: int
+    name: str
+    icon_url: Optional[str]
+    suggested_cost: int
+    min_age: int
+    max_age: int
+
+    class Config:
+        from_attributes = True
+
+class RewardProposeRequest(BaseModel):
+    master_reward_id: int

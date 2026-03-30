@@ -30,6 +30,8 @@ class MasterTask(Base):
     name = Column(String(100), nullable=False)
     icon_url = Column(String(255), nullable=True)
     suggested_value = Column(BigInteger, default=10)
+    min_age = Column(Integer, default=3) # Suggested minimum age
+    max_age = Column(Integer, default=18) # Suggested maximum age
     category = Column(Enum(Category), nullable=False)
     verification_type = Column(Enum(VerificationType), default=VerificationType.REQUIRE_PHOTO)
 
@@ -64,6 +66,8 @@ class MasterReward(Base):
     name = Column(String(100), nullable=False)
     icon_url = Column(String(255), nullable=True)
     suggested_cost = Column(BigInteger, default=50)
+    min_age = Column(Integer, default=3) # Suggested minimum age
+    max_age = Column(Integer, default=18) # Suggested maximum age
 
     family_rewards = relationship("FamilyReward", back_populates="master_reward")
 

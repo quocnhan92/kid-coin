@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, Enum, DateTime, Index, BigInteger
+from sqlalchemy import Column, String, Boolean, ForeignKey, Enum, DateTime, Index, BigInteger, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -18,6 +18,8 @@ class Family(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False)
+    address = Column(String(255), nullable=True)
+    extra_info = Column(String(500), nullable=True)
     parent_pin = Column(String(60), nullable=True) # Hashed
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -41,6 +43,7 @@ class User(Base):
     username = Column(String(100), unique=True, nullable=True)
     display_name = Column(String(50), nullable=False)
     avatar_url = Column(String(255), nullable=True)
+    birth_date = Column(Date, nullable=True) # Added birth_date for age filtering
     current_coin = Column(BigInteger, default=0) # Changed to BigInteger
     total_earned_score = Column(BigInteger, default=0) # Added field, BigInteger
     is_deleted = Column(Boolean, default=False) # Soft delete flag

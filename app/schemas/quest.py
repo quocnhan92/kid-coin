@@ -6,9 +6,12 @@ from app.models.logs_transactions import TaskStatus
 from app.models.tasks_rewards import VerificationType
 
 class QuestBase(BaseModel):
+    id: Optional[int] = None
     name: str
     points_reward: int
     icon_url: Optional[str] = None
+    min_age: Optional[int] = 3
+    max_age: Optional[int] = 18
 
 class QuestItem(QuestBase):
     id: Optional[UUID] = None
@@ -27,3 +30,6 @@ class QuestSubmitRequest(BaseModel):
 class QuestVerifyRequest(BaseModel):
     action: str # APPROVE or REJECT
     comment: Optional[str] = None
+
+class QuestProposeRequest(BaseModel):
+    master_task_id: int

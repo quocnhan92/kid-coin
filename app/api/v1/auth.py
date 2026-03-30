@@ -53,74 +53,53 @@ async def check_device_status(
 
 @router.post("/register-device", response_model=auth_schemas.DeviceContextResponse)
 async def register_device(
-    request: Request, # FastAPI Request object to get headers/IP
+    request: Request,
     payload: auth_schemas.DeviceLoginRequest,
     db: Session = Depends(deps.get_db)
 ):
     """
-    Đăng nhập lần đầu bằng Tài khoản Bố mẹ để đăng ký thiết bị mới.
+    Đăng nhập thiết bị mới vào nhà ĐÃ CÓ (Kiểm tra username và pin của nhà).
     """
-    # Get IP and User-Agent
     client_ip = request.client.host
     user_agent = request.headers.get("user-agent", "Unknown")
-    
-    # Simple Parse UA (In prod, use a library)
     device_info = {"raw": user_agent}
 
-    # 1. Tìm User Parent
     parent = db.query(User).filter(
         User.username == payload.username,
         User.role == Role.PARENT
     ).first()
 
     if not parent:
-        # If the username doesn't match any existing parent, create a new family + parent account
-        # so the device can be registered to that new family.
-        from uuid import uuid4
-        # Create a new family with a default PIN (consider prompting user to change later)
-        default_pin = "1234"
-        new_family = Family(id=uuid4(), name=f"Gia đình {payload.username}", parent_pin=default_pin)
-        db.add(new_family)
-        db.flush()
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản quản trị này.")
+    
+    if parent.family.parent_pin != payload.password:
+        raise HTTPException(status_code=401, detail="Mật khẩu hoặc tên tài khoản không đúng.")
 
-        parent = User(
-            id=uuid4(),
-            family_id=new_family.id,
-            role=Role.PARENT,
-            display_name=payload.username,
-            username=payload.username,
-            avatar_url=f"https://api.dicebear.com/7.x/avataaars/svg?seed={payload.username}"
-        )
-        db.add(parent)
-        db.flush()
-
-    # 2. Tạo hoặc Cập nhật Device
+    # Tạo hoặc cập nhật Device để "nhớ" thiết bị này
     existing_device = db.query(FamilyDevice).filter(FamilyDevice.device_token == payload.device_id).first()
     if existing_device:
         existing_device.is_active = True
         existing_device.family_id = parent.family_id
         existing_device.device_name = payload.device_name
-        existing_device.user_agent = user_agent # Update UA
-        existing_device.device_info = device_info # Update Info
-        # We generally keep the initial_ip as the original registration IP
+        existing_device.user_agent = user_agent
+        existing_device.device_info = device_info
     else:
         new_device = FamilyDevice(
             family_id=parent.family_id,
             device_name=payload.device_name,
             device_token=payload.device_id,
-            initial_ip_address=client_ip, # Store IP
-            user_agent=user_agent, # Store UA
-            device_info=device_info, # Store Parsed Info
+            initial_ip_address=client_ip,
+            user_agent=user_agent,
+            device_info=device_info,
             is_active=True
         )
         db.add(new_device)
 
     db.commit()
     
-    # Audit
     AuditService.log(
         db=db,
-        action="REGISTER_DEVICE",
+        action="LOGIN_DEVICE",
         resource_type="FamilyDevice",
         user_id=str(parent.id),
         status=AuditStatus.SUCCESS,
@@ -128,6 +107,66 @@ async def register_device(
         user_agent=user_agent,
         device_info=device_info,
         details={"device_name": payload.device_name}
+    )
+
+    return await check_device_status(x_device_id=payload.device_id, db=db)
+
+@router.post("/register-family", response_model=auth_schemas.DeviceContextResponse)
+async def register_family(
+    request: Request,
+    payload: auth_schemas.FamilyRegistrationRequest,
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Tạo NHÀ MỚI (Family) và đăng ký thiết bị lần đầu.
+    """
+    client_ip = request.client.host
+    user_agent = request.headers.get("user-agent", "Unknown")
+    device_info = {"raw": user_agent}
+
+    existing_user = db.query(User).filter(User.username == payload.admin_username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.")
+
+    from uuid import uuid4
+    new_family = Family(id=uuid4(), name=payload.family_name, parent_pin=payload.admin_password)
+    db.add(new_family)
+    db.flush()
+
+    parent = User(
+        id=uuid4(),
+        family_id=new_family.id,
+        role=Role.PARENT,
+        display_name=payload.admin_display_name,
+        username=payload.admin_username,
+        avatar_url=f"https://api.dicebear.com/7.x/avataaars/svg?seed={payload.admin_username}"
+    )
+    db.add(parent)
+    db.flush()
+
+    new_device = FamilyDevice(
+        family_id=new_family.id,
+        device_name=payload.device_name,
+        device_token=payload.device_id,
+        initial_ip_address=client_ip,
+        user_agent=user_agent,
+        device_info=device_info,
+        is_active=True
+    )
+    db.add(new_device)
+
+    db.commit()
+    
+    AuditService.log(
+        db=db,
+        action="REGISTER_FAMILY",
+        resource_type="Family",
+        user_id=str(parent.id),
+        status=AuditStatus.SUCCESS,
+        ip_address=client_ip,
+        user_agent=user_agent,
+        device_info=device_info,
+        details={"family_name": payload.family_name}
     )
 
     return await check_device_status(x_device_id=payload.device_id, db=db)

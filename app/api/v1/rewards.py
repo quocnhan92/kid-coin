@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
-from app.models.tasks_rewards import FamilyReward
+from app.models.tasks_rewards import FamilyReward, MasterReward
 from app.models.logs_transactions import Transaction, TransactionType, RedemptionLog, RedemptionStatus
+from app.models.notifications import Notification, NotificationType
 from app.models.user_family import User
+from typing import List, Optional
 from app.services.audit import AuditService, AuditStatus
 from app.schemas import reward as reward_schemas
+from datetime import date
 
 router = APIRouter()
 
@@ -192,3 +195,73 @@ async def deliver_reward(
             error=e
         )
         raise HTTPException(status_code=500, detail="Delivery confirmation failed")
+
+@router.get("/master", response_model=List[reward_schemas.MasterRewardResponse])
+async def get_master_rewards(
+    q: Optional[str] = None,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    KID: Get suggested master rewards with search and age prioritization.
+    """
+    query = db.query(MasterReward)
+    if q:
+        query = query.filter(MasterReward.name.ilike(f"%{q}%"))
+    
+    rewards = query.all()
+    
+    # Age-based prioritization
+    if current_user.birth_date:
+        today = date.today()
+        age = today.year - current_user.birth_date.year - ((today.month, today.day) < (current_user.birth_date.month, current_user.birth_date.day))
+        
+        def sort_key(r):
+            # Tasks within age range get priority 0, outside get priority 1
+            is_in_range = (r.min_age <= age <= r.max_age)
+            return (0 if is_in_range else 1, r.name)
+            
+        rewards.sort(key=sort_key)
+        
+    return rewards
+
+@router.post("/propose-master", response_model=dict)
+async def propose_master_reward(
+    request: reward_schemas.RewardProposeRequest,
+    current_user: User = Depends(deps.require_role(deps.Role.KID)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    KID: Propose a master reward to parents.
+    """
+    master = db.query(MasterReward).get(request.master_reward_id)
+    if not master:
+        raise HTTPException(status_code=404, detail="Master reward not found")
+        
+    try:
+        parents = db.query(User).filter(User.family_id == current_user.family_id, User.role == deps.Role.PARENT).all()
+        for p in parents:
+            notif = Notification(
+                user_id=p.id,
+                type=NotificationType.SYSTEM,
+                title="Con ước món quà mới! 🎁",
+                content=f"{current_user.display_name} vừa ước món quà '{master.name}'. Bạn hãy xem và thêm vào cửa hàng nhé!",
+                reference_id=str(master.id),
+                action_data={"tab": "shop", "master_reward_id": master.id, "suggested_name": master.name}
+            )
+            db.add(notif)
+        db.commit()
+        
+        AuditService.log(
+            db=db,
+            action="PROPOSE_REWARD",
+            resource_type="MasterReward",
+            resource_id=str(master.id),
+            status=AuditStatus.SUCCESS
+        )
+        
+        return {"status": "success", "message": "Đã gửi điều ước tới bố mẹ! ✨"}
+    except Exception as e:
+        db.rollback()
+        AuditService.log_failed(db=db, action="PROPOSE_REWARD", resource_type="MasterReward", error=e)
+        raise HTTPException(status_code=500, detail="Could not propose reward")

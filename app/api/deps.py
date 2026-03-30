@@ -35,32 +35,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
             except ValueError:
                 pass
 
-    # 3. If still no user, Auto-Seed/Fallback (ONLY FOR DEV)
-    if not user:
-        # Check if we have any users, if not, seed them
-        if db.query(User).count() == 0:
-             from uuid import uuid4
-             # Create Family
-             family = Family(id=uuid4(), name="Nhà Cà Rốt", parent_pin="1234")
-             db.add(family)
-             db.flush()
-             
-             # Create Parent
-             parent = User(id=uuid4(), family_id=family.id, role=Role.PARENT, display_name="Bố Tuấn", username="botuan")
-             db.add(parent)
-             
-             # Create Kids
-             kid1 = User(id=uuid4(), family_id=family.id, role=Role.KID, display_name="Bé Bin", avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin")
-             kid2 = User(id=uuid4(), family_id=family.id, role=Role.KID, display_name="Em Na", avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Na")
-             db.add(kid1)
-             db.add(kid2)
-             
-             db.commit()
-             # Return the parent by default if nothing set
-             user = parent
-        else:
-             # Just return the first parent found
-             user = db.query(User).filter(User.role == Role.PARENT).first()
+    # 3. If still no user, Auto-Seed/Fallback (REMOVED)
+    # The initial seed logic exists in main.py startup event.
+    # We no longer fallback to the first parent automatically for security and registration implementation.
 
     if user is None:
         raise HTTPException(

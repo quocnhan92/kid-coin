@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
-from app.models.tasks_rewards import FamilyTask, VerificationType
+from app.models.tasks_rewards import FamilyTask, VerificationType, MasterTask
 from app.models.logs_transactions import TaskLog, TaskStatus
 from app.models.user_family import User, Role
 from app.models.audit import AuditStatus
 from app.services.audit import AuditService
 from app.schemas import quest as quest_schemas
-from typing import List
+from typing import List, Optional
 from datetime import datetime, date
 
 router = APIRouter()
@@ -304,3 +304,147 @@ async def verify_quest(
             error=e
         )
         raise HTTPException(status_code=500, detail="Verification failed")
+
+def calculate_age(birth_date):
+    if not birth_date:
+        return None
+    today = date.today()
+    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+@router.get("/master", response_model=List[quest_schemas.QuestBase])
+async def get_master_tasks(
+    q: Optional[str] = None,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    Get all master tasks for suggestions with optional search and age prioritization.
+    """
+    query = db.query(MasterTask)
+    if q:
+        query = query.filter(MasterTask.name.ilike(f"%{q}%"))
+    
+    master_tasks = query.all()
+    
+    # Prioritization logic based on kid's age
+    user_age = calculate_age(current_user.birth_date)
+    
+    if user_age is not None:
+        # Sort: tasks within age range first, then by proximity to range
+        def sort_key(t):
+            if t.min_age <= user_age <= t.max_age:
+                return (0, 0) # Top priority
+            dist = min(abs(t.min_age - user_age), abs(t.max_age - user_age))
+            return (1, dist)
+        
+        master_tasks.sort(key=sort_key)
+    
+    return [
+        quest_schemas.QuestBase(
+            id=t.id,
+            name=t.name,
+            points_reward=t.suggested_value,
+            icon_url=t.icon_url,
+            min_age=t.min_age,
+            max_age=t.max_age
+        ) for t in master_tasks
+    ]
+
+@router.post("/pick-master", response_model=dict)
+async def pick_master_task(
+    request: quest_schemas.QuestProposeRequest,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    KID/PARENT: Pick a master task to be added directly to the family's daily list.
+    """
+    # 1. Validate master task
+    master_task = db.query(MasterTask).get(request.master_task_id)
+    if not master_task:
+        raise HTTPException(status_code=404, detail="Master task not found")
+
+    # 2. Check if already exists in FamilyTask for this family
+    existing_task = db.query(FamilyTask).filter(
+        FamilyTask.family_id == current_user.family_id,
+        FamilyTask.master_task_id == master_task.id,
+        FamilyTask.is_deleted == False
+    ).first()
+    
+    if existing_task:
+        if not existing_task.is_active:
+            existing_task.is_active = True
+            db.commit()
+        return {"status": "success", "message": "Nhiệm vụ đã có trong danh sách của con rồi!", "already_exists": True}
+
+    # 3. Create new FamilyTask from Master template
+    try:
+        new_task = FamilyTask(
+            family_id=current_user.family_id,
+            master_task_id=master_task.id,
+            name=master_task.name,
+            points_reward=master_task.suggested_value,
+            category=master_task.category,
+            verification_type=master_task.verification_type,
+            is_active=True
+        )
+        db.add(new_task)
+        db.commit()
+        
+        # Audit Log
+        AuditService.log(
+            db=db,
+            action="PICK_MASTER_TASK",
+            resource_type="FamilyTask",
+            resource_id=str(new_task.id),
+            status=AuditStatus.SUCCESS,
+            details={"task_name": master_task.name, "user": current_user.display_name}
+        )
+        
+        return {"status": "success", "message": f"Đã thêm '{master_task.name}' vào danh sách việc cần làm!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to pick task")
+async def propose_master_task(
+    request: quest_schemas.QuestProposeRequest,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    KID/PARENT: Propose a master task to be added to the family.
+    """
+    # 1. Validate master task
+    master_task = db.query(MasterTask).get(request.master_task_id)
+    if not master_task:
+        raise HTTPException(status_code=404, detail="Master task not found")
+
+    # 2. Generate Notification to Parents
+    try:
+        from app.models.notifications import Notification, NotificationType
+        parents = db.query(User).filter(User.family_id == current_user.family_id, User.role == Role.PARENT).all()
+        for p in parents:
+            notif = Notification(
+                user_id=p.id,
+                type=NotificationType.SYSTEM,
+                title="Bé đề xuất nhiệm vụ mới! ✨",
+                content=f"{current_user.display_name} muốn làm việc: '{master_task.name}'. Hãy duyệt thêm cho con nhé!",
+                reference_id=str(master_task.id),
+                action_data={"tab": "tasks", "action": "ADD_MASTER_TASK", "master_task_id": master_task.id}
+            )
+            db.add(notif)
+        db.commit()
+
+        # Audit Log
+        AuditService.log(
+            db=db,
+            action="PROPOSE_QUEST",
+            resource_type="MasterTask",
+            resource_id=str(master_task.id),
+            status=AuditStatus.SUCCESS,
+            details={"task_name": master_task.name, "from": current_user.display_name}
+        )
+        
+        return {"status": "success", "message": "Proposal sent to parents"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to send proposal")

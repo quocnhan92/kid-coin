@@ -13,6 +13,18 @@ def run_migrations():
     inspector = inspect(engine)
     
     with engine.connect() as conn:
+        # Check families table for address and extra_info
+        if inspector.has_table("families"):
+            columns = [col['name'] for col in inspector.get_columns("families")]
+            if "address" not in columns:
+                logger.info("Adding 'address' to 'families' table...")
+                conn.execute(text("ALTER TABLE families ADD COLUMN address VARCHAR(255)"))
+                conn.commit()
+            if "extra_info" not in columns:
+                logger.info("Adding 'extra_info' to 'families' table...")
+                conn.execute(text("ALTER TABLE families ADD COLUMN extra_info VARCHAR(500)"))
+                conn.commit()
+
         # Check users table for total_earned_score and is_deleted
         if inspector.has_table("users"):
             columns = [col['name'] for col in inspector.get_columns("users")]

@@ -5,10 +5,11 @@ from app.models.tasks_rewards import FamilyTask, FamilyReward, MasterTask, Maste
 from app.models.logs_transactions import TaskLog, TaskStatus, RedemptionLog, RedemptionStatus, Transaction, TransactionType
 from app.models.user_family import User, Role
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel
 from uuid import UUID
 from app.services.audit import AuditService, AuditStatus
+from app.schemas import reward as reward_schemas
 from app.models.audit import AuditLog
 
 router = APIRouter()
@@ -56,6 +57,7 @@ class KidDetailResponse(BaseModel):
     avatar_url: Optional[str]
     current_coin: int
     total_earned_score: int
+    birth_date: Optional[date] = None
     created_at: datetime
 
     class Config:
@@ -64,10 +66,27 @@ class KidDetailResponse(BaseModel):
 class CreateKidRequest(BaseModel):
     display_name: str
     avatar_url: Optional[str] = None
+    birth_date: Optional[date] = None
+
+class UpdateFamilyRequest(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    extra_info: Optional[str] = None
+
+class FamilyResponse(BaseModel):
+    id: UUID
+    name: str
+    address: Optional[str] = None
+    extra_info: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class UpdateKidRequest(BaseModel):
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    birth_date: Optional[date] = None
 
 class CreateAdminRequest(BaseModel):
     display_name: str
@@ -76,15 +95,15 @@ class CreateAdminRequest(BaseModel):
 class CreateTaskRequest(BaseModel):
     name: str
     points_reward: int
-    category: str = "Khác"
-    verification_type: str = "Cần chụp ảnh"
+    category: Category = Category.OTHER
+    verification_type: VerificationType = VerificationType.REQUIRE_PHOTO
     master_task_id: Optional[int] = None
 
 class UpdateTaskRequest(BaseModel):
     name: Optional[str] = None
     points_reward: Optional[int] = None
-    category: Optional[str] = None
-    verification_type: Optional[str] = None
+    category: Optional[Category] = None
+    verification_type: Optional[VerificationType] = None
     is_active: Optional[bool] = None
 
 class CreateRewardRequest(BaseModel):
@@ -118,6 +137,19 @@ class AuditLogResponse(BaseModel):
 class AuditLogPaginatedResponse(BaseModel):
     total: int
     logs: List[AuditLogResponse]
+
+class MasterTaskResponse(BaseModel):
+    id: int
+    name: str
+    icon_url: Optional[str]
+    suggested_value: int
+    category: str
+    verification_type: str
+
+    class Config:
+        from_attributes = True
+
+
 
 @router.get("/pending-tasks", response_model=List[PendingTaskResponse])
 async def get_pending_tasks(
@@ -326,9 +358,10 @@ async def update_kid(
     try:
         if request.display_name is not None:
             kid.display_name = request.display_name
-        if request.avatar_url is not None:
+        if request.avatar_url:
             kid.avatar_url = request.avatar_url
-
+        if request.birth_date:
+            kid.birth_date = request.birth_date
         db.commit()
         db.refresh(kid)
 
@@ -382,6 +415,47 @@ async def delete_kid(
         db.rollback()
         AuditService.log_failed(db=db, action="DELETE_KID", resource_type="User", error=e)
         raise HTTPException(status_code=500, detail="Could not delete kid")
+
+@router.get("/family", response_model=FamilyResponse)
+async def get_family_info(
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    from app.models.user_family import Family
+    family = db.query(Family).filter(Family.id == current_user.family_id).first()
+    if not family:
+        raise HTTPException(status_code=404, detail="Family not found")
+    return family
+
+@router.put("/family", response_model=FamilyResponse)
+async def update_family_info(
+    request: UpdateFamilyRequest,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    from app.models.user_family import Family
+    family = db.query(Family).filter(Family.id == current_user.family_id).first()
+    if not family:
+        raise HTTPException(status_code=404, detail="Family not found")
+    
+    if request.name is not None:
+        family.name = request.name
+    if request.address is not None:
+        family.address = request.address
+    if request.extra_info is not None:
+        family.extra_info = request.extra_info
+        
+    db.commit()
+    db.refresh(family)
+    
+    AuditService.log(
+        db=db,
+        action="UPDATE_FAMILY_INFO",
+        resource_type="Family",
+        resource_id=str(family.id),
+        status=AuditStatus.SUCCESS
+    )
+    return family
 
 @router.post("/admins")
 async def create_admin(
@@ -744,18 +818,39 @@ async def approve_task(
                 action="REJECT_TASK",
                 resource_type="TaskLog",
                 resource_id=str(log.id),
-                status=AuditStatus.SUCCESS,
-                details={"reason": request.comment}
+                status=AuditStatus.SUCCESS
             )
-        else:
-            raise HTTPException(status_code=400, detail="Invalid action")
 
         db.commit()
-        return {"status": "success", "message": f"Task {request.action.lower()}ed"}
+        return {"status": "success", "action": request.action}
     except Exception as e:
         db.rollback()
-        AuditService.log_failed(db=db, action="APPROVE_TASK", resource_type="TaskLog", error=e)
-        raise HTTPException(status_code=500, detail="Could not process task")
+        AuditService.log_failed(db=db, action="PROCESS_TASK_SUBMISSION", resource_type="TaskLog", error=e)
+        raise HTTPException(status_code=500, detail="Could not process submission")
+
+@router.get("/master-tasks", response_model=List[MasterTaskResponse])
+async def get_master_tasks(
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Get all suggested master tasks.
+    """
+    return db.query(MasterTask).all()
+
+@router.get("/master-rewards", response_model=List[reward_schemas.MasterRewardResponse])
+async def get_master_rewards(
+    q: Optional[str] = None,
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Get all suggested master rewards.
+    """
+    query = db.query(MasterReward)
+    if q:
+        query = query.filter(MasterReward.name.ilike(f"%{q}%"))
+    return query.all()
 
 @router.post("/rewards/{redemption_id}/confirm")
 async def confirm_reward_delivery(
@@ -821,46 +916,6 @@ async def get_family_rewards(
         for reward in rewards
     ]
 
-@router.get("/master-tasks", response_model=list[dict])
-async def get_master_tasks(
-    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
-    db: Session = Depends(deps.get_db)
-):
-    """
-    Get all master tasks (templates) to create family tasks from.
-    """
-    tasks = db.query(MasterTask).all()
-
-    return [
-        {
-            "id": task.id,
-            "name": task.name,
-            "icon_url": task.icon_url,
-            "suggested_value": task.suggested_value,
-            "category": task.category.value
-        }
-        for task in tasks
-    ]
-
-@router.get("/master-rewards", response_model=list[dict])
-async def get_master_rewards(
-    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
-    db: Session = Depends(deps.get_db)
-):
-    """
-    Get all master rewards (templates) to create family rewards from.
-    """
-    rewards = db.query(MasterReward).all()
-
-    return [
-        {
-            "id": reward.id,
-            "name": reward.name,
-            "icon_url": reward.icon_url,
-            "suggested_cost": reward.suggested_cost
-        }
-        for reward in rewards
-    ]
 
 @router.get("/audit-logs", response_model=AuditLogPaginatedResponse)
 async def get_audit_logs(
