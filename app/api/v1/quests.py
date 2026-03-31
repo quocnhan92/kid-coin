@@ -253,7 +253,13 @@ async def pick_master_task(
         if not existing_task.is_active:
             existing_task.is_active = True
             db.commit()
-        return {"status": "success", "message": "Nhiệm vụ đã có trong danh sách của con rồi!", "already_exists": True}
+        return {
+            "status": "success", 
+            "message": "Nhiệm vụ đã có trong danh sách của con rồi!", 
+            "already_exists": True,
+            "family_task_id": str(existing_task.id),
+            "verification_type": existing_task.verification_type
+        }
 
     # 3. Create new FamilyTask from Master template
     try:
@@ -279,7 +285,12 @@ async def pick_master_task(
             details={"task_name": master_task.name, "user": current_user.display_name}
         )
         
-        return {"status": "success", "message": f"Đã thêm '{master_task.name}' vào danh sách việc cần làm!"}
+        return {
+            "status": "success", 
+            "message": f"Đã thêm '{master_task.name}' vào danh sách việc cần làm!",
+            "family_task_id": str(new_task.id),
+            "verification_type": new_task.verification_type
+        }
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to pick task")

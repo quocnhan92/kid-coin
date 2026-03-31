@@ -118,6 +118,17 @@
                     </div>
                 </div>
 
+                <!-- Section: Wishlist / Proposals (UX-06) -->
+                <div id="wishlist-section" class="mt-8 mb-6 hidden-section">
+                    <h2 class="text-md font-black text-blue-700 mb-3 uppercase tracking-wide flex items-center gap-2">
+                        Điều ước đang gửi 🎁
+                        <span id="wishlist-count" class="text-[10px] bg-blue-200 px-2 py-0.5 rounded-full text-blue-700">0</span>
+                    </h2>
+                    <div id="wishlist-list" class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
                 <div class="border-t-2 border-dashed border-purple-100 my-6"></div>
                 <h2 class="text-md font-black text-purple-800 mb-2 uppercase tracking-wide">Cửa hàng của bé 🛒</h2>
                 <div id="shop-list" class="grid grid-cols-2 gap-3">
@@ -751,6 +762,13 @@
                 setTimeout(() => {
                     fetchQuests(); // Refresh the daily list
                     fetchMasterSuggestions(document.getElementById('suggestion-search').value); // Refresh suggestions
+                    
+                    // UX-01: Auto-prompt for completion
+                    if (data.family_task_id && data.verification_type) {
+                        if (confirm(`Tuyệt quá! Bạn đã làm xong '${taskName}' chưa? Nộp để nhận thưởng ngay nhé!`)) {
+                            prepareTaskSubmit(data.family_task_id, taskName, data.verification_type);
+                        }
+                    }
                 }, 800);
                 
             } catch (error) {
@@ -768,10 +786,43 @@
                 if (!response.ok) throw new Error('Failed to fetch master reward suggestions');
                 const suggestions = await response.json();
                 renderMasterRewardSuggestions(suggestions);
+                
+                // UX-06: Also fetch wishlist when in Shop
+                fetchWishlist();
             } catch (error) {
                 console.error(error);
                 const container = document.getElementById('master-reward-suggestions-list');
                 if (container) container.innerHTML = '<div class="text-xs text-gray-400 italic">Không có gợi ý nào.</div>';
+            }
+        }
+
+        async function fetchWishlist() {
+            try {
+                const res = await fetch(`${API_BASE}/rewards/proposals`);
+                if (!res.ok) return;
+                const items = await res.json();
+                
+                const section = document.getElementById('wishlist-section');
+                const list = document.getElementById('wishlist-list');
+                const count = document.getElementById('wishlist-count');
+                
+                if (items.length === 0) {
+                    section.classList.add('hidden-section');
+                    return;
+                }
+                
+                section.classList.remove('hidden-section');
+                count.innerText = items.length;
+                
+                list.innerHTML = items.map(item => `
+                    <div class="flex-shrink-0 bg-blue-50 border border-blue-200 rounded-xl p-3 flex flex-col items-center gap-1 min-w-[100px] shadow-sm">
+                        <div class="text-2xl">${getIcon(item.name) || '🎁'}</div>
+                        <div class="text-[10px] font-bold text-blue-800 truncate w-full text-center">${item.name}</div>
+                        <div class="text-[9px] text-blue-500 font-medium">${item.status}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to fetch wishlist:", e);
             }
         }
 
@@ -854,11 +905,11 @@
             
             if (tabId === 'quests') {
                 fetchQuests();
-                fetchMasterSuggestions();
+                fetchMasterSuggestions(document.getElementById('suggestion-search').value);
             }
             if (tabId === 'shop') {
                 fetchRewards();
-                fetchMasterRewardSuggestions();
+                fetchMasterRewardSuggestions(document.getElementById('reward-suggestion-search').value);
             }
             if (tabId === 'clubs') {
                 hideClubDetail();

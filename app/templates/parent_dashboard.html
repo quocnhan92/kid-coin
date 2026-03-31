@@ -21,6 +21,19 @@
         .suggestion-card { flex: 0 0 auto; width: 120px; text-align: center; cursor: pointer; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.75rem; transition: all 0.2s; }
         .suggestion-card:hover { border-color: #3b82f6; background-color: #eff6ff; transform: translateY(-2px); }
         .suggestion-card.active { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        /* UX-05: Highlight effect for notification navigation */
+        @keyframes highlightPulse {
+            0% { background-color: transparent; }
+            30% { background-color: #fef08a; transform: scale(1.02); box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
+            70% { background-color: #fef08a; transform: scale(1.02); box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .highlight-pulse {
+            animation: highlightPulse 2s ease-in-out;
+            z-index: 10;
+            position: relative;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -1480,8 +1493,10 @@
                 if (tasks.length === 0) {
                     taskContainer.innerHTML = '<div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 font-medium whitespace-pre-wrap">Hiện không có nhiệm vụ nào chờ duyệt ☕</div>';
                 } else {
-                    taskContainer.innerHTML = tasks.map(t => `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+                    taskContainer.innerHTML = tasks.map(t => {
+                        const isHighlighted = (highlightLogId === t.log_id);
+                        return `
+                        <div id="pending-task-${t.log_id}" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4 transition-all ${isHighlighted ? 'highlight-pulse' : ''}">
                             <div class="flex items-center gap-4 flex-1">
                                 <img src="${t.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + t.kid_name}" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
                                 <div>
@@ -1491,18 +1506,21 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-yellow-600 font-black text-sm mr-2">+${t.points_reward}</span>
-                                <button onclick="openApproveModal('${t.log_id}', '${t.kid_name}', '${t.task_name}', '${t.kid_avatar}', '${t.proof_image_url}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors">Duyệt ngay</button>
+                                <button onclick="openApproveModal('${t.log_id}', '${t.kid_name.replace(/'/g, "\\'")}', '${t.task_name.replace(/'/g, "\\'")}', '${t.kid_avatar || ''}', '${t.proof_image_url || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors">Duyệt ngay</button>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
 
                 // Render Pending Rewards
                 if (rewards.length === 0) {
                     rewardContainer.innerHTML = '<div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 font-medium whitespace-pre-wrap">Chưa có yêu cầu đổi quà nào cần giao 🎁</div>';
                 } else {
-                    rewardContainer.innerHTML = rewards.map(r => `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+                    rewardContainer.innerHTML = rewards.map(r => {
+                        const isHighlighted = (highlightLogId === r.redemption_id);
+                        return `
+                        <div id="pending-reward-${r.redemption_id}" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4 transition-all ${isHighlighted ? 'highlight-pulse' : ''}">
                             <div class="flex items-center gap-4 flex-1">
                                 <img src="${r.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r.kid_name}" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
                                 <div>
@@ -1515,12 +1533,26 @@
                                 <button onclick="confirmDelivery('${r.redemption_id}')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors">Giao quà</button>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
+                }
+
+                // Scroll to highlighted item if exists
+                if (highlightLogId) {
+                    setTimeout(() => {
+                        const el = document.getElementById(`pending-task-${highlightLogId}`) || document.getElementById(`pending-reward-${highlightLogId}`);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        // Reset after highlight
+                        setTimeout(() => { highlightLogId = null; }, 4000);
+                    }, 500);
                 }
 
             } catch (error) {
                 console.error('Error loading pending:', error);
-                taskContainer.innerHTML = '<div class="text-center text-red-500 font-bold p-4">Lỗi tải dữ liệu!</div>';
+                taskContainer.innerHTML = `<div class="text-center text-red-500 font-bold p-4">Lỗi tải dữ liệu: ${error.message}</div>`;
+                rewardContainer.innerHTML = '';
             }
         }
 
@@ -2557,6 +2589,10 @@
             
             // Execute navigation
             if (n.action_data?.tab) {
+                // UX-05: Set highlightLogId if applicable
+                if (n.reference_id) {
+                    highlightLogId = n.reference_id;
+                }
                 switchTab(n.action_data.tab);
             }
             

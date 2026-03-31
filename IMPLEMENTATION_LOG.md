@@ -485,3 +485,36 @@ class RedemptionHistoryItem(BaseModel):
 - Drawer state cần biến `currentKidDetailId` để biết đang xem bé nào khi refresh sau action.
 - Sau khi `confirmDelivery()` từ drawer → gọi `loadKidRewardHistory(currentKidDetailId)` để refresh drawer, không cần reload toàn trang.
 
+---
+
+## [2026-03-31] ENTRY #8 — UX/UI Improvements & Bug Fixes
+
+### Task vừa hoàn thành
+- **UX-01: Tối ưu luồng "LÀM NGAY"**:
+    - Backend: `quests/pick-master` trả về `family_task_id` và `verification_type`.
+    - Frontend: Bé có thể bấm nộp bài ngay lập tức sau khi chọn việc từ danh sách gợi ý.
+- **UX-02: Chống spam "XIN QUÀ"**:
+    - Thêm logic kiểm tra thông báo chưa đọc cho cùng một món quà từ cùng một bé. Tránh việc bố mẹ nhận hàng chục thông báo trùng lặp.
+- **UX-03 & UX-04**:
+    - Sửa link thông báo xin quà trỏ về tab `rewards` của phụ huynh.
+    - Tự động làm mới danh sách quà gợi ý khi bé chuyển sang tab Cửa hàng.
+- **UX-05: Highlight nhiệm vụ từ thông báo**:
+    - Thêm biến `highlightLogId` toàn cục trong Parent Dashboard.
+    - Khi click thông báo, hệ thống tự động cuộn tới và thêm hiệu ứng `highlight-pulse` cho dòng tương ứng.
+- **UX-06: Wishlist cho bé**:
+    - Thêm API `GET /rewards/proposals` để lấy danh sách quà đang chờ duyệt.
+    - Thêm section "Điều ước đang gửi 🎁" trong tab Cửa hàng của bé.
+- **STABILIZATION**:
+    - Sửa lỗi cú pháp JS trong `loadPending()` gây ra thông báo "Lỗi tải dữ liệu" trên Parent Dashboard.
+    - Fix lỗi vỡ giao diện do dấu nháy đơn trong tên nhiệm vụ/tên bé tại các thuộc tính `onclick`.
+
+### Files đã thay đổi
+- `app/api/v1/quests.py` — Update `pick_master_task`.
+- `app/api/v1/rewards.py` — Add `get_my_proposals` & Update `propose_master_reward`.
+- `app/templates/kid_dashboard.html` — Thêm Wishlist UI & cập nhật logic pickTask/switchTab.
+- `app/templates/parent_dashboard.html` — Thêm highlight CSS, sửa lỗi hàm `loadPending`.
+
+### Bước tiếp theo (Pending)
+- Triển khai hệ thống Lịch sử chi tiết (ENTRY #7 thiết kế).
+- Logic duyệt đồng loạt (Bulk Approval).
+- Club Task Logic refinements.

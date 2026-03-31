@@ -180,6 +180,18 @@ async def propose_master_reward(
     if not master:
         raise HTTPException(status_code=404, detail="Master reward not found")
         
+    # Check for existing pending proposal notification for same master reward from this kid
+    # to avoid spamming the parent.
+    existing_notif = db.query(Notification).filter(
+        Notification.type == NotificationType.SYSTEM,
+        Notification.reference_id == str(master.id),
+        Notification.content.like(f"{current_user.display_name}%"),
+        Notification.is_read == False
+    ).first()
+    
+    if existing_notif:
+        return {"status": "success", "message": "Bố mẹ đang xem xét yêu cầu này rồi! Bạn chờ chút nhé ✨"}
+
     try:
         parents = db.query(User).filter(User.family_id == current_user.family_id, User.role == deps.Role.PARENT).all()
         for p in parents:
@@ -207,3 +219,36 @@ async def propose_master_reward(
         db.rollback()
         AuditService.log_failed(db=db, action="PROPOSE_REWARD", resource_type="MasterReward", error=e)
         raise HTTPException(status_code=500, detail="Could not propose reward")
+
+@router.get("/proposals", response_model=List[dict])
+async def get_my_proposals(
+    current_user: User = Depends(deps.require_role(deps.Role.KID)),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    KID: Get my pending reward proposals.
+    """
+    # Simply fetch from Notifications of type REWARD_PROPOSAL sent by this kid
+    # Or keep track in a separate table? Currently it's in Notifications with reference_id = master_id.
+    # To keep it simple, we can query notifications where user is parent and sender is kid?
+    # Actually, let's find notifications where reference_id is a MasterReward and user is a parent in this family.
+    
+    proposals = db.query(Notification).filter(
+        Notification.type == NotificationType.SYSTEM,
+        Notification.title.like("%ước món quà mới%"),
+        Notification.content.like(f"{current_user.display_name}%")
+    ).all()
+    
+    # Extract unique master IDs and names from content/action_data
+    results = []
+    seen_ids = set()
+    for n in proposals:
+        m_id = n.action_data.get("master_reward_id") if n.action_data else None
+        if m_id and m_id not in seen_ids:
+            seen_ids.add(m_id)
+            results.append({
+                "master_reward_id": m_id,
+                "name": n.action_data.get("suggested_name") or "Quà ẩn danh",
+                "status": "Đang chờ duyệt"
+            })
+    return results
