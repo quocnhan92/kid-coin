@@ -139,6 +139,7 @@
 - **Vấn đề:** `QuestBase.id` là `Optional[int]` (dành cho master task id), nhưng `QuestItem` kế thừa và override thành `Optional[UUID]` (log id). Điều này gây nhầm lẫn semantic — hai field cùng tên `id` mang nghĩa khác nhau tùy class.
 - **Đề xuất:** Đổi tên thành `log_id: Optional[UUID]` trong `QuestItem` và `master_id: Optional[int]` trong `QuestBase`.
 
+Fixed in 30/3/2026
 ---
 
 ### 🟢 VẤN ĐỀ UX / UI (Cải thiện trải nghiệm)
