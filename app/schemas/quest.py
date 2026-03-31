@@ -6,7 +6,7 @@ from app.models.logs_transactions import TaskStatus
 from app.models.tasks_rewards import VerificationType
 
 class QuestBase(BaseModel):
-    id: Optional[int] = None
+    master_task_id: Optional[int] = None
     name: str
     points_reward: int
     icon_url: Optional[str] = None
@@ -14,7 +14,7 @@ class QuestBase(BaseModel):
     max_age: Optional[int] = 18
 
 class QuestItem(QuestBase):
-    id: Optional[UUID] = None
+    log_id: Optional[UUID] = None
     task_id: UUID
     status: Optional[TaskStatus] = None # None means not started
     proof_image_url: Optional[str] = None

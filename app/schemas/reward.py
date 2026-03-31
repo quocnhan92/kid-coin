@@ -32,7 +32,7 @@ class DeliveryRequest(BaseModel):
     status: str # DELIVERED
 
 class MasterRewardResponse(BaseModel):
-    id: int
+    master_reward_id: int
     name: str
     icon_url: Optional[str]
     suggested_cost: int

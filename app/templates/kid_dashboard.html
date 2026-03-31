@@ -710,14 +710,15 @@
 
             container.innerHTML = suggestions.map(s => {
                 const escapedName = s.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const points = s.points_reward || s.suggested_value || 0;
                 return `
                     <div class="suggestion-card transform transition active:scale-95 hover:border-yellow-400">
                         <div class="text-4xl mb-2">${getIcon(s.name) || s.icon_url || '✨'}</div>
                         <h4 class="font-bold text-gray-800 text-[11px] leading-tight h-8 overflow-hidden mb-1">${s.name}</h4>
                         <div class="bg-yellow-100 rounded-full px-2 py-0.5 mb-2 inline-block">
-                            <span class="text-yellow-700 font-black text-[10px] tracking-tighter">+${s.points_reward} Xu</span>
+                            <span class="text-yellow-700 font-black text-[10px] tracking-tighter">+${points} Xu</span>
                         </div>
-                        <button onclick="pickTask(event, ${s.id}, '${escapedName}')" class="w-full py-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-black rounded-lg shadow-sm hover:bg-yellow-500 transition-colors">LÀM NGAY</button>
+                        <button onclick="pickTask(event, ${s.master_task_id}, '${escapedName}')" class="w-full py-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-black rounded-lg shadow-sm hover:bg-yellow-500 transition-colors">LÀM NGAY</button>
                     </div>
                 `;
             }).join('');
@@ -792,7 +793,7 @@
                         <div class="bg-purple-100 rounded-full px-2 py-0.5 mb-2 inline-block">
                             <span class="text-purple-700 font-black text-[10px] tracking-tighter">${s.suggested_cost} Xu</span>
                         </div>
-                        <button onclick="proposeReward(event, ${s.id}, '${escapedName}')" class="w-full py-1.5 bg-purple-500 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-purple-600 transition-colors">XIN QUÀ</button>
+                        <button onclick="proposeReward(event, ${s.master_reward_id}, '${escapedName}')" class="w-full py-1.5 bg-purple-500 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-purple-600 transition-colors">XIN QUÀ</button>
                     </div>
                 `;
             }).join('');

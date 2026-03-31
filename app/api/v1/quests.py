@@ -39,7 +39,8 @@ async def get_daily_quests(
         ).order_by(TaskLog.created_at.desc()).first()
         
         quest_item = quest_schemas.QuestItem(
-            id=log.id if log else None, # Log ID if submitted, else None
+            log_id=log.id if log else None, # Log ID if submitted, else None
+            master_task_id=task.master_task_id,
             task_id=task.id,
             name=task.name,
             points_reward=task.points_reward,
@@ -160,7 +161,8 @@ async def submit_quest(
         )
         
         return quest_schemas.QuestItem(
-            id=new_log.id,
+            log_id=new_log.id,
+            master_task_id=task.master_task_id,
             task_id=task.id,
             name=task.name,
             points_reward=task.points_reward,
@@ -180,130 +182,6 @@ async def submit_quest(
         )
         raise HTTPException(status_code=500, detail="Failed to submit quest")
 
-@router.post("/{log_id}/verify")
-async def verify_quest(
-    log_id: str,
-    request: quest_schemas.QuestVerifyRequest,
-    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
-    db: Session = Depends(deps.get_db)
-):
-    """
-    PARENT: Approve or Reject a quest submission.
-    """
-    # 1. Get the log
-    log = db.query(TaskLog).filter(TaskLog.id == log_id).first()
-    if not log:
-        raise HTTPException(status_code=404, detail="Submission not found")
-        
-    # verify ownership via kid's family
-    kid = db.query(User).get(log.kid_id) # Technically this is the user who submitted it (Parent or Kid)
-    if kid.family_id != current_user.family_id:
-        raise HTTPException(status_code=403, detail="Not authorized for this submission")
-
-    if log.status != TaskStatus.PENDING_APPROVAL:
-         raise HTTPException(status_code=400, detail="Submission already processed")
-
-    # 2. Process Approval/Rejection
-    try:
-        log.resolved_at = datetime.now()
-        task = db.query(FamilyTask).get(log.family_task_id)
-        from app.models.notifications import Notification, NotificationType
-        
-        if request.action == "APPROVE":
-            log.status = TaskStatus.APPROVED
-            log.parent_comment = request.comment # Save praise
-            
-            # Transaction: Add Coin & XP
-            points = task.points_reward
-            
-            from app.models.logs_transactions import Transaction, TransactionType
-            
-            transaction = Transaction(
-                kid_id=kid.id,
-                amount=points,
-                transaction_type=TransactionType.TASK_COMPLETION,
-                reference_id=log.id,
-                description=f"Approved: {task.name}"
-            )
-            db.add(transaction)
-            
-            # Update User Balances
-            kid.current_coin += points
-            kid.total_earned_score += points
-            
-            # Notification to Kid
-            kid_notif = Notification(
-                user_id=kid.id,
-                type=NotificationType.SYSTEM,
-                title="Tuyệt vời quá! 🎉",
-                content=f"Bố/mẹ đã chấm điểm '{task.name}'. Lời khen: {request.comment}",
-                reference_id=str(log.id),
-                action_data={
-                    "tab": "quests", 
-                    "show_praise_modal": True, 
-                    "task_id": str(task.id), 
-                    "points_awarded": points, 
-                    "parent_comment": request.comment, 
-                    "status": "APPROVED",
-                    "task_name": task.name
-                }
-            )
-            db.add(kid_notif)
-            
-            AuditService.log(
-                db=db,
-                action="APPROVE_QUEST",
-                resource_type="TaskLog",
-                resource_id=str(log.id),
-                status=AuditStatus.SUCCESS,
-                details={"points_awarded": points}
-            )
-            
-        elif request.action == "REJECT":
-            log.status = TaskStatus.REJECTED
-            log.parent_comment = request.comment # Save reject reason
-            
-            kid_notif = Notification(
-                user_id=kid.id,
-                type=NotificationType.SYSTEM,
-                title="Cần cố gắng thêm! 💪",
-                content=f"Bố/mẹ chưa duyệt '{task.name}'. Lời nhắn: {request.comment}",
-                reference_id=str(log.id),
-                action_data={
-                    "tab": "quests", 
-                    "show_praise_modal": True, 
-                    "task_id": str(task.id), 
-                    "parent_comment": request.comment, 
-                    "status": "REJECTED",
-                    "task_name": task.name
-                }
-            )
-            db.add(kid_notif)
-            
-            AuditService.log(
-                db=db,
-                action="REJECT_QUEST",
-                resource_type="TaskLog",
-                resource_id=str(log.id),
-                status=AuditStatus.SUCCESS,
-                details={"reason": request.comment}
-            )
-        else:
-            raise HTTPException(status_code=400, detail="Invalid action")
-
-        db.commit()
-        return {"status": "success", "message": f"Quest {request.action.lower()}ed"}
-        
-    except Exception as e:
-        db.rollback()
-        AuditService.log_failed(
-            db=db,
-            action="VERIFY_QUEST",
-            resource_type="TaskLog",
-            resource_id=str(log_id),
-            error=e
-        )
-        raise HTTPException(status_code=500, detail="Verification failed")
 
 def calculate_age(birth_date):
     if not birth_date:
@@ -341,7 +219,7 @@ async def get_master_tasks(
     
     return [
         quest_schemas.QuestBase(
-            id=t.id,
+            master_task_id=t.id,
             name=t.name,
             points_reward=t.suggested_value,
             icon_url=t.icon_url,

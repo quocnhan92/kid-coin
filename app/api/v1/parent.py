@@ -140,7 +140,7 @@ class AuditLogPaginatedResponse(BaseModel):
     logs: List[AuditLogResponse]
 
 class MasterTaskResponse(BaseModel):
-    id: int
+    master_task_id: int
     name: str
     icon_url: Optional[str]
     suggested_value: int
@@ -158,25 +158,33 @@ async def get_pending_tasks(
     db: Session = Depends(deps.get_db)
 ):
     """
-    Get all pending tasks for kids in the parent's family.
+    Get all pending tasks for kids in the parent's family (Family + Club tasks).
     """
-    pending_logs = db.query(TaskLog, User, FamilyTask).join(
-        User, TaskLog.kid_id == User.id
-    ).join(
-        FamilyTask, TaskLog.family_task_id == FamilyTask.id # Changed to family_task_id based on recent DB updates
+    from app.models.club_tasks import ClubTask
+
+    # Use explicit join from TaskLog to ensure correctly scoped results
+    pending_logs = db.query(TaskLog, User, FamilyTask, ClubTask).select_from(TaskLog).join(
+        User, User.id == TaskLog.kid_id
+    ).outerjoin(
+        FamilyTask, FamilyTask.id == TaskLog.family_task_id
+    ).outerjoin(
+        ClubTask, ClubTask.id == TaskLog.club_task_id
     ).filter(
         User.family_id == current_user.family_id,
         TaskLog.status == TaskStatus.PENDING_APPROVAL
     ).order_by(TaskLog.created_at.desc()).all()
     
     response = []
-    for log, kid, task in pending_logs:
+    for log, kid, f_task, c_task in pending_logs:
+        task_name = f_task.name if f_task else (c_task.name if c_task else "Nhiệm vụ không xác định")
+        points_reward = f_task.points_reward if f_task else (c_task.points_reward if c_task else 0)
+        
         response.append(PendingTaskResponse(
             log_id=log.id,
             kid_name=kid.display_name,
             kid_avatar=kid.avatar_url,
-            task_name=task.name,
-            points_reward=task.points_reward,
+            task_name=task_name,
+            points_reward=points_reward,
             proof_image_url=log.proof_image_url,
             created_at=log.created_at,
             status=log.status
@@ -875,7 +883,17 @@ async def get_master_tasks(
     """
     Get all suggested master tasks.
     """
-    return db.query(MasterTask).all()
+    tasks = db.query(MasterTask).all()
+    return [
+        MasterTaskResponse(
+            master_task_id=t.id,
+            name=t.name,
+            icon_url=t.icon_url,
+            suggested_value=t.suggested_value,
+            category=t.category.value,
+            verification_type=t.verification_type.value
+        ) for t in tasks
+    ]
 
 @router.get("/master-rewards", response_model=List[reward_schemas.MasterRewardResponse])
 async def get_master_rewards(
@@ -889,7 +907,18 @@ async def get_master_rewards(
     query = db.query(MasterReward)
     if q:
         query = query.filter(MasterReward.name.ilike(f"%{q}%"))
-    return query.all()
+    
+    rewards = query.all()
+    return [
+        reward_schemas.MasterRewardResponse(
+            master_reward_id=r.id,
+            name=r.name,
+            icon_url=r.icon_url,
+            suggested_cost=r.suggested_cost,
+            min_age=r.min_age,
+            max_age=r.max_age
+        ) for r in rewards
+    ]
 
 @router.post("/rewards/{redemption_id}/confirm")
 async def confirm_reward_delivery(

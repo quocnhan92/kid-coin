@@ -42,7 +42,7 @@ async def redeem_reward(
         FamilyReward.id == reward_id,
         FamilyReward.family_id == current_user.family_id,
         FamilyReward.is_active == True
-    ).first()
+    ).with_for_update().first()
     
     if not reward:
         raise HTTPException(status_code=404, detail="Reward not found or inactive")
@@ -128,88 +128,30 @@ async def redeem_reward(
         )
         raise HTTPException(status_code=500, detail="Redemption failed")
 
-@router.put("/delivery/{redemption_id}")
-async def deliver_reward(
-    redemption_id: str,
-    request: reward_schemas.DeliveryRequest,
-    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),
-    db: Session = Depends(deps.get_db)
-):
-    """
-    PARENT: Confirm delivery of a reward.
-    """
-    log = db.query(RedemptionLog).filter(RedemptionLog.id == redemption_id).first()
-    if not log:
-        raise HTTPException(status_code=404, detail="Redemption log not found")
-        
-    kid = db.query(User).get(log.kid_id)
-    if kid.family_id != current_user.family_id:
-        raise HTTPException(status_code=403, detail="Not authorized for this log")
-
-    if log.status != RedemptionStatus.PENDING_DELIVERY:
-         raise HTTPException(status_code=400, detail="Reward already delivered")
-
-    if request.status != "DELIVERED":
-        raise HTTPException(status_code=400, detail="Invalid status update")
-
-    try:
-        from datetime import datetime
-        log.status = RedemptionStatus.DELIVERED
-        log.delivered_at = datetime.now()
-        
-        db.commit()
-        
-        try:
-            from app.models.notifications import Notification, NotificationType
-            reward = db.query(FamilyReward).get(log.reward_id)
-            kid_notif = Notification(
-                user_id=kid.id,
-                type=NotificationType.SYSTEM,
-                title="Quà đã về! 🎁",
-                content=f"Bố/mẹ đã giao cho bạn món quà '{reward.name}'. Bạn đã nhận được chưa?",
-                reference_id=str(log.id),
-                action_data={"tab": "shop", "show_delivery_modal": True, "reward_name": reward.name}
-            )
-            db.add(kid_notif)
-            db.commit()
-        except Exception as e:
-            import logging
-            logging.error(f"Failed to send delivery notification to kid: {e}")
-
-        AuditService.log(
-            db=db,
-            action="DELIVER_REWARD",
-            resource_type="RedemptionLog",
-            resource_id=str(log.id),
-            status=AuditStatus.SUCCESS
-        )
-        
-        return {"status": "success", "message": "Reward marked as delivered"}
-    except Exception as e:
-        db.rollback()
-        AuditService.log_failed(
-            db=db,
-            action="DELIVER_REWARD",
-            resource_type="RedemptionLog",
-            resource_id=redemption_id,
-            error=e
-        )
-        raise HTTPException(status_code=500, detail="Delivery confirmation failed")
-
 @router.get("/master", response_model=List[reward_schemas.MasterRewardResponse])
 async def get_master_rewards(
     q: Optional[str] = None,
-    current_user: User = Depends(deps.get_current_user),
-    db: Session = Depends(deps.get_db)
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
-    KID: Get suggested master rewards with search and age prioritization.
+    Get all master rewards for suggestions.
     """
     query = db.query(MasterReward)
     if q:
         query = query.filter(MasterReward.name.ilike(f"%{q}%"))
     
     rewards = query.all()
+    return [
+        reward_schemas.MasterRewardResponse(
+            master_reward_id=r.id,
+            name=r.name,
+            icon_url=r.icon_url,
+            suggested_cost=r.suggested_cost,
+            min_age=r.min_age,
+            max_age=r.max_age
+        ) for r in rewards
+    ]
     
     # Age-based prioritization
     if current_user.birth_date:

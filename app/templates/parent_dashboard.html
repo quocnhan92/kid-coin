@@ -900,7 +900,7 @@
             const taskContainer = document.getElementById('task-suggestions-list');
             if (taskContainer) {
                 taskContainer.innerHTML = masterTasks.map(t => `
-                    <div class="suggestion-card" onclick="quickFillTask(${t.id})" id="mt-${t.id}">
+                    <div class="suggestion-card" onclick="quickFillTask(${t.master_task_id})" id="mt-${t.master_task_id}">
                         <div class="text-3xl mb-1">${t.icon_url || '✨'}</div>
                         <p class="text-[10px] font-bold text-gray-600 truncate">${t.name}</p>
                         <p class="text-[10px] text-blue-500 font-black">${t.suggested_value} Xu</p>
@@ -923,7 +923,7 @@
                 }
 
                 rewardContainer.innerHTML = filtered.map(r => `
-                    <div class="suggestion-card" onclick="quickFillReward(${r.id})" id="mr-${r.id}">
+                    <div class="suggestion-card" onclick="quickFillReward(${r.master_reward_id})" id="mr-${r.master_reward_id}">
                         <div class="text-3xl mb-1">${r.icon_url || '🎁'}</div>
                         <p class="text-[10px] font-bold text-gray-600 truncate">${r.name}</p>
                         <p class="text-[10px] text-purple-500 font-black">${r.suggested_cost} Xu</p>
@@ -937,7 +937,7 @@
         }
 
         function quickFillTask(id) {
-            const task = masterTasks.find(t => t.id === id);
+            const task = masterTasks.find(t => t.master_task_id === id);
             if (!task) return;
 
             selectedMasterTaskId = id;
@@ -988,7 +988,7 @@
         }
 
         function quickFillReward(id) {
-            const reward = masterRewards.find(r => r.id === id);
+            const reward = masterRewards.find(r => r.master_reward_id === id);
             if (!reward) return;
 
             selectedMasterRewardId = id;
