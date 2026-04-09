@@ -6,7 +6,7 @@ import logging
 import os
 import threading
 from sqlalchemy.orm import Session # Added missing import
-from app.core.database import engine, Base, SessionLocal
+from app.core.database import SessionLocal
 from app.api.v1 import system as system_router
 from app.api.v1 import users as users_router
 from app.api.v1 import quests as quests_router
@@ -19,7 +19,7 @@ from app.api.v1 import notifications as notifications_router
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
-from app.core.migrations import run_migrations
+from app.core.migration_runner import run_alembic_upgrade
 from app.core.security import decode_access_token
 
 # Import all models to ensure they are registered with Base
@@ -34,19 +34,6 @@ from app.models.notifications import Notification
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Run migrations first
-try:
-    run_migrations()
-except Exception as e:
-    logger.error(f"Migration failed: {e}")
-
-# Create tables if not exist (Fallback)
-try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables verified.")
-except Exception as e:
-    logger.error(f"Error creating database tables: {e}")
 
 app = FastAPI(title="Kid Coin", description="Family Task and Reward System")
 
@@ -79,6 +66,8 @@ app.include_router(notifications_router.router, prefix="/api/v1/notifications", 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
 def seed_initial_data():
+    run_alembic_upgrade()
+
     db = SessionLocal()
     try:
         # Check if any user exists

@@ -26,8 +26,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy toàn bộ mã nguồn vào container
 COPY . .
 
+# Cấp quyền thực thi cho entrypoint script
+RUN chmod +x entrypoint.sh
+
 # Expose port 8000 (mặc định của uvicorn/fastapi)
 EXPOSE 8000
 
-# Lệnh chạy ứng dụng
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Chạy entrypoint script (tự động chạy alembic upgrade head trước khi khởi động uvicorn)
+ENTRYPOINT ["./entrypoint.sh"]
