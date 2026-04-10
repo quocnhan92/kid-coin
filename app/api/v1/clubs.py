@@ -35,7 +35,8 @@ async def create_club(
     """
     invite_code = request.custom_invite_code
     if invite_code:
-        if db.query(Club).filter(Club.invite_code.is_(invite_code)).first():
+        # BUG-04 FIX: was using .is_() (SQL IS) instead of == for string comparison
+        if db.query(Club).filter(Club.invite_code == invite_code).first():
             raise HTTPException(status_code=400, detail="Mã mời này đã tồn tại.")
     else:
         invite_code = generate_readable_code(request.name)
@@ -102,6 +103,28 @@ async def get_my_clubs(
         logger.exception("Error in get_my_clubs: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
+# BUG-09 FIX: /search defined here (before /{club_id}) to prevent route shadowing
+@router.get("/search", response_model=List[club_schemas.ClubResponse])
+async def search_clubs(
+    query: str = Query(..., description="Search term for club name or invite code"),
+    db: Session = Depends(deps.get_db)
+):
+    """
+    Search for clubs by name or invite code.
+    """
+    try:
+        clubs = db.query(Club).filter(
+            Club.is_active.is_(True),
+            or_(
+                Club.name.ilike(f"%{query}%"),
+                Club.invite_code == query
+            )
+        ).all()
+        return clubs
+    except Exception as e:
+        logger.exception("Error in search_clubs: %s", e)
+        raise HTTPException(status_code=500, detail="Could not search for clubs")
+
 @router.get("/{club_id}", response_model=club_schemas.ClubDetailResponse)
 async def get_club_detail(
     club_id: str,
@@ -122,18 +145,19 @@ async def get_club_detail(
     ).all()
 
     if not members:
-        raise HTTPException(status_code=404, detail="No members found for this club.")
-
-    members_list = [
-        {
-            "user_id": member_id,
-            "display_name": display_name,
-            "avatar_url": avatar_url,
-            "total_earned_score": total_earned_score,
-            "role": role,
-            "joined_at": joined_at
-        } for member_id, display_name, avatar_url, total_earned_score, role, joined_at in members
-    ]
+        # BUG-10 FIX: was raising 404 for empty clubs — return empty list instead
+        members_list = []
+    else:
+        members_list = [
+            {
+                "user_id": member_id,
+                "display_name": display_name,
+                "avatar_url": avatar_url,
+                "total_earned_score": total_earned_score,
+                "role": role,
+                "joined_at": joined_at
+            } for member_id, display_name, avatar_url, total_earned_score, role, joined_at in members
+        ]
 
     return {
         "id": club.id,
@@ -411,26 +435,8 @@ async def get_club_tasks(
 
     return tasks
 
-@router.get("/search", response_model=List[club_schemas.ClubResponse])
-async def search_clubs(
-    query: str = Query(..., description="Search term for club name or invite code"),
-    db: Session = Depends(deps.get_db)
-):
-    """
-    Search for clubs by name or invite code.
-    """
-    try:
-        clubs = db.query(Club).filter(
-            Club.is_active.is_(True),
-            or_(
-                Club.name.ilike(f"%{query}%"),
-                Club.invite_code == query
-            )
-        ).all()
-        return clubs
-    except Exception as e:
-        logger.exception("Error in search_clubs: %s", e)
-        raise HTTPException(status_code=500, detail="Could not search for clubs")
+# BUG-09 FIX: /search is now defined before /{club_id} in the file (see above).
+# The original /{club_id} route at the top of the file handles GET /{club_id}.
 
 @router.post("/{club_id}/invite", response_model=club_schemas.ClubResponse)
 async def invite_user_to_club(

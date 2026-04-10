@@ -1,13 +1,12 @@
+import os
 from datetime import datetime, timedelta
 from typing import Any, Union
 from jose import jwt
-import os
 
-# In a real production environment, this should be an environment variable!
-# e.g., SECRET_KEY = os.getenv("SECRET_KEY", "your-fallback-secret-key")
-SECRET_KEY = "kidcoin_super_secret_key_for_jwt_tokens_replace_in_prod"
+# BUG-12 FIX: Read from env var, fallback for local dev only
+SECRET_KEY = os.getenv("SECRET_KEY", "kidcoin_super_secret_key_for_jwt_tokens_replace_in_prod")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30 # 30 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 days
 
 def create_access_token(subject: Union[str, Any], expires_delta: timedelta = None) -> str:
     if expires_delta:

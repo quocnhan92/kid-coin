@@ -790,11 +790,21 @@ async def approve_task(
         log.resolved_at = datetime.now()
         log.parent_comment = request.comment # Save praise or reject reason
 
+        # BUG-01/06 FIX: Resolve task from either family_task_id or club_task_id
+        from app.models.club_tasks import ClubTask as ClubTaskModel
+        if log.family_task_id:
+            task = db.query(FamilyTask).get(log.family_task_id)
+        elif log.club_task_id:
+            task = db.query(ClubTaskModel).get(log.club_task_id)
+        else:
+            task = None
+
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found for this log")
+
         if request.action.upper() == "APPROVE":
             log.status = TaskStatus.APPROVED
 
-            # Get task details
-            task = db.query(FamilyTask).get(log.family_task_id)
             points = task.points_reward
 
             # Create transaction
@@ -828,11 +838,11 @@ async def approve_task(
                 content=f"Bố/mẹ đã chấm điểm '{task.name}'. Lời khen: {request.comment}",
                 reference_id=str(log.id),
                 action_data={
-                    "tab": "quests", 
-                    "show_praise_modal": True, 
-                    "task_id": str(task.id), 
-                    "points_awarded": points, 
-                    "parent_comment": request.comment, 
+                    "tab": "quests",
+                    "show_praise_modal": True,
+                    "task_id": str(task.id),
+                    "points_awarded": points,
+                    "parent_comment": request.comment,
                     "status": "APPROVED",
                     "task_name": task.name
                 }
@@ -850,7 +860,6 @@ async def approve_task(
             )
 
             # Notification to Kid
-            task = db.query(FamilyTask).get(log.family_task_id)
             kid_notif = Notification(
                 user_id=kid.id,
                 type=NotificationType.SYSTEM,
@@ -858,10 +867,10 @@ async def approve_task(
                 content=f"Bố/mẹ chưa duyệt '{task.name}'. Lời nhắn: {request.comment}",
                 reference_id=str(log.id),
                 action_data={
-                    "tab": "quests", 
-                    "show_praise_modal": True, 
-                    "task_id": str(task.id), 
-                    "parent_comment": request.comment, 
+                    "tab": "quests",
+                    "show_praise_modal": True,
+                    "task_id": str(task.id),
+                    "parent_comment": request.comment,
                     "status": "REJECTED",
                     "task_name": task.name
                 }
@@ -953,7 +962,7 @@ async def confirm_reward_delivery(
             status=AuditStatus.SUCCESS
         )
 
-        # Notification to Kid
+        # BUG-03 FIX: Notification to Kid — commit was missing
         reward = db.query(FamilyReward).get(log.reward_id)
         kid_notif = Notification(
             user_id=kid.id,
@@ -964,6 +973,7 @@ async def confirm_reward_delivery(
             action_data={"tab": "shop", "show_delivery_modal": True, "reward_name": reward.name}
         )
         db.add(kid_notif)
+        db.commit()  # BUG-03 FIX: was missing
 
         return {"status": "success", "message": "Reward marked as delivered"}
     except Exception as e:
@@ -1008,8 +1018,8 @@ async def get_audit_logs(
     """
     Get audit logs for the family with server-side filtering and pagination.
     """
-    # Join with User to get only logs related to this family
-    query = db.query(AuditLog, User).join(
+    # BUG-08 FIX: Use outerjoin to include system audit logs where user_id is NULL
+    query = db.query(AuditLog, User).outerjoin(
         User, AuditLog.user_id == User.id
     ).filter(
         User.family_id == current_user.family_id

@@ -12,8 +12,12 @@ class UpdateProfileRequest(BaseModel):
     avatar_url: Optional[str] = None
 
 @router.get("/")
-def get_users(db: Session = Depends(deps.get_db)):
-    users = db.query(User).all()
+def get_users(
+    current_user: User = Depends(deps.require_role(deps.Role.PARENT)),  # BUG-11 FIX: added auth
+    db: Session = Depends(deps.get_db)
+):
+    # Only return users in the same family, not all users globally
+    users = db.query(User).filter(User.family_id == current_user.family_id).all()
     return users
 
 @router.get("/search")
