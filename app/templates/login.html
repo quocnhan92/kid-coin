@@ -1,9 +1,135 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidCoin - Đăng nhập</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+    <!-- ===== PRIMARY SEO META TAGS ===== -->
+    <title>KidCoin — Ứng dụng Quản lý Việc nhà & Dạy Tài chính cho Trẻ em | Miễn phí</title>
+    <meta name="description" content="KidCoin giúp bố mẹ giao việc nhà, thưởng Coin cho bé hoàn thành nhiệm vụ. Dạy trẻ quản lý tài chính, tiết kiệm và trách nhiệm qua gamification. Miễn phí, dễ dùng cho gia đình Việt Nam.">
+    <meta name="keywords" content="ứng dụng quản lý việc nhà trẻ em, dạy trẻ quản lý tài chính, gamification gia đình, thưởng coin cho bé, app parenting Việt Nam, nhiệm vụ hàng ngày cho bé, hệ thống điểm thưởng trẻ em, dạy trẻ tiết kiệm tiền, bảng nhiệm vụ gia đình, ứng dụng giáo dục tài chính trẻ em, quản lý việc nhà bằng app, leaderboard gia đình, thử thách gia đình, KidCoin">
+    <meta name="author" content="KidCoin">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://kidcoin.app/login">
+
+    <!-- ===== OPEN GRAPH (Facebook, Zalo, Messenger) ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kidcoin.app/login">
+    <meta property="og:title" content="KidCoin — Ứng dụng Quản lý Việc nhà & Dạy Tài chính cho Trẻ em">
+    <meta property="og:description" content="Giao việc nhà, thưởng Coin, dạy bé tiết kiệm. Gamification gia đình đơn giản và hiệu quả. Miễn phí hoàn toàn.">
+    <meta property="og:image" content="https://kidcoin.app/static/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="KidCoin - Ứng dụng quản lý việc nhà và dạy tài chính cho trẻ em">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:site_name" content="KidCoin">
+
+    <!-- ===== TWITTER CARD ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="KidCoin — Ứng dụng Quản lý Việc nhà cho Trẻ em">
+    <meta name="twitter:description" content="Gamification gia đình: giao việc, thưởng Coin, dạy tài chính cho bé. Miễn phí.">
+    <meta name="twitter:image" content="https://kidcoin.app/static/og-image.png">
+    <meta name="twitter:image:alt" content="KidCoin App Screenshot">
+
+    <!-- ===== PWA & MOBILE ===== -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KidCoin">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/static/site.webmanifest">
+
+    <!-- ===== FAVICON ===== -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+
+    <!-- ===== PERFORMANCE: PRECONNECT ===== -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://api.dicebear.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://api.dicebear.com">
+
+    <!-- ===== JSON-LD STRUCTURED DATA ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "KidCoin",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "FamilyApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "description": "Ứng dụng quản lý việc nhà và dạy tài chính cho trẻ em thông qua gamification. Bố mẹ giao nhiệm vụ, bé hoàn thành nhận Coin, học cách tiết kiệm và quản lý tiền.",
+      "url": "https://kidcoin.app",
+      "inLanguage": "vi",
+      "isAccessibleForFree": true,
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Gia đình có trẻ em từ 3-18 tuổi"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "VND",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Quản lý nhiệm vụ hàng ngày cho trẻ em",
+        "Hệ thống thưởng Coin gamification",
+        "Dạy trẻ quản lý tài chính và tiết kiệm",
+        "Leaderboard thi đua gia đình",
+        "Thử thách gia đình",
+        "Nhật ký tự phản biện cho thiếu niên",
+        "Heo đất mục tiêu tiết kiệm",
+        "Câu lạc bộ thi đua cộng đồng"
+      ],
+      "screenshot": "https://kidcoin.app/static/screenshot.png"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "KidCoin",
+      "url": "https://kidcoin.app",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kidcoin.app/static/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "Nền tảng gamification gia đình giúp dạy trẻ em quản lý tài chính và trách nhiệm",
+      "foundingDate": "2026",
+      "inLanguage": "vi"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "KidCoin — Đăng nhập",
+      "description": "Đăng nhập vào KidCoin để quản lý việc nhà và dạy tài chính cho trẻ em",
+      "url": "https://kidcoin.app/login",
+      "inLanguage": "vi",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "KidCoin",
+        "url": "https://kidcoin.app"
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": "https://kidcoin.app/login"
+        }]
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hidden-view { display: none; }
@@ -14,7 +140,18 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen font-sans">
+<body class="bg-gray-100 flex flex-col justify-center items-center min-h-screen font-sans">
+
+    <!-- Hidden SEO content for crawlers -->
+    <header class="sr-only" role="banner">
+        <h1>KidCoin — Ứng dụng Quản lý Việc nhà và Dạy Tài chính cho Trẻ em</h1>
+        <p>Nền tảng gamification gia đình: bố mẹ giao việc nhà, bé hoàn thành nhận Coin, học cách tiết kiệm và quản lý tài chính từ nhỏ. Miễn phí, dễ dùng cho gia đình Việt Nam.</p>
+        <nav aria-label="Điều hướng chính">
+            <a href="/login">Đăng nhập</a>
+        </nav>
+    </header>
+
+    <main role="main" aria-label="Đăng nhập KidCoin" class="w-full flex justify-center items-center flex-1">
 
     <div class="bg-white w-full max-w-md h-[800px] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-4 border-gray-800 p-8 text-center fade-in">
 
@@ -119,6 +256,17 @@
         </div>
 
     </div>
+
+    </main>
+
+    <!-- SEO Footer -->
+    <footer role="contentinfo" class="sr-only">
+        <p>© 2026 KidCoin — Ứng dụng giáo dục gia đình Việt Nam</p>
+        <p>Từ khóa: ứng dụng quản lý việc nhà trẻ em, dạy trẻ quản lý tài chính, gamification gia đình, thưởng coin cho bé, app parenting Việt Nam</p>
+        <nav aria-label="Footer">
+            <a href="/login">Đăng nhập</a>
+        </nav>
+    </footer>
 
     <script>
         const API_BASE = '/api/v1/auth';

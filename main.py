@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, Cookie, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
 import logging
 import os
 import threading
@@ -221,6 +221,44 @@ async def read_kid_dashboard(request: Request, access_token: Optional[str] = Coo
         return response
         
     return templates.TemplateResponse("kid_dashboard.html", {"request": request})
+
+
+# ===== SEO ROUTES =====
+
+@app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
+async def robots_txt():
+    """robots.txt — hướng dẫn search engine crawl"""
+    return """User-agent: *
+Allow: /login
+Allow: /static/
+Disallow: /parent
+Disallow: /kid
+Disallow: /admin
+Disallow: /api/
+Disallow: /analytics
+
+# Sitemap location
+Sitemap: https://kidcoin.app/sitemap.xml"""
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    """sitemap.xml — danh sách URLs cho search engine index"""
+    from datetime import date
+    today = date.today().isoformat()
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://kidcoin.app/login</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://kidcoin.app/login"/>
+  </url>
+</urlset>"""
+    return Response(content=content, media_type="application/xml")
+
 
 if __name__ == "__main__":
     import uvicorn

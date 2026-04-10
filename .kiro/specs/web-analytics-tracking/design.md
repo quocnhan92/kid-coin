@@ -583,21 +583,157 @@ async def analytics_dashboard(
 
 ## Correctness Properties
 
-1. **Non-blocking**: Với mọi request R, thời gian xử lý của R không tăng quá 5ms do analytics middleware (analytics chạy trong BackgroundTask).
+*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-2. **No data loss on error**: Nếu `record_event` raise exception, exception được catch và log, response vẫn được trả về bình thường.
+### Property 1: Skip paths never produce analytics records
 
-3. **Session uniqueness**: Với cùng `device_id` trong window 30 phút, `resolve_session` luôn trả về cùng `session_id`.
+*For any* request path that starts with `/static/`, equals `/favicon.ico`, or equals `/health`, calling `AnalyticsMiddleware.dispatch` should not insert any `WebPageView` record into the database.
 
-4. **Session isolation**: Hai `device_id` khác nhau không bao giờ share cùng `session_id`.
+**Validates: Requirement 1.2**
 
-5. **Idempotent daily stats**: Upsert `web_daily_stats` với cùng `(stat_date, path)` không tạo duplicate row.
+---
 
-6. **Skip paths**: Paths `/static/*`, `/favicon.ico`, `/health` không bao giờ tạo `WebPageView` record.
+### Property 2: Analytics never delays response
 
-7. **DAU ≤ WAU ≤ MAU**: Luôn đúng vì DAU là subset của WAU, WAU là subset của MAU.
+*For any* HTTP request, the response returned to the client should be identical (status code, headers, body) regardless of whether analytics recording succeeds or fails, and the BackgroundTask should be scheduled without blocking the response.
 
-8. **Auth isolation**: Analytics API chỉ accessible với PARENT role; KID không thể xem analytics.
+**Validates: Requirements 1.4, 1.5**
+
+---
+
+### Property 3: Page view classification is path-based
+
+*For any* request path starting with `/api/`, the recorded `WebPageView` should have `is_page_view = False`; for any other non-skip path, `is_page_view` should be `True`.
+
+**Validates: Requirement 1.8**
+
+---
+
+### Property 4: Device ID and user ID are propagated correctly
+
+*For any* request with an `X-Device-ID` header value and a valid JWT cookie, the recorded `WebPageView` should have `device_id` matching the header value and `user_id` matching the JWT subject.
+
+**Validates: Requirements 1.6, 1.7**
+
+---
+
+### Property 5: record_event inserts exactly one record with complete data
+
+*For any* valid `PageViewEvent`, calling `record_event` should result in exactly one new `WebPageView` row whose fields (`path`, `method`, `status_code`, `duration_ms`, `user_id`, `device_id`, `session_id`, `ip_address`, `user_agent`, `device_type`, `os_name`, `browser`, `country`, `city`, `is_page_view`) match the event data.
+
+**Validates: Requirements 2.1, 2.2**
+
+---
+
+### Property 6: record_event never propagates exceptions
+
+*For any* exception raised inside `record_event` (DB failure, constraint violation, parsing error), the function should return `None` without raising to the caller.
+
+**Validates: Requirement 2.3**
+
+---
+
+### Property 7: record_event upserts daily stats for both specific path and site-wide
+
+*For any* valid `PageViewEvent` with path P, after `record_event` completes, `web_daily_stats` should contain rows for both path P and path `"/"` for the event's date.
+
+**Validates: Requirement 2.4**
+
+---
+
+### Property 8: UserAgentParser always returns required structure
+
+*For any* string (including empty, malformed, or random strings), `parse_user_agent` should return an object containing `device_type`, `os_name`, and `browser` keys without raising an exception (values may be `null`).
+
+**Validates: Requirements 3.1, 3.5**
+
+---
+
+### Property 9: GeoIPResolver never raises exceptions
+
+*For any* IP address string (private IP, malformed, IPv6, empty), `resolve_geo` should return `{country: null, city: null}` without raising an exception when the lookup fails.
+
+**Validates: Requirement 4.2**
+
+---
+
+### Property 10: Analytics API responses never expose raw IP addresses
+
+*For any* analytics API endpoint response (`/api/v1/analytics/*`), the JSON response body should not contain any `ip_address` field or raw IP address values.
+
+**Validates: Requirement 4.3**
+
+---
+
+### Property 11: Session reuse within 30-minute window
+
+*For any* `device_id`, two consecutive calls to `resolve_session` within 30 minutes should return the same `session_id`, and the second call should increment `page_count` by 1.
+
+**Validates: Requirements 5.2, 5.6**
+
+---
+
+### Property 12: Session isolation across different devices
+
+*For any* two distinct `device_id` values, `resolve_session` should return different `session_id` values.
+
+**Validates: Requirement 5.5**
+
+---
+
+### Property 13: WebDailyStat upsert is idempotent
+
+*For any* `(stat_date, path)` pair, calling the upsert operation N times should result in exactly one row in `web_daily_stats` (no duplicates), with `page_views` incremented by exactly N.
+
+**Validates: Requirements 6.1, 6.2**
+
+---
+
+### Property 14: Error count increments only for status_code >= 400
+
+*For any* `PageViewEvent`, if `status_code >= 400` then `error_count` in `WebDailyStat` should increment by 1; if `status_code < 400` then `error_count` should remain unchanged.
+
+**Validates: Requirement 6.3**
+
+---
+
+### Property 15: DAU ≤ WAU ≤ MAU invariant
+
+*For any* dataset of `WebPageView` records, `get_retention` should return values satisfying `dau <= wau` and `wau <= mau`, since DAU is a subset of WAU which is a subset of MAU.
+
+**Validates: Requirements 8.5, 8.6, 8.7**
+
+---
+
+### Property 16: Overview numeric fields are non-negative
+
+*For any* dataset and any valid `days` value in [1, 365], `get_overview` should return all numeric fields (`total_page_views`, `unique_visitors`, `total_sessions`, `avg_session_duration_ms`, `bounce_rate`) with values >= 0.
+
+**Validates: Requirements 7.4**
+
+---
+
+### Property 17: Top endpoints are sorted by call count descending
+
+*For any* dataset of endpoint calls, `get_top_endpoints` should return results where each `EndpointStat` has a `call_count` greater than or equal to the `call_count` of the next item in the list.
+
+**Validates: Requirement 8.9**
+
+---
+
+### Property 18: Analytics endpoints require PARENT role
+
+*For any* of the 7 analytics API endpoints, a request without a valid JWT cookie should return HTTP 401, and a request with a valid JWT for a non-PARENT role (e.g., KID) should return HTTP 403.
+
+**Validates: Requirements 9.2, 9.3**
+
+---
+
+### Property 19: Dashboard escapes user-generated content
+
+*For any* `user_agent` string containing HTML or JavaScript (e.g., `<script>alert(1)</script>`), the rendered `/analytics` dashboard HTML should contain the escaped version of the string, not the raw executable content.
+
+**Validates: Requirement 10.5**
 
 ---
 
