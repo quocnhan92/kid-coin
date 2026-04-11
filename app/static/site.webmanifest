@@ -1,0 +1,19 @@
+{
+  "name": "KidCoin — Quản lý Việc nhà cho Trẻ em",
+  "short_name": "KidCoin",
+  "description": "Ứng dụng gamification gia đình: giao việc, thưởng Coin, dạy tài chính cho bé",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "lang": "vi",
+  "icons": [
+    {"src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ],
+  "categories": ["education", "lifestyle", "productivity"],
+  "screenshots": [
+    {"src": "/static/screenshot-mobile.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow"},
+    {"src": "/static/screenshot-desktop.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide"}
+  ]
+}

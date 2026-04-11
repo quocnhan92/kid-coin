@@ -50,7 +50,7 @@ Chuẩn hóa toàn bộ HTML templates theo tiêu chuẩn SEO để Google và c
 
 ```html
 <!-- Primary Meta Tags -->
-<title>KidCoin — Ứng dụng Quản lý Việc nhà & Dạy Tài chính cho Trẻ em</title>
+<title>KidCoin — Ứng dụng Quản lý Việc nhà & Huấn luyện tư duy Tài chính cho Trẻ em</title>
 <meta name="description" content="KidCoin giúp bố mẹ giao việc nhà, thưởng Coin cho bé hoàn thành nhiệm vụ. Dạy trẻ quản lý tài chính, tiết kiệm và trách nhiệm qua gamification. Miễn phí, dễ dùng.">
 <meta name="keywords" content="ứng dụng quản lý việc nhà trẻ em, dạy trẻ quản lý tài chính, gamification gia đình, thưởng coin cho bé, app parenting Việt Nam, nhiệm vụ hàng ngày cho bé, hệ thống điểm thưởng trẻ em">
 <meta name="author" content="KidCoin">
@@ -60,7 +60,7 @@ Chuẩn hóa toàn bộ HTML templates theo tiêu chuẩn SEO để Google và c
 <!-- Open Graph (Facebook, Zalo) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kidcoin.app/login">
-<meta property="og:title" content="KidCoin — Ứng dụng Quản lý Việc nhà & Dạy Tài chính cho Trẻ em">
+<meta property="og:title" content="KidCoin — Ứng dụng Quản lý Việc nhà & Huấn luyện tư duy Tài chính cho Trẻ em">
 <meta property="og:description" content="Giao việc nhà, thưởng Coin, dạy bé tiết kiệm. Gamification gia đình đơn giản và hiệu quả.">
 <meta property="og:image" content="https://kidcoin.app/static/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -207,7 +207,7 @@ Thêm semantic HTML5 elements để Google hiểu cấu trúc trang:
 <body>
   <header role="banner">
     <h1>KidCoin</h1>
-    <p>Ứng dụng Quản lý Việc nhà & Dạy Tài chính cho Trẻ em</p>
+    <p>Ứng dụng Quản lý Việc nhà & Huấn luyện tư duy Tài chính cho Trẻ em</p>
   </header>
 
   <main role="main" aria-label="Đăng nhập KidCoin">

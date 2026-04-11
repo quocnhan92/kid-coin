@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" prefix="og: https://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>{% block title %}KidCoin — Ứng dụng Quản lý Việc nhà cho Trẻ em{% endblock %}</title>
+  <meta name="description" content="{% block description %}KidCoin giúp bố mẹ giao việc nhà, thưởng Coin cho bé. Dạy trẻ quản lý tài chính qua gamification.{% endblock %}">
+  <meta name="robots" content="{% block robots %}noindex, nofollow{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}https://kidcoin.app{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}KidCoin{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Ứng dụng gamification gia đình{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}https://kidcoin.app/static/og-image.png{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="KidCoin">
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="/static/site.webmanifest">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://api.dicebear.com">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block body %}{% endblock %}
+</body>
+</html>

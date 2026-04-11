@@ -19,7 +19,6 @@ from app.api.v1 import notifications as notifications_router
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
-from app.core.migration_runner import run_alembic_upgrade
 from app.core.security import decode_access_token
 
 # Import all models to ensure they are registered with Base
@@ -66,7 +65,8 @@ app.include_router(notifications_router.router, prefix="/api/v1/notifications", 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
 def seed_initial_data():
-    run_alembic_upgrade()
+    # NOTE: alembic upgrade head đã được chạy bởi entrypoint.sh trước khi uvicorn start.
+    # Không gọi run_alembic_upgrade() ở đây để tránh double migration.
 
     db = SessionLocal()
     try:
