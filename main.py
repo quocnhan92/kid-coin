@@ -42,7 +42,14 @@ from app.models.notifications import Notification
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Kid Coin", description="Family Task and Reward System")
+# Security Configuration for Docs
+ENV = os.getenv("ENV", "dev") # default to dev
+app = FastAPI(
+    title="Kid Coin", 
+    description="Family Task and Reward System",
+    docs_url="/docs" if ENV != "prod" else None,
+    redoc_url="/redoc" if ENV != "prod" else None,
+)
 
 # Add Middleware
 app.add_middleware(RequestContextMiddleware)
