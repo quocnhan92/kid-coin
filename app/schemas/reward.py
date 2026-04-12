@@ -35,9 +35,9 @@ class MasterRewardResponse(BaseModel):
     master_reward_id: int
     name: str
     icon_url: Optional[str]
-    suggested_cost: int
-    min_age: int
-    max_age: int
+    suggested_cost: Optional[int] = 50
+    min_age: Optional[int] = 3
+    max_age: Optional[int] = 18
 
     class Config:
         from_attributes = True

@@ -8,7 +8,7 @@ from app.models.tasks_rewards import VerificationType
 class QuestBase(BaseModel):
     master_task_id: Optional[int] = None
     name: str
-    points_reward: int
+    points_reward: Optional[int] = 0
     icon_url: Optional[str] = None
     min_age: Optional[int] = 3
     max_age: Optional[int] = 18
