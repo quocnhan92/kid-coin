@@ -36,7 +36,7 @@ def upgrade() -> None:
 
     role_enum = postgresql.ENUM(
         'PARENT', 'KID',
-        name='role', create_type=False
+        name='role'
     )
     role_enum.create(op.get_bind(), checkfirst=True)
 

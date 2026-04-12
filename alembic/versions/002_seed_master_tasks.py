@@ -21,18 +21,18 @@ down_revision: Union[str, None] = '001'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-# Map từ tiếng Việt → enum key trong PostgreSQL
+# Map từ tiếng Việt → giá trị thực tế trong PostgreSQL ENUM
 CATEGORY_MAP = {
-    'Cá nhân':  'PERSONAL',
-    'Việc nhà': 'CHORE',
-    'Học tập':  'STUDY',
-    'Xã hội':   'SOCIAL',
+    'Cá nhân':  'Cá nhân',
+    'Việc nhà': 'Việc nhà',
+    'Học tập':  'Học tập',
+    'Xã hội':   'Xã hội',
 }
 
 VERIFICATION_MAP = {
-    'Tự động duyệt':             'AUTO_APPROVE',
-    'Cần chụp ảnh':              'REQUIRE_PHOTO',
-    'Bố mẹ kiểm tra trực tiếp': 'REQUIRE_PARENT_CHECK',
+    'Tự động duyệt':             'Tự động duyệt',
+    'Cần chụp ảnh':              'Cần chụp ảnh',
+    'Bố mẹ kiểm tra trực tiếp': 'Bố mẹ kiểm tra trực tiếp',
 }
 
 # 100 master tasks: (name, icon_url, suggested_value, category, verification_type)
