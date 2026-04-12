@@ -139,41 +139,37 @@ async def get_master_rewards(
     """
     Get all master rewards for suggestions with age-based prioritization.
     """
-    try:
-        query = db.query(MasterReward)
-        if q:
-            query = query.filter(MasterReward.name.ilike(f"%{q}%"))
+    query = db.query(MasterReward)
+    if q:
+        query = query.filter(MasterReward.name.ilike(f"%{q}%"))
 
-        rewards = query.all()
+    rewards = query.all()
 
-        # BUG-02 FIX: Age-based sort was dead code (return was before it). Moved correctly.
-        if current_user.birth_date:
-            today = date.today()
-            age = today.year - current_user.birth_date.year - (
-                (today.month, today.day) < (current_user.birth_date.month, current_user.birth_date.day)
-            )
+    # BUG-02 FIX: Age-based sort was dead code (return was before it). Moved correctly.
+    if current_user.birth_date:
+        today = date.today()
+        age = today.year - current_user.birth_date.year - (
+            (today.month, today.day) < (current_user.birth_date.month, current_user.birth_date.day)
+        )
 
-            def sort_key(r):
-                min_a = r.min_age if r.min_age is not None else 0
-                max_a = r.max_age if r.max_age is not None else 100
-                is_in_range = (min_a <= age <= max_a)
-                return (0 if is_in_range else 1, r.name)
+        def sort_key(r):
+            min_a = r.min_age if r.min_age is not None else 0
+            max_a = r.max_age if r.max_age is not None else 100
+            is_in_range = (min_a <= age <= max_a)
+            return (0 if is_in_range else 1, r.name)
 
-            rewards.sort(key=sort_key)
+        rewards.sort(key=sort_key)
 
-        return [
-            reward_schemas.MasterRewardResponse(
-                master_reward_id=r.id,
-                name=r.name,
-                icon_url=r.icon_url,
-                suggested_cost=r.suggested_cost or 50,
-                min_age=r.min_age or 3,
-                max_age=r.max_age or 18
-            ) for r in rewards
-        ]
-    except Exception as e:
-        logging.error(f"Error in get_master_rewards: {str(e)}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Debug Error: {str(e)}")
+    return [
+        reward_schemas.MasterRewardResponse(
+            master_reward_id=r.id,
+            name=r.name,
+            icon_url=r.icon_url,
+            suggested_cost=r.suggested_cost or 50,
+            min_age=r.min_age or 3,
+            max_age=r.max_age or 18
+        ) for r in rewards
+    ]
 
 @router.post("/propose-master", response_model=dict)
 async def propose_master_reward(

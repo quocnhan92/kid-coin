@@ -200,41 +200,37 @@ async def get_master_tasks(
     """
     Get all master tasks for suggestions with optional search and age prioritization.
     """
-    try:
-        query = db.query(MasterTask)
-        if q:
-            query = query.filter(MasterTask.name.ilike(f"%{q}%"))
+    query = db.query(MasterTask)
+    if q:
+        query = query.filter(MasterTask.name.ilike(f"%{q}%"))
+    
+    master_tasks = query.all()
+    
+    # Prioritization logic based on kid's age
+    user_age = calculate_age(current_user.birth_date)
+    
+    if user_age is not None:
+        # Sort: tasks within age range first, then by proximity to range
+        def sort_key(t):
+            min_a = t.min_age if t.min_age is not None else 0
+            max_a = t.max_age if t.max_age is not None else 100
+            if min_a <= user_age <= max_a:
+                return (0, 0) # Top priority
+            dist = min(abs(min_a - user_age), abs(max_a - user_age))
+            return (1, dist)
         
-        master_tasks = query.all()
-        
-        # Prioritization logic based on kid's age
-        user_age = calculate_age(current_user.birth_date)
-        
-        if user_age is not None:
-            # Sort: tasks within age range first, then by proximity to range
-            def sort_key(t):
-                min_a = t.min_age if t.min_age is not None else 0
-                max_a = t.max_age if t.max_age is not None else 100
-                if min_a <= user_age <= max_a:
-                    return (0, 0) # Top priority
-                dist = min(abs(min_a - user_age), abs(max_a - user_age))
-                return (1, dist)
-            
-            master_tasks.sort(key=sort_key)
-        
-        return [
-            quest_schemas.QuestBase(
-                master_task_id=t.id,
-                name=t.name,
-                points_reward=t.suggested_value or 0,
-                icon_url=t.icon_url,
-                min_age=t.min_age or 3,
-                max_age=t.max_age or 18
-            ) for t in master_tasks
-        ]
-    except Exception as e:
-        logging.error(f"Error in get_master_tasks: {str(e)}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Debug Error: {str(e)}")
+        master_tasks.sort(key=sort_key)
+    
+    return [
+        quest_schemas.QuestBase(
+            master_task_id=t.id,
+            name=t.name,
+            points_reward=t.suggested_value or 0,
+            icon_url=t.icon_url,
+            min_age=t.min_age or 3,
+            max_age=t.max_age or 18
+        ) for t in master_tasks
+    ]
 
 @router.post("/pick-master", response_model=dict)
 async def pick_master_task(

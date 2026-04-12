@@ -41,13 +41,13 @@ def upgrade() -> None:
     role_enum.create(op.get_bind(), checkfirst=True)
 
     category_enum = postgresql.ENUM(
-        'Học tập', 'Việc nhà', 'Giải trí', 'Xã hội', 'Cá nhân', 'Kiếm tiền', 'Khác',
+        'STUDY', 'CHORE', 'ENTERTAINMENT', 'SOCIAL', 'PERSONAL', 'MONEY_MAKING', 'OTHER',
         name='category'
     )
     category_enum.create(op.get_bind(), checkfirst=True)
 
     verificationtype_enum = postgresql.ENUM(
-        'Tự động duyệt', 'Cần chụp ảnh', 'Bố mẹ kiểm tra trực tiếp',
+        'AUTO_APPROVE', 'REQUIRE_PHOTO', 'REQUIRE_PARENT_CHECK',
         name='verificationtype'
     )
     verificationtype_enum.create(op.get_bind(), checkfirst=True)

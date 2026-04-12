@@ -7,18 +7,38 @@ import enum
 from app.core.database import Base
 
 class Category(str, enum.Enum):
-    STUDY = "Học tập"
-    CHORE = "Việc nhà"
-    ENTERTAINMENT = "Giải trí"
-    SOCIAL = "Xã hội"
-    PERSONAL = "Cá nhân"
-    MONEY_MAKING = "Kiếm tiền"
-    OTHER = "Khác"
+    STUDY = "STUDY"
+    CHORE = "CHORE"
+    ENTERTAINMENT = "ENTERTAINMENT"
+    SOCIAL = "SOCIAL"
+    PERSONAL = "PERSONAL"
+    MONEY_MAKING = "MONEY_MAKING"
+    OTHER = "OTHER"
+
+    def label(self):
+        labels = {
+            "STUDY": "Học tập",
+            "CHORE": "Việc nhà",
+            "ENTERTAINMENT": "Giải trí",
+            "SOCIAL": "Xã hội",
+            "PERSONAL": "Cá nhân",
+            "MONEY_MAKING": "Kiếm tiền",
+            "OTHER": "Khác"
+        }
+        return labels.get(self.value, self.value)
 
 class VerificationType(str, enum.Enum):
-    AUTO_APPROVE = "Tự động duyệt"
-    REQUIRE_PHOTO = "Cần chụp ảnh"
-    REQUIRE_PARENT_CHECK = "Bố mẹ kiểm tra trực tiếp"
+    AUTO_APPROVE = "AUTO_APPROVE"
+    REQUIRE_PHOTO = "REQUIRE_PHOTO"
+    REQUIRE_PARENT_CHECK = "REQUIRE_PARENT_CHECK"
+
+    def label(self):
+        labels = {
+            "AUTO_APPROVE": "Tự động duyệt",
+            "REQUIRE_PHOTO": "Cần chụp ảnh",
+            "REQUIRE_PARENT_CHECK": "Bố mẹ kiểm tra trực tiếp"
+        }
+        return labels.get(self.value, self.value)
 
 class MasterTask(Base):
     __tablename__ = "master_tasks"

@@ -920,8 +920,8 @@ async def get_master_tasks(
             name=t.name,
             icon_url=t.icon_url,
             suggested_value=t.suggested_value,
-            category=t.category.value,
-            verification_type=t.verification_type.value
+            category=t.category.label(),
+            verification_type=t.verification_type.label()
         ) for t in tasks
     ]
 
