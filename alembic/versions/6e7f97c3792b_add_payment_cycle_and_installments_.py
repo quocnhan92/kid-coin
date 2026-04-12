@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.drop_index('ix_notifications_is_read', table_name='notifications')
     op.drop_index('ix_notifications_user_id', table_name='notifications')
     op.drop_table('notifications')
-    op.create_unique_constraint('uq_club_user_status', 'club_invitations', ['club_id', 'invited_user_id', 'status'])
+    # op.create_unique_constraint('uq_club_user_status', 'club_invitations', ['club_id', 'invited_user_id', 'status']) # Already exists in 001
     op.add_column('loan_accounts', sa.Column('payment_cycle', sa.String(length=20), server_default='ONE_TIME', nullable=True))
     op.add_column('loan_accounts', sa.Column('installments_count', sa.Integer(), server_default='1', nullable=True))
     op.alter_column('personal_projects', 'milestones',
