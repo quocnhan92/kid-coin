@@ -52,8 +52,8 @@ class MasterTask(Base):
     suggested_value = Column(BigInteger, default=10)
     min_age = Column(Integer, default=3) # Suggested minimum age
     max_age = Column(Integer, default=18) # Suggested maximum age
-    category = Column(Enum(Category), nullable=False)
-    verification_type = Column(Enum(VerificationType), default=VerificationType.REQUIRE_PHOTO)
+    category = Column(Enum(Category, values_callable=lambda x: [i.value for i in x]), nullable=False)
+    verification_type = Column(Enum(VerificationType, values_callable=lambda x: [i.value for i in x]), default=VerificationType.REQUIRE_PHOTO)
 
     family_tasks = relationship("FamilyTask", back_populates="master_task")
 
@@ -69,8 +69,8 @@ class FamilyTask(Base):
     master_task_id = Column(Integer, ForeignKey("master_tasks.id"), nullable=True)
     name = Column(String(100), nullable=False)
     points_reward = Column(BigInteger, nullable=False)
-    category = Column(Enum(Category), default=Category.OTHER)
-    verification_type = Column(Enum(VerificationType), default=VerificationType.REQUIRE_PHOTO)
+    category = Column(Enum(Category, values_callable=lambda x: [i.value for i in x]), default=Category.OTHER)
+    verification_type = Column(Enum(VerificationType, values_callable=lambda x: [i.value for i in x]), default=VerificationType.REQUIRE_PHOTO)
     is_active = Column(Boolean, default=True)
     is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
