@@ -120,7 +120,7 @@ def upgrade() -> None:
         sa.Column('min_age', sa.Integer(), server_default='3'),
         sa.Column('max_age', sa.Integer(), server_default='18'),
         sa.Column('category', postgresql.ENUM(name='category', create_type=False), nullable=False),
-        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='Cần chụp ảnh'),
+        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='REQUIRE_PHOTO'),
     )
     op.create_index('idx_master_task_category', 'master_tasks', ['category'])
 
@@ -161,8 +161,8 @@ def upgrade() -> None:
         sa.Column('master_task_id', sa.Integer(), sa.ForeignKey('master_tasks.id', ondelete='SET NULL'), nullable=True),
         sa.Column('name', sa.String(100), nullable=False),
         sa.Column('points_reward', sa.BigInteger(), nullable=False),
-        sa.Column('category', postgresql.ENUM(name='category', create_type=False), server_default='Khác'),
-        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='Cần chụp ảnh'),
+        sa.Column('category', postgresql.ENUM(name='category', create_type=False), server_default='OTHER'),
+        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='REQUIRE_PHOTO'),
         sa.Column('is_active', sa.Boolean(), server_default='true'),
         sa.Column('is_deleted', sa.Boolean(), server_default='false'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
