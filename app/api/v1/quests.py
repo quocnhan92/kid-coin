@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+import traceback
 from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.tasks_rewards import FamilyTask, VerificationType, MasterTask
@@ -231,7 +233,6 @@ async def get_master_tasks(
             ) for t in master_tasks
         ]
     except Exception as e:
-        import traceback
         logging.error(f"Error in get_master_tasks: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Debug Error: {str(e)}")
 
