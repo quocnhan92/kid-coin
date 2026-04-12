@@ -22,6 +22,18 @@ def upgrade() -> None:
     # -------------------------------------------------------------------------
     # 1. Create PostgreSQL Enum types (10 total)
     # -------------------------------------------------------------------------
+    # Force drop existing types to avoid conflicts on dirty databases
+    op.execute("DROP TYPE IF EXISTS role CASCADE")
+    op.execute("DROP TYPE IF EXISTS category CASCADE")
+    op.execute("DROP TYPE IF EXISTS verificationtype CASCADE")
+    op.execute("DROP TYPE IF EXISTS taskstatus CASCADE")
+    op.execute("DROP TYPE IF EXISTS redemptionstatus CASCADE")
+    op.execute("DROP TYPE IF EXISTS transactiontype CASCADE")
+    op.execute("DROP TYPE IF EXISTS clubrole CASCADE")
+    op.execute("DROP TYPE IF EXISTS invitationstatus CASCADE")
+    op.execute("DROP TYPE IF EXISTS notificationtype CASCADE")
+    op.execute("DROP TYPE IF EXISTS auditstatus CASCADE")
+
     role_enum = postgresql.ENUM(
         'PARENT', 'KID',
         name='role', create_type=False
@@ -30,55 +42,55 @@ def upgrade() -> None:
 
     category_enum = postgresql.ENUM(
         'Học tập', 'Việc nhà', 'Giải trí', 'Xã hội', 'Cá nhân', 'Kiếm tiền', 'Khác',
-        name='category', create_type=False
+        name='category'
     )
     category_enum.create(op.get_bind(), checkfirst=True)
 
     verificationtype_enum = postgresql.ENUM(
         'Tự động duyệt', 'Cần chụp ảnh', 'Bố mẹ kiểm tra trực tiếp',
-        name='verificationtype', create_type=False
+        name='verificationtype'
     )
     verificationtype_enum.create(op.get_bind(), checkfirst=True)
 
     taskstatus_enum = postgresql.ENUM(
         'PENDING_APPROVAL', 'APPROVED', 'REJECTED',
-        name='taskstatus', create_type=False
+        name='taskstatus'
     )
     taskstatus_enum.create(op.get_bind(), checkfirst=True)
 
     redemptionstatus_enum = postgresql.ENUM(
         'PENDING_DELIVERY', 'DELIVERED',
-        name='redemptionstatus', create_type=False
+        name='redemptionstatus'
     )
     redemptionstatus_enum.create(op.get_bind(), checkfirst=True)
 
     transactiontype_enum = postgresql.ENUM(
         'TASK_COMPLETION', 'REWARD_REDEMPTION', 'PENALTY', 'BONUS',
-        name='transactiontype', create_type=False
+        name='transactiontype'
     )
     transactiontype_enum.create(op.get_bind(), checkfirst=True)
 
     clubrole_enum = postgresql.ENUM(
         'ADMIN', 'MEMBER',
-        name='clubrole', create_type=False
+        name='clubrole'
     )
     clubrole_enum.create(op.get_bind(), checkfirst=True)
 
     invitationstatus_enum = postgresql.ENUM(
         'PENDING', 'ACCEPTED', 'REJECTED',
-        name='invitationstatus', create_type=False
+        name='invitationstatus'
     )
     invitationstatus_enum.create(op.get_bind(), checkfirst=True)
 
     notificationtype_enum = postgresql.ENUM(
         'SYSTEM', 'CLUB_INVITE', 'KID_CLUB_INVITE', 'TASK_ASSIGNED',
-        name='notificationtype', create_type=False
+        name='notificationtype'
     )
     notificationtype_enum.create(op.get_bind(), checkfirst=True)
 
     auditstatus_enum = postgresql.ENUM(
         'INIT', 'PROCESSING', 'SUCCESS', 'FAILED',
-        name='auditstatus', create_type=False
+        name='auditstatus'
     )
     auditstatus_enum.create(op.get_bind(), checkfirst=True)
 
@@ -107,8 +119,8 @@ def upgrade() -> None:
         sa.Column('suggested_value', sa.BigInteger(), server_default='10'),
         sa.Column('min_age', sa.Integer(), server_default='3'),
         sa.Column('max_age', sa.Integer(), server_default='18'),
-        sa.Column('category', sa.Enum('Học tập', 'Việc nhà', 'Giải trí', 'Xã hội', 'Cá nhân', 'Kiếm tiền', 'Khác', name='category', create_type=False, create_constraint=False), nullable=False),
-        sa.Column('verification_type', sa.Enum('Tự động duyệt', 'Cần chụp ảnh', 'Bố mẹ kiểm tra trực tiếp', name='verificationtype', create_type=False, create_constraint=False), server_default='Cần chụp ảnh'),
+        sa.Column('category', postgresql.ENUM(name='category', create_type=False), nullable=False),
+        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='Cần chụp ảnh'),
     )
     op.create_index('idx_master_task_category', 'master_tasks', ['category'])
 
@@ -128,7 +140,7 @@ def upgrade() -> None:
         'users',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('family_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('families.id'), nullable=False, index=True),
-        sa.Column('role', sa.Enum('PARENT', 'KID', name='role', create_type=False, create_constraint=False), nullable=False),
+        sa.Column('role', postgresql.ENUM(name='role', create_type=False), nullable=False),
         sa.Column('username', sa.String(100), unique=True, nullable=True),
         sa.Column('display_name', sa.String(50), nullable=False),
         sa.Column('avatar_url', sa.String(255), nullable=True),
@@ -149,8 +161,8 @@ def upgrade() -> None:
         sa.Column('master_task_id', sa.Integer(), sa.ForeignKey('master_tasks.id', ondelete='SET NULL'), nullable=True),
         sa.Column('name', sa.String(100), nullable=False),
         sa.Column('points_reward', sa.BigInteger(), nullable=False),
-        sa.Column('category', sa.Enum('Học tập', 'Việc nhà', 'Giải trí', 'Xã hội', 'Cá nhân', 'Kiếm tiền', 'Khác', name='category', create_type=False, create_constraint=False), server_default='Khác'),
-        sa.Column('verification_type', sa.Enum('Tự động duyệt', 'Cần chụp ảnh', 'Bố mẹ kiểm tra trực tiếp', name='verificationtype', create_type=False, create_constraint=False), server_default='Cần chụp ảnh'),
+        sa.Column('category', postgresql.ENUM(name='category', create_type=False), server_default='Khác'),
+        sa.Column('verification_type', postgresql.ENUM(name='verificationtype', create_type=False), server_default='Cần chụp ảnh'),
         sa.Column('is_active', sa.Boolean(), server_default='true'),
         sa.Column('is_deleted', sa.Boolean(), server_default='false'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
@@ -195,7 +207,7 @@ def upgrade() -> None:
         'club_members',
         sa.Column('club_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('clubs.id', ondelete='CASCADE'), primary_key=True, index=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True),
-        sa.Column('role', sa.Enum('ADMIN', 'MEMBER', name='clubrole', create_type=False, create_constraint=False), server_default='MEMBER', nullable=False),
+        sa.Column('role', postgresql.ENUM(name='clubrole', create_type=False), server_default='MEMBER', nullable=False),
         sa.Column('joined_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     )
@@ -207,7 +219,7 @@ def upgrade() -> None:
         sa.Column('club_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('clubs.id', ondelete='CASCADE'), nullable=False, index=True),
         sa.Column('invited_user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True),
         sa.Column('inviter_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='SET NULL'), nullable=True),
-        sa.Column('status', sa.Enum('PENDING', 'ACCEPTED', 'REJECTED', name='invitationstatus', create_type=False, create_constraint=False), server_default='PENDING', nullable=False),
+        sa.Column('status', postgresql.ENUM(name='invitationstatus', create_type=False), server_default='PENDING', nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.UniqueConstraint('club_id', 'invited_user_id', 'status', name='uq_club_user_status'),
@@ -237,7 +249,7 @@ def upgrade() -> None:
         sa.Column('kid_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False, index=True),
         sa.Column('family_task_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('family_tasks.id', ondelete='SET NULL'), nullable=True, index=True),
         sa.Column('club_task_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('club_tasks.id', ondelete='SET NULL'), nullable=True, index=True),
-        sa.Column('status', sa.Enum('PENDING_APPROVAL', 'APPROVED', 'REJECTED', name='taskstatus', create_type=False, create_constraint=False), server_default='PENDING_APPROVAL'),
+        sa.Column('status', postgresql.ENUM(name='taskstatus', create_type=False), server_default='PENDING_APPROVAL'),
         sa.Column('proof_image_url', sa.String(255), nullable=True),
         sa.Column('parent_comment', sa.String(500), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
@@ -253,7 +265,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('kid_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False, index=True),
         sa.Column('reward_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('family_rewards.id'), nullable=False, index=True),
-        sa.Column('status', sa.Enum('PENDING_DELIVERY', 'DELIVERED', name='redemptionstatus', create_type=False, create_constraint=False), server_default='PENDING_DELIVERY'),
+        sa.Column('status', postgresql.ENUM(name='redemptionstatus', create_type=False), server_default='PENDING_DELIVERY'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
         sa.Column('delivered_at', sa.DateTime(timezone=True), nullable=True),
     )
@@ -266,7 +278,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('kid_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False, index=True),
         sa.Column('amount', sa.BigInteger(), nullable=False),
-        sa.Column('transaction_type', sa.Enum('TASK_COMPLETION', 'REWARD_REDEMPTION', 'PENALTY', 'BONUS', name='transactiontype', create_type=False, create_constraint=False), nullable=False),
+        sa.Column('transaction_type', postgresql.ENUM(name='transactiontype', create_type=False), nullable=False),
         sa.Column('reference_id', postgresql.UUID(as_uuid=True), nullable=True, index=True),
         sa.Column('description', sa.String(255), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
@@ -297,7 +309,7 @@ def upgrade() -> None:
         'notifications',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True),
-        sa.Column('type', sa.Enum('SYSTEM', 'CLUB_INVITE', 'KID_CLUB_INVITE', 'TASK_ASSIGNED', name='notificationtype', create_type=False, create_constraint=False), server_default='SYSTEM', nullable=False),
+        sa.Column('type', postgresql.ENUM(name='notificationtype', create_type=False), server_default='SYSTEM', nullable=False),
         sa.Column('title', sa.String(200), nullable=False),
         sa.Column('content', sa.String(1000), nullable=True),
         sa.Column('reference_id', sa.String(36), nullable=True),
@@ -312,7 +324,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=True, index=True),
         sa.Column('action', sa.String(100), nullable=False, index=True),
-        sa.Column('status', sa.Enum('INIT', 'PROCESSING', 'SUCCESS', 'FAILED', name='auditstatus', create_type=False, create_constraint=False), server_default='INIT', nullable=False, index=True),
+        sa.Column('status', postgresql.ENUM(name='auditstatus', create_type=False), server_default='INIT', nullable=False, index=True),
         sa.Column('resource_type', sa.String(50), nullable=False, index=True),
         sa.Column('resource_id', sa.String(36), nullable=True, index=True),
         sa.Column('request_id', sa.String(50), nullable=True, index=True),
