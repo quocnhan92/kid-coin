@@ -1,0 +1,145 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard Tổng quan{% endblock %}
+{% block page_subtitle %}Chào mừng bạn quay lại hệ thống quản trị KidCoin.{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="card">
+        <div class="card-title">Tổng Coin Lưu hành</div>
+        <div class="card-value" id="stat-total-coins">...</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Số dư Quỹ từ thiện</div>
+        <div class="card-value" id="stat-charity-fund">...</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Trẻ em hoạt động</div>
+        <div class="card-value" id="stat-active-kids">...</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Hoạt động trong tuần</div>
+        <div class="card-value" id="stat-weekly-tasks">...</div>
+    </div>
+</div>
+
+<div class="grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <div class="card">
+        <div class="card-title">Hoạt động hàng ngày (Daily Active)</div>
+        <div style="height: 300px;">
+            <canvas id="activeUsersChart"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">Nhiệm vụ phổ biến</div>
+        <div id="popular-tasks-list">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-title">Lỗi hệ thống mới nhất</div>
+    <div class="table-container">
+        <table id="error-logs-table">
+            <thead>
+                <tr>
+                    <th>Hành động</th>
+                    <th>Lỗi</th>
+                    <th>Tài nguyên</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populated by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDashboard() {
+    try {
+        const response = await fetch('/api/v1/admin/analytics/dashboard');
+        const data = await response.json();
+        
+        document.getElementById('stat-total-coins').innerText = (data.financials.total_earned - data.financials.total_spent).toLocaleString();
+        document.getElementById('stat-charity-fund').innerText = data.financials.charity_balance.toLocaleString();
+        document.getElementById('stat-active-kids').innerText = data.financials.active_kids;
+        
+        // Popular tasks
+        const taskList = document.getElementById('popular-tasks-list');
+        taskList.innerHTML = data.popular_tasks.map(t => `
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                <span>${t.name}</span>
+                <span style="color: var(--accent); font-weight: 600;">${t.count} lần</span>
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error("Failed to load dashboard data", e);
+    }
+}
+
+async function loadCharts() {
+    try {
+        const response = await fetch('/api/v1/admin/stats/daily-active');
+        const data = await response.json();
+        
+        const ctx = document.getElementById('activeUsersChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [{
+                    label: 'Người dùng hoạt động',
+                    data: data.map(d => d.count),
+                    borderColor: '#6366f1',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Failed to load chart data", e);
+    }
+}
+
+async function loadErrors() {
+    try {
+        const response = await fetch('/api/v1/admin/logs/errors');
+        const data = await response.json();
+        
+        const tbody = document.querySelector('#error-logs-table tbody');
+        tbody.innerHTML = data.map(log => `
+            <tr>
+                <td><span class="status-pills status-error">${log.action}</span></td>
+                <td style="color: var(--text-muted); font-size: 0.875rem;">${log.error}</td>
+                <td>${log.resource}</td>
+                <td>${new Date(log.at).toLocaleString()}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Failed to load error logs", e);
+    }
+}
+
+loadDashboard();
+loadCharts();
+loadErrors();
+</script>
+{% endblock %}

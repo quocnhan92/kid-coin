@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Enum, Index, UniqueConstraint
+import sqlalchemy as sa
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Enum, Index, UniqueConstraint, Integer, BigInteger, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -18,6 +19,12 @@ class InvitationStatus(str, enum.Enum):
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
+
+
+class ChallengeStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    EXPIRED = "EXPIRED"
 
 
 # --- Models ---
@@ -82,3 +89,65 @@ class ClubInvitation(Base):
     club = relationship("Club", backref="invitations")
     invited_user = relationship("User", foreign_keys=[invited_user_id])
     inviter = relationship("User", foreign_keys=[inviter_id])
+
+class WallOfFame(Base):
+    __tablename__ = "wall_of_fame"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    family_id = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False, index=True)
+    kid_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    posted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    image_url = Column(String(255), nullable=True)
+    caption = Column(String(500), nullable=False)
+    task_log_id = Column(UUID(as_uuid=True), ForeignKey("task_logs.id"), nullable=True)
+    likes_count = Column(sa.Integer() if 'sa' in locals() else sa.Integer, server_default='0', default=0) # Need to check if sa imported
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    family = relationship("Family")
+    kid = relationship("User", foreign_keys=[kid_id])
+    poster = relationship("User", foreign_keys=[posted_by])
+    likes = relationship("WallLike", back_populates="post", cascade="all, delete-orphan")
+
+class WallLike(Base):
+    __tablename__ = "wall_likes"
+
+    post_id = Column(UUID(as_uuid=True), ForeignKey("wall_of_fame.id"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+
+    post = relationship("WallOfFame", back_populates="likes")
+    user = relationship("User")
+
+class FamilyChallenge(Base):
+    __tablename__ = "family_challenges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    family_id = Column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False, index=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    title = Column(String(200), nullable=False)
+    description = Column(String(500), nullable=True)
+    target_count = Column(sa.Integer() if 'sa' in locals() else sa.Integer, nullable=False)
+    duration_days = Column(sa.Integer() if 'sa' in locals() else sa.Integer, nullable=False)
+    reward_coins = Column(sa.BigInteger() if 'sa' in locals() else sa.BigInteger, nullable=False)
+    start_date = Column(sa.Date() if 'sa' in locals() else sa.Date, nullable=False)
+    end_date = Column(sa.Date() if 'sa' in locals() else sa.Date, nullable=False)
+    status = Column(Enum(ChallengeStatus), server_default='ACTIVE', default=ChallengeStatus.ACTIVE)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    family = relationship("Family", back_populates="challenges")
+    creator = relationship("User")
+
+class ChallengeProgress(Base):
+    __tablename__ = "challenge_progress"
+    __table_args__ = (
+        UniqueConstraint('challenge_id', 'user_id', 'check_in_date', name='uq_challenge_user_date'),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    challenge_id = Column(UUID(as_uuid=True), ForeignKey("family_challenges.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    check_in_date = Column(sa.Date() if 'sa' in locals() else sa.Date, nullable=False)
+    proof_image_url = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    challenge = relationship("FamilyChallenge")
+    user = relationship("User")

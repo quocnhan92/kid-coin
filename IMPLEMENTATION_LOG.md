@@ -518,3 +518,24 @@ class RedemptionHistoryItem(BaseModel):
 - Triển khai hệ thống Lịch sử chi tiết (ENTRY #7 thiết kế).
 - Logic duyệt đồng loạt (Bulk Approval).
 - Club Task Logic refinements.
+
+---
+
+## [2026-04-11] ENTRY #9 — KidCoin Expansion Phase 1: Database & Infra Completion
+
+### Task vừa hoàn thành
+- Triển khai toàn bộ DB Schema mở rộng qua 4 migration mới (005 -> 008).
+- Tạo mới và hoàn thiện SQLAlchemy Models cho 6 nhóm tính năng: Gamification, Finance, Thinking, Social, Teen, Admin.
+- Mở rộng các model `User`, `Family` và `TransactionType` để hỗ trợ tính năng mới.
+- Xuất toàn bộ model qua `app/models/__init__.py`.
+- Cập nhật theo dõi tiến độ trong `.kiro/specs/kidcoin-expansion/tasks.md`.
+
+### Files đã thay đổi
+- `alembic/versions/` — 005, 006, 007, 008.
+- `app/models/` — `gamification.py`, `finance.py`, `thinking.py`, `social.py`, `teen.py`, `admin.py`, `user_family.py`, `logs_transactions.py`, `__init__.py`.
+- `.kiro/specs/kidcoin-expansion/tasks.md`.
+
+### Bước tiếp theo (Pending)
+- Triển khai Seed Data cho Master Tables (UserLevels, AvatarItems).
+- Thiết lập Cron Job Infrastructure dùng APScheduler.
+- Bắt đầu Phase 2: Gamification API.

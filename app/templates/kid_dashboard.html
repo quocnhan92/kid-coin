@@ -12,12 +12,15 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .coin-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .hidden-section { display: none !important; }
         .suggestion-scroll { display: flex; overflow-x: auto; gap: 0.75rem; padding-bottom: 0.5rem; scrollbar-width: none; -ms-overflow-style: none; }
         .suggestion-scroll::-webkit-scrollbar { display: none; }
         .suggestion-card { flex: 0 0 auto; width: 140px; background: white; border-radius: 1.5rem; padding: 1rem; border-bottom: 4px solid #fde047; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: center; cursor: pointer; transition: all 0.2s; }
         .suggestion-card:active { transform: scale(0.95); }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-yellow-100 flex justify-center items-center min-h-screen font-sans">
@@ -31,10 +34,17 @@
                     Chào <span id="kid-name-header">...</span>! 
                     <button onclick="showProfileModal()" class="text-sm bg-yellow-400 hover:bg-yellow-500 rounded-full px-2 py-1 shadow-sm transition-colors">✏️</button>
                 </h1>
-                <div class="flex items-center gap-2 mt-2 bg-white/50 px-3 py-1 rounded-full w-fit">
-                    <span class="text-2xl">💰</span>
-                    <span id="coin-balance" class="text-xl font-black text-yellow-800">0</span>
-                    <span class="text-xs font-bold text-yellow-800">Xu</span>
+                <div class="flex items-center gap-2 mt-2">
+                    <div class="bg-white/80 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-yellow-200">
+                        <span class="text-lg">💰</span>
+                        <span id="coin-balance" class="text-sm font-black text-yellow-800">0</span>
+                    </div>
+                    <div id="level-badge" class="hidden-section bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-2 py-1 rounded-full text-[10px] font-black shadow-md border border-white/30 animate-pulse">
+                        LV. <span id="level-val">1</span>
+                    </div>
+                    <div id="streak-counter" class="hidden-section bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-[10px] font-black flex items-center gap-0.5 shadow-sm border border-orange-200">
+                        🔥 <span id="streak-val">0</span>
+                    </div>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -56,8 +66,9 @@
                 </div>
 
                 <div class="relative cursor-pointer" onclick="showProfileModal()">
-                    <img id="kid-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full border-4 border-white bg-yellow-100 shadow-md">
-                    <div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow">✏️</div>
+                    <img id="kid-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bin" class="w-16 h-16 rounded-full border-4 border-white bg-yellow-100 shadow-md z-0 relative">
+                    <img id="kid-avatar-frame" class="hidden-section absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84px] h-[84px] max-w-none pointer-events-none z-10" src="">
+                    <div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow z-20">✏️</div>
                 </div>
             </div>
         </div>
@@ -154,21 +165,92 @@
                 </div>
             </div>
 
+            <!-- Tab: Avatar Shop (Mặc đồ) -->
+            <div id="tab-avatar" class="tab-content space-y-4">
+                <h2 class="text-lg font-black text-pink-700 mb-2 uppercase tracking-wide">Trang trí Avatar ✨</h2>
+                
+                <div class="bg-white p-4 rounded-3xl border-4 border-pink-100 shadow-sm mb-6">
+                    <h3 class="font-black text-pink-600 text-sm mb-3">Tủ đồ của bé 🎒</h3>
+                    <div id="inventory-list" class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        <div class="text-center text-gray-400 text-xs w-full py-4 italic">Đang mở túi...</div>
+                    </div>
+                </div>
+
+                <h3 class="font-black text-pink-700 text-sm mb-3 uppercase">Cửa hàng vật phẩm 🛍️</h3>
+                <div id="avatar-shop-list" class="grid grid-cols-2 gap-4">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Tab: Finance (Tiền bạc) -->
+            <div id="tab-finance" class="tab-content space-y-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-xl font-black mb-1">Ví của bé 👛</h2>
+                        <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest opacity-80">Số dư hiện tại</p>
+                        <div class="text-4xl font-black mt-2"><span id="finance-coins">0</span> <small class="text-xl">Xu</small></div>
+                    </div>
+                    <span class="absolute -right-4 -bottom-4 text-8xl opacity-20">💰</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-2xl border-b-4 border-blue-200 shadow-sm">
+                        <p class="text-[10px] font-black text-blue-400 uppercase">Hũ từ thiện</p>
+                        <div class="text-lg font-black text-blue-600" id="finance-charity">0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border-b-4 border-emerald-200 shadow-sm">
+                        <p class="text-[10px] font-black text-emerald-400 uppercase">Tiết kiệm</p>
+                        <div class="text-lg font-black text-emerald-600" id="finance-savings">0</div>
+                    </div>
+                </div>
+
+                <h2 class="text-lg font-black text-emerald-800 mt-6 mb-2 uppercase tracking-wide">Khoản vay & Trình ký 📝</h2>
+                <div id="loan-list" class="space-y-3">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Tab: Thinking (Tư duy) -->
+            <div id="tab-thinking" class="tab-content space-y-4">
+                <h2 class="text-lg font-black text-indigo-800 mb-2 uppercase tracking-wide">Thử thách trí tuệ 🧠</h2>
+                
+                <div id="problem-board" class="space-y-4">
+                    <!-- Loaded via JS -->
+                    <div class="text-center text-gray-400 py-10 italic">Đang tìm câu đố...</div>
+                </div>
+
+                <h2 class="text-lg font-black text-indigo-800 mt-8 mb-2 uppercase tracking-wide">Nhìn lại tuần qua ✨</h2>
+                <div id="reflection-list" class="space-y-4">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
         </div>
 
         <!-- Bottom Navigation -->
-        <div class="absolute bottom-0 w-full bg-white border-t-4 border-yellow-200 flex justify-around p-3 pb-6 rounded-t-3xl z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
-            <button onclick="switchTab('quests')" id="btn-quests" class="nav-btn text-yellow-600 flex flex-col items-center w-1/3 transform transition hover:scale-105">
-                <span class="text-4xl mb-1 filter drop-shadow-md">📝</span>
-                <span class="text-sm font-black">Nhiệm Vụ</span>
+        <div class="absolute bottom-0 w-full bg-white border-t-4 border-yellow-200 flex overflow-x-auto scrollbar-hide px-3 py-3 pb-6 rounded-t-3xl z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.1)] gap-2 justify-start sm:justify-around snap-x">
+            <button onclick="switchTab('quests')" id="btn-quests" class="nav-btn flex-shrink-0 w-[68px] snap-center text-yellow-600 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md">📝</span>
+                <span class="text-[10px] font-black">Nhiệm Vụ</span>
             </button>
-            <button onclick="switchTab('shop')" id="btn-shop" class="nav-btn text-gray-400 flex flex-col items-center w-1/3 transform transition hover:scale-105">
-                <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🛒</span>
-                <span class="text-sm font-black">Cửa Hàng</span>
+            <button onclick="switchTab('shop')" id="btn-shop" class="nav-btn flex-shrink-0 w-[68px] snap-center text-gray-400 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md grayscale opacity-50">🛒</span>
+                <span class="text-[10px] font-black">Cửa Hàng</span>
             </button>
-            <button onclick="switchTab('clubs')" id="btn-clubs" class="nav-btn text-gray-400 flex flex-col items-center w-1/3 transform transition hover:scale-105">
-                <span class="text-4xl mb-1 filter drop-shadow-md grayscale opacity-50">🏆</span>
-                <span class="text-sm font-black">Thi Đua</span>
+            <button onclick="switchTab('clubs')" id="btn-clubs" class="nav-btn flex-shrink-0 w-[68px] snap-center text-gray-400 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md grayscale opacity-50">🏆</span>
+                <span class="text-[10px] font-black">Thi Đua</span>
+            </button>
+            <button onclick="switchTab('avatar')" id="btn-avatar" class="nav-btn flex-shrink-0 w-[68px] snap-center text-gray-400 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md grayscale opacity-50">👕</span>
+                <span class="text-[10px] font-black">Avatar</span>
+            </button>
+            <button onclick="switchTab('finance')" id="btn-finance" class="nav-btn flex-shrink-0 w-[68px] snap-center text-gray-400 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md grayscale opacity-50">💹</span>
+                <span class="text-[10px] font-black">Tài chính</span>
+            </button>
+            <button onclick="switchTab('thinking')" id="btn-thinking" class="nav-btn flex-shrink-0 w-[68px] snap-center text-gray-400 flex flex-col items-center transform transition hover:scale-105">
+                <span class="text-3xl mb-1 filter drop-shadow-md grayscale opacity-50">🧠</span>
+                <span class="text-[10px] font-black">Tư duy</span>
             </button>
             
             <!-- Parent Return Button -->
@@ -232,6 +314,45 @@
         </div>
     </div>
 
+    <!-- Modal: Xem Lịch Trả Nợ -->
+    <div id="view-loan-schedule-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm">
+            <h2 class="text-xl font-black text-orange-800 mb-4">Lịch Trả Nợ 📆</h2>
+            <div id="loan-schedule-content" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                <!-- Schedule items will be here -->
+            </div>
+            <button onclick="closeModal('view-loan-schedule-modal')" 
+                class="w-full mt-6 py-3 bg-orange-100 text-orange-700 font-bold rounded-xl hover:bg-orange-200">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Modal: Trả nợ (Repay Loan) -->
+    <div id="repay-loan-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm border-4 border-orange-400 relative">
+            <h2 class="text-xl font-black text-orange-800 mb-4 text-center">💸 Trả nợ cho Bố Mẹ</h2>
+            
+            <form id="repay-loan-form" onsubmit="submitRepayLoan(event)" class="space-y-4">
+                <input type="hidden" id="repay-loan-id">
+                <input type="hidden" id="repay-max-amount">
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Số dư Xu hiện tại:</label>
+                    <p class="text-center font-black text-yellow-600 text-lg mb-2"><span id="repay-current-coin">0</span> Xu</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Số Xu muốn trả (Tối đa <span id="repay-max-label">0</span> Xu):</label>
+                    <input type="number" id="repay-amount" min="1" required class="w-full px-4 py-3 bg-gray-50 border-2 border-orange-200 rounded-xl font-bold text-gray-800 text-center text-xl focus:border-orange-500 focus:outline-none" placeholder="10">
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('repay-loan-modal')" class="flex-1 py-3 bg-gray-200 text-gray-800 font-bold rounded-xl hover:bg-gray-300">Hủy</button>
+                    <button type="submit" class="flex-1 py-3 bg-orange-500 text-white font-black rounded-xl hover:bg-orange-600 shadow-md transform active:scale-95">Trả ngay</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Overlay Loading -->
     <div id="loading-overlay" class="hidden-section fixed inset-0 bg-black/60 flex flex-col justify-center items-center z-[60]">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-yellow-400 mb-4"></div>
@@ -262,7 +383,7 @@
                 const response = await fetch(`${API_BASE}/users/me`);
                 if (!response.ok) throw new Error('Failed to fetch user info');
                 const me = await response.json();
-                
+                window.currentUser = me;
                 currentUserId = me.id;
                 document.getElementById('coin-balance').innerText = me.current_coin;
                 
@@ -282,9 +403,35 @@
                 if (me.role === 'PARENT') {
                     document.getElementById('btn-return-parent').classList.remove('hidden-section');
                 }
+
+                // Fetch extra gamification info
+                fetchLevelAndStreak();
+
             } catch (error) {
                 console.error(error);
             }
+        }
+
+        async function fetchLevelAndStreak() {
+            try {
+                const levelRes = await fetch(`${API_BASE}/gamification/me/level`);
+                if (levelRes.ok) {
+                    const data = await levelRes.json();
+                    const badge = document.getElementById('level-badge');
+                    badge.classList.remove('hidden-section');
+                    document.getElementById('level-val').innerText = data.current_level;
+                }
+
+                const streakRes = await fetch(`${API_BASE}/gamification/me/streak`);
+                if (streakRes.ok) {
+                    const data = await streakRes.json();
+                    if (data.current_streak > 0) {
+                        const counter = document.getElementById('streak-counter');
+                        counter.classList.remove('hidden-section');
+                        document.getElementById('streak-val').innerText = data.current_streak;
+                    }
+                }
+            } catch (e) { console.error(e); }
         }
 
         function renderQuests(quests) {
@@ -629,6 +776,310 @@
             document.getElementById('club-list').classList.remove('hidden-section');
         }
 
+        // --- Avatar Shop & Inventory ---
+        async function fetchAvatarShop() {
+            try {
+                const res = await fetch(`${API_BASE}/gamification/shop`);
+                const items = await res.json();
+                const container = document.getElementById('avatar-shop-list');
+                container.innerHTML = items.map(item => `
+                    <div class="bg-white p-4 rounded-3xl border-b-4 ${item.is_owned ? 'border-gray-200' : 'border-pink-200'} shadow-sm text-center">
+                        <img src="${item.image_url}" class="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-pink-50">
+                        <h4 class="font-black text-gray-800 text-xs mb-1">${item.name}</h4>
+                        <p class="text-[10px] text-pink-500 font-bold mb-3">${item.price_coins} Xu</p>
+                        ${item.is_owned ? `
+                            <span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-1 rounded-full font-bold">Đã sở hữu</span>
+                        ` : `
+                            <button onclick="buyAvatarItem(${item.id})" class="w-full py-1.5 bg-pink-500 text-white text-[10px] font-black rounded-xl active:scale-95 transition-all">MUA</button>
+                        `}
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchInventory() {
+            try {
+                const res = await fetch(`${API_BASE}/gamification/inventory`);
+                const items = await res.json();
+                const container = document.getElementById('inventory-list');
+                
+                // Update avatar frame if equipped
+                const equippedFrame = items.find(i => i.is_equipped && i.item_type === 'FRAME');
+                const frameImg = document.getElementById('kid-avatar-frame');
+                if (equippedFrame) {
+                    frameImg.src = equippedFrame.image_url;
+                    frameImg.classList.remove('hidden-section');
+                } else {
+                    frameImg.classList.add('hidden-section');
+                }
+
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 text-xs w-full py-4 italic">Chưa có món đồ nào...</div>';
+                    return;
+                }
+
+                container.innerHTML = items.map(ua => `
+                    <div onclick="equipItem('${ua.id}')" class="flex-shrink-0 w-20 text-center cursor-pointer group hover:bg-pink-50 p-1 rounded-xl transition-colors">
+                        <div class="relative">
+                            <img src="${ua.image_url}" class="w-14 h-14 mx-auto rounded-full border-4 ${ua.is_equipped ? 'border-pink-500 bg-pink-100 scale-105' : 'border-white'} shadow-sm group-active:scale-95 transition-all">
+                            ${ua.is_equipped ? '<span class="absolute -top-1 -right-1 text-xs drop-shadow-md">✅</span>' : ''}
+                        </div>
+                        <p class="text-[10px] font-bold mt-1 truncate ${ua.is_equipped ? 'text-pink-600' : 'text-gray-500'}">${ua.name}</p>
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function buyAvatarItem(id) {
+            if (!confirm("Bé có muốn thấy xu mua vật phẩm này không?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/gamification/shop/buy/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail);
+                alert("Mua thành công! Vào tủ đồ để mặc nhé ✨");
+                fetchAvatarShop();
+                fetchInventory();
+                fetchMe(); // update balance
+            } catch (e) { alert(e.message); }
+        }
+
+        async function equipItem(uaId) {
+            try {
+                const res = await fetch(`${API_BASE}/gamification/inventory/equip/${uaId}`, { method: 'POST' });
+                if (res.ok) {
+                    fetchInventory();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Finance & Thinking ---
+        async function fetchFinanceData() {
+            try {
+                const statusRes = await fetch(`${API_BASE}/finance/status`);
+                const status = await statusRes.json();
+                document.getElementById('finance-coins').innerText = status.current_coin.toLocaleString();
+                document.getElementById('finance-charity').innerText = status.charity_balance.toLocaleString();
+                document.getElementById('finance-savings').innerText = status.total_savings.toLocaleString();
+
+                const loansRes = await fetch(`${API_BASE}/finance/loans`);
+                const loans = await loansRes.json();
+                const container = document.getElementById('loan-list');
+                if (loans.length === 0) {
+                    container.innerHTML = '<div class="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs italic">Không có khoản vay nào.</div>';
+                } else {
+                    container.innerHTML = loans.map(l => {
+                        const cycleText = {
+                            'ONE_TIME': 'Trả 1 lần',
+                            'DAILY': 'Mỗi ngày',
+                            'WEEKLY': 'Mỗi tuần',
+                            'MONTHLY': 'Mỗi tháng'
+                        }[l.payment_cycle] || 'Không rõ';
+                        
+                        const remaining = l.total_owed - l.repaid_amount;
+                        const installAmount = Math.ceil(l.total_owed / l.installments_count);
+                        
+                        return `
+                            <div class="bg-white p-5 rounded-3xl border-b-4 border-orange-100 shadow-sm">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-black text-gray-800 text-sm">Nợ: ${remaining.toLocaleString()} Xu</h4>
+                                        <p class="text-[10px] text-gray-400 font-medium tracking-tight">Gốc: ${l.loan_amount} + Lãi: ${l.total_owed - l.loan_amount}</p>
+                                    </div>
+                                    <span class="text-[9px] bg-orange-50 text-orange-800 px-2 py-0.5 rounded-full font-black uppercase">${l.status}</span>
+                                </div>
+                                
+                                <div class="bg-orange-50/50 rounded-2xl p-3 mb-4">
+                                    <div class="flex justify-between text-[10px] font-bold text-orange-800 mb-1">
+                                        <span>Kế hoạch: ${cycleText}</span>
+                                        <span>${l.installments_count} lần</span>
+                                    </div>
+                                    <p class="text-[10px] text-orange-600 italic">Mỗi lần trả khoảng: <b>${installAmount} Xu</b></p>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <button onclick="showLoanSchedule('${l.id}', ${l.total_owed}, ${l.installments_count}, '${cycleText}')" 
+                                        class="flex-1 text-[10px] bg-white border-2 border-orange-200 text-orange-600 px-3 py-2 rounded-xl hover:bg-orange-50 font-black transition-all">
+                                        LỊCH TRẢ
+                                    </button>
+                                    ${l.status === 'ACTIVE' && remaining > 0 ? `
+                                        <button onclick="showRepayLoanModal('${l.id}', ${remaining})" 
+                                            class="flex-1 text-[10px] bg-orange-500 text-white px-3 py-2 rounded-xl hover:bg-orange-600 shadow-md font-black transform transition active:scale-95 uppercase">
+                                            TRẢ NỢ
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function showLoanSchedule(loanId, total, count, cycle) {
+            const content = document.getElementById('loan-schedule-content');
+            const perInstallment = Math.ceil(total / count);
+            let html = '';
+            for(let i=1; i<=count; i++) {
+                html += `
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border-2 border-gray-100">
+                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-700 font-black text-xs">
+                            ${i}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-gray-700">Lần trả ${i}</p>
+                            <p class="text-[10px] text-gray-400">${cycle}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-black text-orange-600">${perInstallment} Xu</p>
+                        </div>
+                    </div>
+                `;
+            }
+            content.innerHTML = html;
+            document.getElementById('view-loan-schedule-modal').classList.remove('hidden-section');
+        }
+
+        function showRepayLoanModal(loanId, maxAmount) {
+            document.getElementById('repay-loan-id').value = loanId;
+            document.getElementById('repay-max-amount').value = maxAmount;
+            document.getElementById('repay-max-label').innerText = maxAmount.toLocaleString();
+            document.getElementById('repay-current-coin').innerText = currentUser.current_coin.toLocaleString();
+            document.getElementById('repay-amount').max = maxAmount;
+            document.getElementById('repay-amount').value = '';
+            document.getElementById('repay-loan-modal').classList.remove('hidden-section');
+        }
+
+        async function submitRepayLoan(event) {
+            event.preventDefault();
+            const loanId = document.getElementById('repay-loan-id').value;
+            const amount = parseInt(document.getElementById('repay-amount').value);
+            const maxAmount = parseInt(document.getElementById('repay-max-amount').value);
+
+            if (amount <= 0) {
+                alert('Số Xu trả nợ phải lớn hơn 0!');
+                return;
+            }
+            if (amount > maxAmount) {
+                alert('Không thể trả lố số tiền đang nợ!');
+                return;
+            }
+            if (amount > currentUser.current_coin) {
+                alert('Bé không có đủ Xu để trả mức này đâu!');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/finance/loans/repay`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        loan_id: loanId,
+                        amount: amount
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi trả nợ");
+                }
+
+                closeModal('repay-loan-modal');
+                
+                // Reload dashboard data immediately
+                await fetchMe();
+                await fetchFinanceData();
+
+                // Visual feedback
+                const balanceEl = document.getElementById('coin-balance');
+                if (balanceEl) {
+                    balanceEl.parentElement.classList.add('coin-pop');
+                    setTimeout(() => balanceEl.parentElement.classList.remove('coin-pop'), 300);
+                }
+
+                alert('🎉 Giỏi quá! Bé vừa trả nợ thành công rồi nhé!');
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        async function fetchThinkingData() {
+            try {
+                const probRes = await fetch(`${API_BASE}/thinking/problems`);
+                const probs = await probRes.json();
+                const probBoard = document.getElementById('problem-board');
+                if (probs.length === 0) {
+                    probBoard.innerHTML = '<div class="bg-white p-6 rounded-3xl text-center text-gray-400 text-xs italic">Gia đình chưa có thử thách nào...</div>';
+                } else {
+                    probBoard.innerHTML = probs.map(p => `
+                        <div class="bg-white p-5 rounded-3xl border-b-4 border-indigo-200 shadow-sm">
+                            <h4 class="font-black text-indigo-900 mb-1">${p.title}</h4>
+                            <p class="text-xs text-indigo-600 font-medium mb-4">${p.description}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="bg-yellow-100 text-yellow-700 font-black text-[10px] px-2 py-1 rounded-full shadow-sm drop-shadow-sm border border-yellow-200">+ ${p.reward_points} Xu</span>
+                                <button onclick="submitProblem('${p.id}', '${p.title.replace(/'/g, "\\'")}')" class="bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-md transition-all uppercase tracking-wider">GIẢI ĐÁP</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                const reflRes = await fetch(`${API_BASE}/thinking/reflections/me`);
+                const reflections = await reflRes.json();
+                const reflBoard = document.getElementById('reflection-list');
+                if (reflections.length === 0) {
+                    reflBoard.innerHTML = '<div class="text-center text-gray-400 text-xs italic py-4">Tuần này chưa có bài tập nào...</div>';
+                } else {
+                    reflBoard.innerHTML = reflections.map(r => `
+                        <div class="bg-white p-4 rounded-2xl border-l-4 ${r.status === 'PENDING' ? 'border-yellow-400 bg-yellow-50/50' : 'border-green-400'} shadow-sm">
+                            <p class="text-xs font-bold ${r.status === 'PENDING' ? 'text-yellow-800' : 'text-green-800'} flex items-center justify-between">
+                                <span>${r.status === 'PENDING' ? '📝 Hãy dành 5 phút nhìn lại' : '✅ Đã hoàn thành'}</span>
+                                <span class="text-[10px] text-gray-400 font-medium">${new Date(r.created_at).toLocaleDateString()}</span>
+                            </p>
+                            ${r.status === 'PENDING' ? `
+                                <button onclick="submitReflection('${r.id}')" class="mt-3 w-full py-2 bg-yellow-400 text-yellow-900 hover:bg-yellow-500 active:scale-95 text-[10px] font-black rounded-xl shadow-sm transition-all uppercase tracking-wider">LÀM NGAY</button>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function submitProblem(problemId, problemTitle) {
+            const answer = prompt(`Nhập câu trả lời hoặc cách giải cho thử thách "${problemTitle}":`);
+            if (!answer) return;
+            try {
+                const res = await fetch(`${API_BASE}/thinking/problems/${problemId}/solutions`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ task_description: answer, proof_image_url: "" })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.detail || "Gửi lời giải thất bại");
+                alert("Đã gửi lời giải thành công! Hãy chờ bố mẹ chấm điểm nhé. 🧠");
+                fetchThinkingData();
+            } catch(e) { alert(e.message); }
+        }
+
+        async function submitReflection(reflectionId) {
+            const q1 = prompt("1. Tuần qua con tự hào nhất về điều gì?\\n(Ví dụ: Con đã giúp mẹ nấu cơm...)");
+            if (q1 === null || q1.trim() === '') return;
+            
+            const q2 = prompt("2. Con thấy mình cần cố gắng hơn ở điểm nào?\\n(Ví dụ: Cần ngủ sớm hơn...)");
+            if (q2 === null || q2.trim() === '') return;
+            
+            const q3 = prompt("3. Con muốn bố mẹ giúp gì trong tuần tới?\\n(Ví dụ: Mẹ kèm con môn Toán nhé...)");
+            if (q3 === null || q3.trim() === '') return;
+
+            try {
+                const res = await fetch(`${API_BASE}/thinking/reflections/${reflectionId}/submit`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ q1_answer: q1, q2_answer: q2, q3_answer: q3 })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.detail || "Gửi bài tập thất bại");
+                alert("Cảm ơn con đã chia sẻ! Bố mẹ sẽ đọc và trân trọng điều này. ❤️");
+                fetchThinkingData();
+            } catch(e) { alert(e.message); }
+        }
+
         // --- Profile Update ---
         function showProfileModal() {
             document.getElementById('profile-modal').classList.remove('hidden-section');
@@ -854,15 +1305,10 @@
         function handleRewardSearch(query) {
             fetchMasterRewardSuggestions(query);
         }
-
         async function proposeReward(event, masterRewardId, rewardName) {
             const btn = event.currentTarget;
             if (btn.disabled) return;
             
-            const originalText = btn.innerText;
-            btn.innerText = 'ĐANG XIN...';
-            btn.disabled = true;
-
             try {
                 const response = await fetch(`${API_BASE}/rewards/propose-master`, {
                     method: 'POST',
@@ -883,27 +1329,53 @@
             } catch (error) {
                 console.error(error);
                 alert(error.message);
-                btn.innerText = originalText;
+                btn.innerText = 'XIN QUÀ';
                 btn.disabled = false;
             }
         }
 
         // --- Tabs ---
         function switchTab(tabId) {
+            // Hide all tab content
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-yellow-600');
-                el.querySelector('span:first-child').classList.add('grayscale', 'opacity-50');
+            // Remove active style from all buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.add('text-gray-400');
+                btn.classList.remove('text-yellow-600', 'text-purple-600', 'text-blue-600', 'text-pink-600', 'text-emerald-700', 'text-indigo-700');
+                const span = btn.querySelector('span:first-child');
+                if (span) {
+                    span.classList.add('grayscale', 'opacity-50');
+                }
             });
 
-            document.getElementById('tab-' + tabId).classList.add('active');
-            const activeBtn = document.getElementById('btn-' + tabId);
-            if (activeBtn) {
-                 activeBtn.classList.add('text-yellow-600');
-                 activeBtn.classList.remove('text-gray-400');
-                 activeBtn.querySelector('span:first-child').classList.remove('grayscale', 'opacity-50');
+            // Show selected tab
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.add('active');
             }
-            
+
+            // Set active class on button
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            const colorClass = {
+                'quests': 'text-yellow-600',
+                'praise': 'text-yellow-600',
+                'shop': 'text-purple-600',
+                'clubs': 'text-blue-600',
+                'avatar': 'text-pink-600',
+                'finance': 'text-emerald-700',
+                'thinking': 'text-indigo-700'
+            }[tabId] || 'text-yellow-600';
+
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add(colorClass);
+                const span = activeBtn.querySelector('span:first-child');
+                if (span) {
+                    span.classList.remove('grayscale', 'opacity-50');
+                }
+            }
+
+            // Fetch data based on tab
             if (tabId === 'quests') {
                 fetchQuests();
                 fetchMasterSuggestions(document.getElementById('suggestion-search').value);
@@ -916,6 +1388,9 @@
                 hideClubDetail();
                 fetchClubs();
             }
+            if (tabId === 'avatar') { fetchAvatarShop(); fetchInventory(); }
+            if (tabId === 'finance') fetchFinanceData();
+            if (tabId === 'thinking') fetchThinkingData();
         }
 
         // --- Notifications ---

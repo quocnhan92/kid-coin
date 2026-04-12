@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,29 +8,104 @@
     <meta name="robots" content="noindex, nofollow">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Use !important to ensure hiding works even with flex/grid utilities */
-        .hidden-section { display: none !important; }
-        
+        .hidden-section {
+            display: none !important;
+        }
+
         /* Custom scrollbar for tab navigation */
-        .tab-scroll::-webkit-scrollbar { height: 4px; }
-        .tab-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-        .tab-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .tab-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .suggestion-scroll { display: flex; overflow-x: auto; gap: 0.75rem; padding-bottom: 0.5rem; scrollbar-width: none; }
-        .suggestion-scroll::-webkit-scrollbar { display: none; }
-        .suggestion-card { flex: 0 0 auto; width: 120px; text-align: center; cursor: pointer; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.75rem; transition: all 0.2s; }
-        .suggestion-card:hover { border-color: #3b82f6; background-color: #eff6ff; transform: translateY(-2px); }
-        .suggestion-card.active { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        
+        .tab-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .tab-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .tab-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .tab-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .suggestion-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.75rem;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+
+        .suggestion-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .suggestion-card {
+            flex: 0 0 auto;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #f1f5f9;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .suggestion-card:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: translateY(-2px);
+        }
+
+        .suggestion-card.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
         /* UX-05: Highlight effect for notification navigation */
         @keyframes highlightPulse {
-            0% { background-color: transparent; }
-            30% { background-color: #fef08a; transform: scale(1.02); box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
-            70% { background-color: #fef08a; transform: scale(1.02); box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
-            100% { background-color: transparent; transform: scale(1); }
+            0% {
+                background-color: transparent;
+            }
+
+            30% {
+                background-color: #fef08a;
+                transform: scale(1.02);
+                box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+            }
+
+            70% {
+                background-color: #fef08a;
+                transform: scale(1.02);
+                box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+            }
+
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
         }
+
         .highlight-pulse {
             animation: highlightPulse 2s ease-in-out;
             z-index: 10;
@@ -37,6 +113,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -49,13 +126,16 @@
                 <!-- Notifications Bell -->
                 <div class="relative cursor-pointer" onclick="toggleNotificationDropdown()" id="notification-bell">
                     <span class="text-2xl hover:opacity-80 transition-opacity block">🔔</span>
-                    <span id="notification-badge" class="hidden-section absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
-                    
+                    <span id="notification-badge"
+                        class="hidden-section absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
+
                     <!-- Dropdown -->
-                    <div id="notification-dropdown" class="hidden-section absolute right-0 mt-3 w-[320px] sm:w-[380px] bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
+                    <div id="notification-dropdown"
+                        class="hidden-section absolute right-0 mt-3 w-[320px] sm:w-[380px] bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 overflow-hidden transform origin-top-right transition-all">
                         <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 class="font-black text-gray-800 text-sm">Thông báo</h3>
-                            <button onclick="event.stopPropagation(); markAllNotificationsRead()" class="text-xs text-blue-600 font-bold hover:text-blue-800">Đánh dấu đã đọc</button>
+                            <button onclick="event.stopPropagation(); markAllNotificationsRead()"
+                                class="text-xs text-blue-600 font-bold hover:text-blue-800">Đánh dấu đã đọc</button>
                         </div>
                         <div id="notification-list" class="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
                             <div class="p-6 text-center text-gray-400 text-sm">Đang tải...</div>
@@ -63,14 +143,17 @@
                     </div>
                 </div>
 
-                <a href="/kid" class="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-bold border border-yellow-200 hidden md:block">
+                <a href="/kid"
+                    class="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-bold border border-yellow-200 hidden md:block">
                     🎮 Thi đua cùng con
                 </a>
-                <button onclick="showCreateAdminModal()" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-bold border border-blue-200 hidden sm:block">
+                <button onclick="showCreateAdminModal()"
+                    class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-bold border border-blue-200 hidden sm:block">
                     + Thêm Admin (Bố/Mẹ)
                 </button>
                 <span id="current-user" class="text-sm font-medium text-gray-600 hidden lg:block">...</span>
-                <button onclick="logout()" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-bold border border-red-200">
+                <button onclick="logout()"
+                    class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-bold border border-red-200">
                     Đăng xuất
                 </button>
             </div>
@@ -78,41 +161,60 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
+
         <!-- Mobile Helper Arrow -->
         <div class="md:hidden flex justify-end text-xs text-gray-400 mb-1 italic">
             Vuốt ngang để xem thêm menu ➡️
         </div>
-        
+
         <!-- Tab Navigation -->
         <div class="mb-8 flex gap-2 border-b border-gray-200 overflow-x-auto tab-scroll pb-2 relative">
-            <button onclick="switchTab('overview')" class="tab-btn active px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-bold whitespace-nowrap bg-blue-50 rounded-t-lg transition-colors">
+            <button onclick="switchTab('overview')"
+                class="tab-btn active px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-bold whitespace-nowrap bg-blue-50 rounded-t-lg transition-colors">
                 📊 Tổng quan
             </button>
-            <button onclick="switchTab('kids')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="switchTab('kids')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 👶 Các con
             </button>
-            <button onclick="switchTab('tasks')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="switchTab('tasks')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 ✅ Việc nhà
             </button>
-            <button onclick="switchTab('rewards')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="switchTab('rewards')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 🎁 Cửa hàng
             </button>
-            <button onclick="switchTab('clubs')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="switchTab('clubs')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 🏆 Câu lạc bộ
             </button>
-            <button onclick="switchTab('pending')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors relative">
+            <button onclick="switchTab('pending')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors relative">
                 ⏳ Chờ duyệt
-                <span id="pending-badge" class="absolute top-1 right-1 transform translate-x-1/4 -translate-y-1/4 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden-section shadow-sm ring-2 ring-white">0</span>
+                <span id="pending-badge"
+                    class="absolute top-1 right-1 transform translate-x-1/4 -translate-y-1/4 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden-section shadow-sm ring-2 ring-white">0</span>
             </button>
-            <button onclick="switchTab('audit')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="switchTab('expansion')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-purple-600 font-black hover:text-purple-800 hover:bg-purple-50 whitespace-nowrap rounded-t-lg transition-colors relative">
+                🌟 Nâng cao
+                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                </span>
+            </button>
+            <button onclick="switchTab('audit')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 📝 Lịch sử (Audit)
             </button>
             <!-- Mobile only buttons -->
-            <a href="/kid" class="sm:hidden px-4 py-2 border-b-2 border-transparent text-yellow-600 font-bold hover:text-yellow-800 hover:bg-yellow-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <a href="/kid"
+                class="sm:hidden px-4 py-2 border-b-2 border-transparent text-yellow-600 font-bold hover:text-yellow-800 hover:bg-yellow-50 whitespace-nowrap rounded-t-lg transition-colors">
                 🎮 Vào làm nhiệm vụ
             </a>
-            <button onclick="showCreateAdminModal()" class="sm:hidden px-4 py-2 border-b-2 border-transparent text-blue-600 font-medium hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap rounded-t-lg transition-colors">
+            <button onclick="showCreateAdminModal()"
+                class="sm:hidden px-4 py-2 border-b-2 border-transparent text-blue-600 font-medium hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap rounded-t-lg transition-colors">
                 + Bố/Mẹ mới
             </button>
         </div>
@@ -120,21 +222,24 @@
         <!-- Tab: Tổng quan -->
         <div id="overview" class="tab-content fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex items-center justify-between">
                     <div>
                         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tổng số con</h3>
                         <p id="total-kids" class="text-3xl font-black text-blue-600">-</p>
                     </div>
                     <div class="text-4xl opacity-20">👶</div>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-yellow-100 p-6 flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-yellow-100 p-6 flex items-center justify-between">
                     <div>
                         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nhiệm vụ active</h3>
                         <p id="total-tasks" class="text-3xl font-black text-yellow-600">-</p>
                     </div>
                     <div class="text-4xl opacity-20">📋</div>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-red-100 p-6 flex items-center justify-between cursor-pointer hover:bg-red-50 transition-colors" onclick="switchTab('pending')">
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 p-6 flex items-center justify-between cursor-pointer hover:bg-red-50 transition-colors"
+                    onclick="switchTab('pending')">
                     <div>
                         <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Cần duyệt ngay</h3>
                         <p id="pending-count" class="text-3xl font-black text-red-600">-</p>
@@ -145,13 +250,15 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>📋</span> Bài tập chờ duyệt gần đây</h2>
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>📋</span> Bài tập chờ
+                        duyệt gần đây</h2>
                     <div id="recent-pending-tasks" class="space-y-3">
                         <p class="text-gray-500 text-center py-8">Đang tải...</p>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Quà chờ giao gần đây</h2>
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Quà chờ
+                        giao gần đây</h2>
                     <div id="recent-pending-rewards" class="space-y-3">
                         <p class="text-gray-500 text-center py-8">Đang tải...</p>
                     </div>
@@ -162,8 +269,13 @@
         <!-- Tab: Quản lý Con -->
         <div id="kids" class="tab-content hidden-section fade-in">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="flex items-center gap-3"><h2 id="display-family-name" class="text-2xl font-black text-gray-800">Đang tải...</h2><button onclick="showEditFamilyModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors" title="Chỉnh sửa thông tin nhà">⚙️</button></div>
-                <button onclick="showCreateKidModal()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                <div class="flex items-center gap-3">
+                    <h2 id="display-family-name" class="text-2xl font-black text-gray-800">Đang tải...</h2><button
+                        onclick="showEditFamilyModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Chỉnh sửa thông tin nhà">⚙️</button>
+                </div>
+                <button onclick="showCreateKidModal()"
+                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
                     ➕ Thêm thành viên
                 </button>
             </div>
@@ -176,7 +288,8 @@
         <div id="tasks" class="tab-content hidden-section fade-in">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 class="text-2xl font-black text-gray-800">Việc nhà & Học tập</h2>
-                <button onclick="showCreateTaskModal()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                <button onclick="showCreateTaskModal()"
+                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
                     ➕ Giao việc mới
                 </button>
             </div>
@@ -191,7 +304,8 @@
         <div id="rewards" class="tab-content hidden-section fade-in">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 class="text-2xl font-black text-gray-800">Cửa hàng phần thưởng</h2>
-                <button onclick="showCreateRewardModal()" class="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold shadow-md shadow-purple-200">
+                <button onclick="showCreateRewardModal()"
+                    class="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-bold shadow-md shadow-purple-200">
                     ➕ Thêm món mới
                 </button>
             </div>
@@ -201,21 +315,23 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Tab: Câu lạc bộ -->
         <div id="clubs" class="tab-content hidden-section fade-in">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 class="text-2xl font-black text-gray-800">Cộng đồng & Nhóm</h2>
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <button onclick="showJoinClubModal()" class="flex-1 sm:flex-none px-4 py-3 bg-white text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors font-bold shadow-sm">
+                    <button onclick="showJoinClubModal()"
+                        class="flex-1 sm:flex-none px-4 py-3 bg-white text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors font-bold shadow-sm">
                         🔗 Nhập mã
                     </button>
-                    <button onclick="showCreateClubModal()" class="flex-1 sm:flex-none px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
+                    <button onclick="showCreateClubModal()"
+                        class="flex-1 sm:flex-none px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-md shadow-blue-200">
                         ➕ Tạo nhóm mới
                     </button>
                 </div>
             </div>
-            
+
             <div id="clubs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <p class="text-gray-500 text-center py-8 col-span-full">Đang tải danh sách nhóm...</p>
             </div>
@@ -223,18 +339,24 @@
             <!-- Leaderboard & Tasks section (hidden by default) -->
             <div id="club-detail-section" class="hidden-section mt-8 space-y-6">
                 <!-- Header -->
-                <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h3 id="lb-club-name" class="text-xl font-black text-blue-800">Chi tiết nhóm</h3>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <button id="btn-invite-parent" onclick="showInviteModal()" class="hidden-section px-4 py-2 border border-blue-200 bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 rounded-xl transition-colors">✉️ Mời người mới</button>
-                        <button onclick="closeClubDetail()" class="text-gray-500 font-bold hover:text-gray-800 px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">✕ Thoát ra</button>
+                        <button id="btn-invite-parent" onclick="showInviteModal()"
+                            class="hidden-section px-4 py-2 border border-blue-200 bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 rounded-xl transition-colors">✉️
+                            Mời người mới</button>
+                        <button onclick="closeClubDetail()"
+                            class="text-gray-500 font-bold hover:text-gray-800 px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">✕
+                            Thoát ra</button>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Leaderboard -->
                     <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
-                        <h4 class="font-bold text-gray-700 mb-4 flex items-center gap-2 text-lg">🏆 Bảng Xếp Hạng Top XP</h4>
+                        <h4 class="font-bold text-gray-700 mb-4 flex items-center gap-2 text-lg">🏆 Bảng Xếp Hạng Top XP
+                        </h4>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-left">
                                 <thead>
@@ -251,12 +373,14 @@
                             </table>
                         </div>
                     </div>
-                    
+
                     <!-- Club Tasks -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-yellow-200 p-6 flex flex-col h-full lg:max-h-[600px]">
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-yellow-200 p-6 flex flex-col h-full lg:max-h-[600px]">
                         <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-100">
                             <h4 class="font-bold text-gray-700 flex items-center gap-2 text-lg">🎯 Việc cần cày</h4>
-                            <button id="btn-create-club-task" onclick="showCreateClubTaskModal()" class="hidden-section px-4 py-2 bg-yellow-400 text-yellow-900 font-black rounded-xl hover:bg-yellow-500 shadow-sm transition-all transform active:scale-95 text-sm">
+                            <button id="btn-create-club-task" onclick="showCreateClubTaskModal()"
+                                class="hidden-section px-4 py-2 bg-yellow-400 text-yellow-900 font-black rounded-xl hover:bg-yellow-500 shadow-sm transition-all transform active:scale-95 text-sm">
                                 ➕ Giao cấu hình khó
                             </button>
                         </div>
@@ -274,16 +398,20 @@
         <div id="pending" class="tab-content hidden-section fade-in">
             <div class="space-y-8">
                 <div>
-                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>✅</span> Cần duyệt mỏi tay</h2>
+                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>✅</span> Cần duyệt
+                        mỏi tay</h2>
                     <div id="pending-tasks-full" class="space-y-4">
-                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang tải...</p>
+                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang
+                            tải...</p>
                     </div>
                 </div>
-                
+
                 <div>
-                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Nợ quà các sếp</h2>
+                    <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2"><span>🎁</span> Nợ quà
+                        các sếp</h2>
                     <div id="pending-rewards-full" class="space-y-4">
-                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang tải...</p>
+                        <p class="text-gray-500 text-center py-8 bg-white rounded-2xl border border-gray-100">Đang
+                            tải...</p>
                     </div>
                 </div>
             </div>
@@ -294,74 +422,167 @@
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 class="text-2xl font-black text-gray-800">Nhật ký Hệ thống (Audit Log)</h2>
                 <div class="w-full sm:w-auto flex gap-2">
-                    <input type="text" id="audit-search" placeholder="Tìm kiếm hành động..." class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <button onclick="resetAndLoadAudit()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-bold">Lọc</button>
+                    <input type="text" id="audit-search" placeholder="Tìm kiếm hành động..."
+                        class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button onclick="resetAndLoadAudit()"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-bold">Lọc</button>
                 </div>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời gian</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người thực hiện</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hành động</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Đối tượng</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Thời gian</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Người thực hiện</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Hành động</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Đối
+                                tượng</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody id="audit-list" class="bg-white divide-y divide-gray-200 text-sm">
-                        <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải...</td></tr>
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải...</td>
+                        </tr>
                     </tbody>
                 </table>
                 <!-- Pagination Controls -->
                 <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between">
-                    <span class="text-sm text-gray-700">Tổng: <span id="audit-total" class="font-bold">0</span> bản ghi</span>
+                    <span class="text-sm text-gray-700">Tổng: <span id="audit-total" class="font-bold">0</span> bản
+                        ghi</span>
                     <div class="flex gap-2">
-                        <button id="btn-audit-prev" onclick="changeAuditPage(-1)" class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Trước</button>
-                        <button id="btn-audit-next" onclick="changeAuditPage(1)" class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Sau</button>
+                        <button id="btn-audit-prev" onclick="changeAuditPage(-1)"
+                            class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Trước</button>
+                        <button id="btn-audit-next" onclick="changeAuditPage(1)"
+                            class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Sau</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Tab: Nâng cao (Tài chính, Tư duy, Xã hội) -->
+    <div id="expansion" class="tab-content hidden-section fade-in">
+        <div class="mb-6">
+            <h2 class="text-2xl font-black text-purple-800">Cộng đồng & Mở rộng 🌟</h2>
+            <p class="text-gray-500 text-sm">Quản lý Tài chính, Thử thách tư duy và Nhật ký trưởng thành của con.</p>
+        </div>
+
+        <!-- Finance Block -->
+        <div class="bg-white rounded-2xl shadow-sm border border-yellow-200 p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-black text-gray-800 flex items-center gap-2"><span>💸</span> Quản lý Khoản Vay
+                </h3>
+                <button onclick="showCreateLoanModal()"
+                    class="px-4 py-2 bg-yellow-400 text-yellow-900 font-bold rounded-xl hover:bg-yellow-500 shadow-sm active:scale-95 transition-all text-sm">➕
+                    Tạo khoản nợ</button>
+            </div>
+            <div id="parent-loans-list" class="space-y-3">
+                <p class="text-gray-400 text-center py-4 text-sm italic">Đang tải khoản vay...</p>
+            </div>
+        </div>
+
+        <!-- Thinking Block -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Problems -->
+            <div class="bg-indigo-50 rounded-2xl shadow-sm border border-indigo-100 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-black text-indigo-900 flex items-center gap-2"><span>🧠</span> Thử thách Trí
+                        tuệ</h3>
+                    <button onclick="showCreateProblemModal()"
+                        class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-sm active:scale-95 transition-all text-xs">➕
+                        Ra đề</button>
+                </div>
+                <div id="parent-problems-list" class="space-y-3 max-h-[400px] overflow-y-auto">
+                    <p class="text-gray-400 text-center py-4 text-sm italic">Đang tải thử thách...</p>
+                </div>
+            </div>
+
+            <!-- Reflections -->
+            <div class="bg-white rounded-2xl shadow-sm border border-green-200 p-6">
+                <h3 class="text-lg font-black text-green-900 flex items-center gap-2 mb-4"><span>🌱</span> Nhật ký Tuần
+                    qua</h3>
+                <div id="parent-reflections-list" class="space-y-3 max-h-[400px] overflow-y-auto">
+                    <p class="text-gray-400 text-center py-4 text-sm italic">Đang tải nhật ký...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wall of Fame Block -->
+        <div class="bg-gradient-to-r from-orange-50 to-pink-50 rounded-2xl shadow-sm border border-pink-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-black text-pink-900 flex items-center gap-2"><span>🏅</span> Bảng Vàng Gia Đình
+                </h3>
+                <button onclick="showCreateWallPostModal()"
+                    class="px-4 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 shadow-sm active:scale-95 transition-all text-sm">📝
+                    Vinh danh con</button>
+            </div>
+            <div id="parent-wall-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="text-gray-400 text-center py-4 text-sm col-span-full italic">Đang tải bảng vàng...</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
     <!-- Modal: Thêm Quản trị viên (Bố/Mẹ) -->
-    <div id="create-admin-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+    <div id="create-admin-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
             <h2 class="text-2xl font-black text-blue-800 mb-2 text-center">Thêm Quản trị viên 👨‍👩‍👧‍👦</h2>
             <p class="text-sm text-gray-500 text-center mb-6">Thêm Mẹ, Ông, Bà vào cùng quản lý gia đình</p>
             <form id="admin-form" onsubmit="createAdmin(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên hiển thị</label>
-                    <input type="text" id="admin-name" required placeholder="VD: Mẹ Hoa, Ông Nội..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                    <input type="text" id="admin-name" required placeholder="VD: Mẹ Hoa, Ông Nội..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên đăng nhập (Username)</label>
-                    <input type="text" id="admin-username" required placeholder="VD: mehoa123" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
-                    <p class="text-xs text-gray-400 mt-1">Dùng để đăng nhập trên thiết bị mới (Mật khẩu PIN chung của gia đình).</p>
+                    <input type="text" id="admin-username" required placeholder="VD: mehoa123"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                    <p class="text-xs text-gray-400 mt-1">Dùng để đăng nhập trên thiết bị mới (Mật khẩu PIN chung của
+                        gia đình).</p>
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('create-admin-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo Tài Khoản</button>
+                    <button type="button" onclick="closeModal('create-admin-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo
+                        Tài Khoản</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Thêm con -->
-    <div id="create-kid-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+    <div id="create-kid-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
             <h2 class="text-2xl font-black text-gray-800 mb-6 text-center">Thêm bé mới 👶</h2>
             <form id="kid-form" onsubmit="createKid(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên gọi ở nhà của bé</label>
-                    <input type="text" id="kid-name" required placeholder="VD: Bé Gạo, Cún..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
+                    <input type="text" id="kid-name" required placeholder="VD: Bé Gạo, Cún..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
                 </div>
-                
+
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Sinh nhật bé (để gợi ý việc phù hợp)</label>
-                    <input type="date" id="kid-birth-date" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Sinh nhật bé (để gợi ý việc phù
+                        hợp)</label>
+                    <input type="date" id="kid-birth-date"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
                 </div>
 
                 <div>
@@ -373,27 +594,34 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('create-kid-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu thành viên</button>
+                    <button type="button" onclick="closeModal('create-kid-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu
+                        thành viên</button>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <!-- Modal: Sửa con -->
-    <div id="edit-kid-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
+    <div id="edit-kid-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 transform transition-transform">
             <h2 class="text-2xl font-black text-gray-800 mb-6 text-center">Sửa thông tin bé ✏️</h2>
             <form id="edit-kid-form" onsubmit="updateKid(event)" class="space-y-5">
                 <input type="hidden" id="edit-kid-id">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên gọi</label>
-                    <input type="text" id="edit-kid-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
+                    <input type="text" id="edit-kid-name" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium text-lg">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Sinh nhật bé</label>
-                    <input type="date" id="edit-kid-birth-date" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
+                    <input type="date" id="edit-kid-birth-date"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium">
                 </div>
 
                 <div>
@@ -404,19 +632,34 @@
                     <input type="hidden" id="edit-kid-avatar-url">
                 </div>
 
+                <div class="p-3 bg-purple-50 border border-purple-100 rounded-xl">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="edit-kid-teen-mode"
+                            class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                        <span class="ml-3 font-bold text-purple-900 text-sm flex-1">🌟 Kích hoạt Chế độ Teen</span>
+                    </label>
+                    <p class="text-xs text-purple-700 mt-1 ml-8">Mở khóa tính năng Hợp đồng và Dự án khởi nghiệp (Khuyên
+                        dùng cho trẻ &gt; 12 tuổi).</p>
+                </div>
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('edit-kid-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
+                    <button type="button" onclick="closeModal('edit-kid-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập
+                        nhật</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Tạo Nhiệm vụ -->
-    <div id="create-task-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+    <div id="create-task-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-black text-gray-800 mb-4">Giao việc mới 📝</h2>
-            
+
             <div class="mb-6">
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Phát hành nhanh ⚡</p>
                 <div id="task-suggestions-list" class="suggestion-scroll">
@@ -433,7 +676,8 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên việc</label>
                     <div class="flex gap-2">
-                        <select id="task-icon" class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-2xl">
+                        <select id="task-icon"
+                            class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-2xl">
                             <option value="🪥">🪥</option>
                             <option value="🛏️">🛏️</option>
                             <option value="📚">📚</option>
@@ -444,21 +688,24 @@
                             <option value="💧">💧</option>
                             <option value="✨">✨</option>
                         </select>
-                        <input type="text" id="task-name" required placeholder="Gấp chăn màn..." class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                        <input type="text" id="task-name" required placeholder="Gấp chăn màn..."
+                            class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng (Xu)</label>
                         <div class="relative">
-                            <input type="number" id="task-points" required min="1" placeholder="10" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
+                            <input type="number" id="task-points" required min="1" placeholder="10"
+                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
                             <span class="absolute right-4 top-3 text-gray-400 font-bold">💰</span>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Nhóm</label>
-                        <select id="task-category" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
+                        <select id="task-category"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
                             <option value="Việc nhà">Việc nhà</option>
                             <option value="Học tập">Học tập</option>
                             <option value="Cá nhân">Cá nhân</option>
@@ -466,52 +713,65 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Yêu cầu báo cáo</label>
                     <div class="space-y-2">
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" name="verification" value="Cần chụp ảnh" checked class="w-5 h-5 text-blue-600">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="verification" value="Cần chụp ảnh" checked
+                                class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">📸 Bắt buộc chụp ảnh</span>
                         </label>
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" name="verification" value="Bố mẹ kiểm tra trực tiếp" class="w-5 h-5 text-blue-600">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="verification" value="Bố mẹ kiểm tra trực tiếp"
+                                class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">👀 Bố mẹ tự đi kiểm tra</span>
                         </label>
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
                             <input type="radio" name="verification" value="Tự động duyệt" class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">⚡ Tự động cộng tiền luôn</span>
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('create-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu việc</button>
+                    <button type="button" onclick="closeModal('create-task-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu
+                        việc</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Sửa Nhiệm vụ -->
-    <div id="edit-task-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+    <div id="edit-task-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-black text-gray-800 mb-6">Sửa nhiệm vụ 📝</h2>
             <form id="edit-task-form" onsubmit="updateTask(event)" class="space-y-5">
                 <input type="hidden" id="edit-task-id">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên việc (có thể thêm icon ở đầu)</label>
-                    <input type="text" id="edit-task-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                    <input type="text" id="edit-task-name" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng (Xu)</label>
-                        <input type="number" id="edit-task-points" required min="1" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
+                        <input type="number" id="edit-task-points" required min="1"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Nhóm</label>
-                        <select id="edit-task-category" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
+                        <select id="edit-task-category"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium">
                             <option value="Việc nhà">Việc nhà</option>
                             <option value="Học tập">Học tập</option>
                             <option value="Cá nhân">Cá nhân</option>
@@ -519,45 +779,55 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Yêu cầu báo cáo</label>
                     <div class="space-y-2">
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" name="edit-verification" value="Cần chụp ảnh" class="w-5 h-5 text-blue-600">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Cần chụp ảnh"
+                                class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">📸 Bắt buộc chụp ảnh</span>
                         </label>
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" name="edit-verification" value="Bố mẹ kiểm tra trực tiếp" class="w-5 h-5 text-blue-600">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Bố mẹ kiểm tra trực tiếp"
+                                class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">👀 Bố mẹ tự đi kiểm tra</span>
                         </label>
-                        <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="radio" name="edit-verification" value="Tự động duyệt" class="w-5 h-5 text-blue-600">
+                        <label
+                            class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="edit-verification" value="Tự động duyệt"
+                                class="w-5 h-5 text-blue-600">
                             <span class="ml-3 font-medium">⚡ Tự động cộng tiền luôn</span>
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('edit-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
+                    <button type="button" onclick="closeModal('edit-task-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Cập
+                        nhật</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Tạo Quà thưởng -->
-    <div id="create-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+    <div id="create-reward-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
             <h2 class="text-2xl font-black text-purple-800 mb-4">Đưa hàng lên kệ 🎁</h2>
-            
+
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Gợi ý mồi 🍦</p>
                     <div class="relative w-40">
-                        <input type="text" id="reward-suggestion-search" placeholder="Tìm quà..." 
-                               oninput="filterRewardSuggestions(this.value)"
-                               class="w-full pl-7 pr-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-purple-400 focus:bg-white transition-all">
+                        <input type="text" id="reward-suggestion-search" placeholder="Tìm quà..."
+                            oninput="filterRewardSuggestions(this.value)"
+                            class="w-full pl-7 pr-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-purple-400 focus:bg-white transition-all">
                         <span class="absolute left-2 top-1 text-gray-400">🔍</span>
                     </div>
                 </div>
@@ -575,7 +845,8 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Icon & Tên món quà</label>
                     <div class="flex gap-2">
-                        <select id="reward-icon" class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 text-2xl">
+                        <select id="reward-icon"
+                            class="px-2 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 text-2xl">
                             <option value="📺">📺</option>
                             <option value="🎮">🎮</option>
                             <option value="🍦">🍦</option>
@@ -585,54 +856,67 @@
                             <option value="🚴">🚴</option>
                             <option value="💵">💵</option>
                         </select>
-                        <input type="text" id="reward-name" required placeholder="Xem TV 30 phút..." class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
+                        <input type="text" id="reward-name" required placeholder="Xem TV 30 phút..."
+                            class="flex-1 px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Giá bán (Xu)</label>
-                        <input type="number" id="reward-cost" required min="1" placeholder="50" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
+                        <input type="number" id="reward-cost" required min="1" placeholder="50"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Số lượng kho</label>
-                        <input type="number" id="reward-stock" min="1" placeholder="Vô hạn" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
+                        <input type="number" id="reward-stock" min="1" placeholder="Vô hạn"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
                     </div>
                 </div>
-                
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('create-reward-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Lên kệ</button>
+                    <button type="button" onclick="closeModal('create-reward-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Lên
+                        kệ</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Sửa Quà thưởng -->
-    <div id="edit-reward-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+    <div id="edit-reward-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
             <h2 class="text-2xl font-black text-purple-800 mb-6">Sửa thông tin quà 🎁</h2>
             <form id="edit-reward-form" onsubmit="updateReward(event)" class="space-y-5">
                 <input type="hidden" id="edit-reward-id">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên món quà</label>
-                    <input type="text" id="edit-reward-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
+                    <input type="text" id="edit-reward-name" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:bg-white font-medium">
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Giá bán (Xu)</label>
-                        <input type="number" id="edit-reward-cost" required min="1" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
+                        <input type="number" id="edit-reward-cost" required min="1"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-black text-purple-600">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Số lượng kho</label>
-                        <input type="number" id="edit-reward-stock" min="1" placeholder="Vô hạn" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
+                        <input type="number" id="edit-reward-stock" min="1" placeholder="Vô hạn"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-medium">
                     </div>
                 </div>
-                
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('edit-reward-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Cập nhật</button>
+                    <button type="button" onclick="closeModal('edit-reward-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 shadow-md transform active:scale-95 transition-all">Cập
+                        nhật</button>
                 </div>
             </form>
         </div>
@@ -641,7 +925,8 @@
     <!-- Modal: Duyệt Việc (Khen/Chê) -->
     <div id="approve-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
-            <div id="approve-modal-header" class="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+            <div id="approve-modal-header"
+                class="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <img id="approve-kid-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                     <div>
@@ -649,196 +934,361 @@
                         <p id="approve-task-name" class="text-xs text-gray-500">...</p>
                     </div>
                 </div>
-                <button onclick="closeModal('approve-modal')" class="text-gray-400 hover:text-gray-600 font-bold text-xl px-2">&times;</button>
+                <button onclick="closeModal('approve-modal')"
+                    class="text-gray-400 hover:text-gray-600 font-bold text-xl px-2">&times;</button>
             </div>
-            
+
             <div class="p-6">
                 <!-- Image Preview (if any) -->
                 <div id="approve-image-container" class="mb-4 hidden-section">
-                    <img id="approve-image" src="" class="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-900">
+                    <img id="approve-image" src=""
+                        class="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-900">
                 </div>
-                
+
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Lời nhắn cho con (Tùy chọn)</label>
-                    <textarea id="approve-comment" rows="2" placeholder="Ví dụ: Giỏi lắm! / Con làm lại góc này nhé..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+                    <textarea id="approve-comment" rows="2" placeholder="Ví dụ: Giỏi lắm! / Con làm lại góc này nhé..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
                 </div>
 
                 <input type="hidden" id="approve-log-id">
-                
+
                 <div class="flex gap-3">
-                    <button onclick="submitApproval('REJECT')" class="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 border border-red-200 transition-colors">✕ Từ chối</button>
-                    <button onclick="submitApproval('APPROVE')" class="flex-[2] py-3 bg-green-500 text-white font-black rounded-xl hover:bg-green-600 shadow-md shadow-green-200 transform active:scale-95 transition-all text-lg">✓ Duyệt Thưởng</button>
+                    <button onclick="submitApproval('REJECT')"
+                        class="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 border border-red-200 transition-colors">✕
+                        Từ chối</button>
+                    <button onclick="submitApproval('APPROVE')"
+                        class="flex-[2] py-3 bg-green-500 text-white font-black rounded-xl hover:bg-green-600 shadow-md shadow-green-200 transform active:scale-95 transition-all text-lg">✓
+                        Duyệt Thưởng</button>
                 </div>
             </div>
         </div>
     </div>
     <!-- Modal: Nhận lời mời nhóm -->
-    <div id="club-approve-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-[60] p-4">
-        <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in-up border-4 border-blue-400">
+    <div id="club-approve-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-center items-center z-[60] p-4">
+        <div
+            class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in-up border-4 border-blue-400">
             <div class="bg-blue-600 p-4 text-white text-center rounded-t-2xl">
                 <h3 class="font-black text-xl flex items-center justify-center gap-2">Yêu Cầu Tham Gia Nhóm 📬</h3>
             </div>
             <div class="p-6 text-center space-y-4 bg-blue-50">
                 <div class="text-6xl mb-2 animate-bounce mt-2">🏅</div>
                 <p class="text-gray-700 text-lg font-medium leading-relaxed">
-                    Bé <span class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200" id="cam-kid-name"></span><br>
+                    Bé <span class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200"
+                        id="cam-kid-name"></span><br>
                     vừa được mời tham gia nhóm<br>
-                    <span class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200 mt-1 inline-block" id="cam-club-name"></span>
+                    <span
+                        class="font-black text-blue-700 bg-white px-2 py-1 rounded-lg border border-blue-200 mt-1 inline-block"
+                        id="cam-club-name"></span>
                 </p>
                 <p class="text-sm text-gray-500 font-bold italic mt-4">Bạn có duyệt cho con trải nghiệm không?</p>
-                
+
                 <input type="hidden" id="cam-club-id">
                 <input type="hidden" id="cam-invitation-id">
                 <input type="hidden" id="cam-notif-id">
-                
+
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('club-approve-modal')" class="flex-1 py-3 bg-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-300">Nhắc Sau</button>
-                    <button type="button" onclick="approveClubInviteFromModal('REJECT')" class="flex-1 py-3 bg-red-100 text-red-600 font-bold rounded-xl hover:bg-red-200">Từ Chối</button>
-                    <button type="button" onclick="approveClubInviteFromModal('ACCEPT')" class="flex-[1.5] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all text-lg">Đồng Ý!</button>
+                    <button type="button" onclick="closeModal('club-approve-modal')"
+                        class="flex-1 py-3 bg-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-300">Nhắc
+                        Sau</button>
+                    <button type="button" onclick="approveClubInviteFromModal('REJECT')"
+                        class="flex-1 py-3 bg-red-100 text-red-600 font-bold rounded-xl hover:bg-red-200">Từ
+                        Chối</button>
+                    <button type="button" onclick="approveClubInviteFromModal('ACCEPT')"
+                        class="flex-[1.5] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all text-lg">Đồng
+                        Ý!</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Modal: Tạo Câu lạc bộ -->
-    <div id="create-club-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+    <div id="create-club-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
             <h2 class="text-2xl font-black text-blue-800 mb-6">Tạo Nhóm / Câu lạc bộ 🏆</h2>
             <form onsubmit="createClub(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhóm</label>
-                    <input type="text" id="club-name" required placeholder="VD: Hội làm việc nhà Lớp 3A" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
+                    <input type="text" id="club-name" required placeholder="VD: Hội làm việc nhà Lớp 3A"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-medium">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Mã mời tùy chọn (để trống sẽ tự tạo)</label>
-                    <input type="text" id="club-custom-code" placeholder="VD: LOP3A2024" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono uppercase">
-                    <p class="text-xs text-gray-500 mt-1">Viết liền không dấu. Mã này dùng để gửi cho các phụ huynh khác.</p>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Mã mời tùy chọn (để trống sẽ tự
+                        tạo)</label>
+                    <input type="text" id="club-custom-code" placeholder="VD: LOP3A2024"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono uppercase">
+                    <p class="text-xs text-gray-500 mt-1">Viết liền không dấu. Mã này dùng để gửi cho các phụ huynh
+                        khác.</p>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('create-club-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo Nhóm</button>
+                    <button type="button" onclick="closeModal('create-club-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tạo
+                        Nhóm</button>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <!-- Modal: Tham gia Câu lạc bộ -->
-    <div id="join-club-modal" class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+    <div id="join-club-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
             <h2 class="text-2xl font-black text-blue-800 mb-6">Tham gia Nhóm 🔗</h2>
             <p class="text-sm text-gray-600 mb-4">Nhập mã mời và chọn các thành viên trong nhà sẽ tham gia thi đua.</p>
             <form onsubmit="joinClub(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Mã mời (Invite Code)</label>
-                    <input type="text" id="join-club-code" required placeholder="VD: TEAM-A1B2" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono font-bold tracking-widest text-center uppercase">
+                    <input type="text" id="join-club-code" required placeholder="VD: TEAM-A1B2"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white font-mono font-bold tracking-widest text-center uppercase">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Chọn người tham gia</label>
-                    <div id="join-club-members-select" class="space-y-2 border-2 border-gray-100 p-3 rounded-xl max-h-48 overflow-y-auto">
+                    <div id="join-club-members-select"
+                        class="space-y-2 border-2 border-gray-100 p-3 rounded-xl max-h-48 overflow-y-auto">
                         <!-- JS generated list of checkboxes -->
                     </div>
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('join-club-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tham gia</button>
+                    <button type="button" onclick="closeModal('join-club-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Tham
+                        gia</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal: Tạo Khoản Vay -->
+    <div id="create-loan-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-yellow-800 mb-6">Tạo Khoản Nợ 💸</h2>
+            <form onsubmit="createLoan(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chọn bé</label>
+                    <select id="loan-kid-id" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Số tiền (Xu)</label>
+                    <input type="number" id="loan-amount" required min="1" placeholder="Ví dụ: 50"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 font-black text-yellow-600">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Lãi suất (%)</label>
+                        <input type="number" id="loan-interest" required min="0" step="0.1" value="0"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 font-bold text-red-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Chia nhỏ trả (lần)</label>
+                        <input type="number" id="loan-installments" required min="1" value="1"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chu kỳ thanh toán</label>
+                    <select id="loan-cycle" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 font-medium">
+                        <option value="ONE_TIME">Trả 1 lần khi đến hạn</option>
+                        <option value="DAILY">Hàng ngày</option>
+                        <option value="WEEKLY">Hàng tuần</option>
+                        <option value="MONTHLY">Hàng tháng</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-loan-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-yellow-400 text-yellow-900 font-bold rounded-xl hover:bg-yellow-500 shadow-md transform active:scale-95 transition-all">Ghi
+                        ráng</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <!-- Modal: Thử Thách Trí Tuệ -->
+    <div id="create-problem-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-indigo-800 mb-6">Ra đề mới 🧠</h2>
+            <form onsubmit="createProblem(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Câu hỏi mở</label>
+                    <input type="text" id="problem-title" required placeholder="Làm sao để..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Gợi ý</label>
+                    <textarea id="problem-desc" placeholder="Cho các bé biết cần phải làm thế nào..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Phần thưởng (Xu)</label>
+                    <input type="number" id="problem-reward" required min="1" placeholder="10"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 font-black text-indigo-600">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-problem-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md transform active:scale-95 transition-all">Lên
+                        bảng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Vinh danh bảng vàng -->
+    <div id="create-wall-post-modal"
+        class="hidden-section fixed inset-0 bg-black/60 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0">
+            <h2 class="text-2xl font-black text-pink-800 mb-6">Đăng Bảng Vàng 🏅</h2>
+            <form onsubmit="createWallPost(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Người được vinh danh</label>
+                    <select id="wall-kid-id" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-pink-500 font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chúc Mừng</label>
+                    <textarea id="wall-caption" required placeholder="Hôm nay bé siêu nhất vì đã..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-pink-500 font-medium"></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('create-wall-post-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 shadow-md transform active:scale-95 transition-all">Đăng
+                        tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
     </div>
 
     <!-- Modal: Tạo Nhiệm vụ Câu lạc bộ -->
-    <div id="create-club-task-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+    <div id="create-club-task-modal"
+        class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">Giao việc nhóm 🏆📝</h2>
             <form id="club-task-form" onsubmit="createClubTask(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhiệm vụ</label>
-                    <input type="text" id="club-task-name" required placeholder="VD: 🎯 Cày Level Học Tiếng Anh" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
+                    <input type="text" id="club-task-name" required placeholder="VD: 🎯 Cày Level Học Tiếng Anh"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Lời dặn (Tùy chọn)</label>
-                    <textarea id="club-task-desc" rows="2" placeholder="Yêu cầu cụ thể..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
+                    <textarea id="club-task-desc" rows="2" placeholder="Yêu cầu cụ thể..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng XP</label>
                         <div class="relative">
-                            <input type="number" id="club-task-points" required min="1" placeholder="100" class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
+                            <input type="number" id="club-task-points" required min="1" placeholder="100"
+                                class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Hạn chót (Tùy chọn)</label>
-                        <input type="date" id="club-task-due" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
+                        <input type="date" id="club-task-due"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
                     </div>
                 </div>
                 <div class="flex gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeModal('create-club-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Bỏ qua</button>
-                    <button type="submit" class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu việc & Phát đơn</button>
+                    <button type="button" onclick="closeModal('create-club-task-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Bỏ
+                        qua</button>
+                    <button type="submit"
+                        class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu
+                        việc & Phát đơn</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Sửa Nhiệm vụ Câu lạc bộ -->
-    <div id="edit-club-task-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
+    <div id="edit-club-task-modal"
+        class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">Chỉnh sửa việc ✏️</h2>
             <form id="edit-club-task-form" onsubmit="updateClubTask(event)" class="space-y-4">
                 <input type="hidden" id="edit-club-task-id">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Tên nhiệm vụ</label>
-                    <input type="text" id="edit-club-task-name" required class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
+                    <input type="text" id="edit-club-task-name" required
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Lời dặn</label>
-                    <textarea id="edit-club-task-desc" rows="2" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
+                    <textarea id="edit-club-task-desc" rows="2"
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none font-medium text-sm"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Thưởng XP</label>
-                        <input type="number" id="edit-club-task-points" required min="1" class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
+                        <input type="number" id="edit-club-task-points" required min="1"
+                            class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 font-black text-blue-600 text-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Hạn chót</label>
-                        <input type="date" id="edit-club-task-due" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
+                        <input type="date" id="edit-club-task-due"
+                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-600">
                     </div>
                 </div>
-                <label class="flex items-center gap-3 pt-2 cursor-pointer p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                <label
+                    class="flex items-center gap-3 pt-2 cursor-pointer p-3 bg-yellow-50 rounded-xl border border-yellow-100">
                     <input type="checkbox" id="edit-club-task-active" class="w-5 h-5 text-blue-600 rounded">
                     <span class="font-bold text-gray-700">Đang hoạt động (Khóa sẽ tàng hình trên màn của bé)</span>
                 </label>
                 <div class="flex gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeModal('edit-club-task-modal')" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
-                    <button type="submit" class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu Cập Nhật</button>
+                    <button type="button" onclick="closeModal('edit-club-task-modal')"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    <button type="submit"
+                        class="flex-[2] py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 shadow-md transform active:scale-95 transition-all">Lưu
+                        Cập Nhật</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal: Mời Phụ Huynh -->
-    <div id="invite-parent-modal" class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] flex flex-col pt-8">
+    <div id="invite-parent-modal"
+        class="hidden-section fixed inset-0 bg-black/70 flex justify-end sm:justify-center sm:items-center z-50 sm:p-4">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl p-6 w-full max-w-md mt-auto sm:mt-0 max-h-[90vh] flex flex-col pt-8">
             <h2 class="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2">Mời Phụ Huynh ✉️</h2>
             <div class="mb-4">
                 <div class="relative">
-                    <input type="text" id="invite-search-input" placeholder="Nhập tên hoặc username..." class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium pb-3" onkeydown="if(event.key === 'Enter') searchUsersForInvite()">
-                    <button onclick="searchUsersForInvite()" class="absolute right-2 top-2 bottom-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-lg font-bold hover:bg-blue-200 transition-colors">Tìm</button>
+                    <input type="text" id="invite-search-input" placeholder="Nhập tên hoặc username..."
+                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-medium pb-3"
+                        onkeydown="if(event.key === 'Enter') searchUsersForInvite()">
+                    <button onclick="searchUsersForInvite()"
+                        class="absolute right-2 top-2 bottom-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-lg font-bold hover:bg-blue-200 transition-colors">Tìm</button>
                 </div>
             </div>
-            
+
             <div class="flex-1 overflow-y-auto mb-4 border border-gray-100 rounded-xl bg-gray-50 min-h-[200px]">
                 <div id="invite-search-results" class="divide-y divide-gray-100">
                     <p class="text-gray-400 py-6 text-center text-sm">Gõ tên tìm kiếm để mời vào nhóm...</p>
                 </div>
             </div>
-            
+
             <div class="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
-                <button type="button" onclick="closeModal('invite-parent-modal')" class="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">✕ Đóng</button>
+                <button type="button" onclick="closeModal('invite-parent-modal')"
+                    class="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">✕
+                    Đóng</button>
             </div>
         </div>
     </div>
@@ -869,7 +1319,7 @@
             }
 
             const text = await res.text();
-            
+
             // Try to parse JSON
             try {
                 const data = text ? JSON.parse(text) : null;
@@ -930,7 +1380,7 @@
                     const q = rewardQuery.toLowerCase();
                     filtered = masterRewards.filter(r => r.name.toLowerCase().includes(q));
                 }
-                
+
                 if (filtered.length === 0) {
                     rewardContainer.innerHTML = '<div class="text-[10px] text-gray-400 italic py-4">Không tìm thấy...</div>';
                     return;
@@ -957,19 +1407,19 @@
             selectedMasterTaskId = id;
             document.getElementById('task-name').value = task.name;
             document.getElementById('task-points').value = task.suggested_value;
-            
+
             // Set icon if matches
             const iconSelect = document.getElementById('task-icon');
             if (task.icon_url) {
                 let found = false;
-                for(let i=0; i<iconSelect.options.length; i++) {
-                    if(iconSelect.options[i].value === task.icon_url) {
+                for (let i = 0; i < iconSelect.options.length; i++) {
+                    if (iconSelect.options[i].value === task.icon_url) {
                         iconSelect.selectedIndex = i;
                         found = true;
                         break;
                     }
                 }
-                if(!found) {
+                if (!found) {
                     // Add new option if not exists
                     const opt = document.createElement('option');
                     opt.value = task.icon_url;
@@ -978,16 +1428,16 @@
                     iconSelect.value = task.icon_url;
                 }
             }
-            
+
             // Map category
             const catSelect = document.getElementById('task-category');
             if (task.category) {
-                 for(let i=0; i<catSelect.options.length; i++) {
-                     if(catSelect.options[i].value === task.category || catSelect.options[i].text === task.category) {
-                         catSelect.selectedIndex = i;
-                         break;
-                     }
-                 }
+                for (let i = 0; i < catSelect.options.length; i++) {
+                    if (catSelect.options[i].value === task.category || catSelect.options[i].text === task.category) {
+                        catSelect.selectedIndex = i;
+                        break;
+                    }
+                }
             }
 
             // Map verification
@@ -1008,19 +1458,19 @@
             selectedMasterRewardId = id;
             document.getElementById('reward-name').value = reward.name;
             document.getElementById('reward-cost').value = reward.suggested_cost;
-            
+
             // Set icon if matches
             const iconSelect = document.getElementById('reward-icon');
             if (reward.icon_url) {
                 let found = false;
-                for(let i=0; i<iconSelect.options.length; i++) {
-                    if(iconSelect.options[i].value === reward.icon_url) {
+                for (let i = 0; i < iconSelect.options.length; i++) {
+                    if (iconSelect.options[i].value === reward.icon_url) {
                         iconSelect.selectedIndex = i;
                         found = true;
                         break;
                     }
                 }
-                if(!found) {
+                if (!found) {
                     const opt = document.createElement('option');
                     opt.value = reward.icon_url;
                     opt.text = reward.icon_url;
@@ -1051,7 +1501,7 @@
 
             document.getElementById(tab).classList.remove('hidden-section');
             const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(`'${tab}'`));
-            if(activeBtn) {
+            if (activeBtn) {
                 activeBtn.classList.remove('border-transparent', 'text-gray-600', 'font-medium');
                 activeBtn.classList.add('border-blue-600', 'text-blue-600', 'font-bold', 'bg-blue-50');
             }
@@ -1075,6 +1525,8 @@
                     resetAndLoadAudit();
                 } else if (tab === 'clubs') {
                     await loadClubs();
+                } else if (tab === 'expansion') {
+                    await fetchExpansionData();
                 }
             } catch (e) {
                 console.error('[loadTabData] error loading tab', tab, e);
@@ -1111,7 +1563,7 @@
                 document.getElementById('total-kids').textContent = kids.length;
                 document.getElementById('total-tasks').textContent = tasks.filter(t => t.is_active).length;
                 document.getElementById('pending-count').textContent = totalPending;
-                
+
                 // Update badge
                 const badge = document.getElementById('pending-badge');
                 if (totalPending > 0) {
@@ -1125,7 +1577,7 @@
                 const recentTasksHtml = pendingTasks.slice(0, 3).map(p => `
                     <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors" onclick="openApproveModal('${p.log_id}', '${p.kid_name}', '${p.task_name.replace(/'/g, "\\'")}', '${p.kid_avatar}', '${p.proof_image_url || ''}')">
                         <div class="flex items-center gap-3">
-                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                             <div>
                                 <p class="font-bold text-gray-800 text-sm leading-tight">${p.kid_name}</p>
                                 <p class="text-xs text-gray-600 truncate max-w-[150px]">${p.task_name}</p>
@@ -1143,7 +1595,7 @@
                 const recentRewardsHtml = pendingRewards.slice(0, 3).map(p => `
                     <div class="flex justify-between items-center p-3 bg-purple-50 rounded-xl border border-purple-100">
                         <div class="flex items-center gap-3">
-                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                            <img src="${p.kid_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.kid_name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                             <div>
                                 <p class="font-bold text-gray-800 text-sm leading-tight">${p.kid_name}</p>
                                 <p class="text-xs text-purple-700 font-medium truncate max-w-[150px]">${p.reward_name}</p>
@@ -1177,7 +1629,7 @@
                         </div>
                         <div class="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-blue-50 to-white"></div>
                         <div class="flex justify-center mb-4 relative z-10">
-                            <img src="${kid.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+kid.display_name}" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-yellow-100 object-cover">
+                            <img src="${kid.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + kid.display_name}" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-yellow-100 object-cover">
                         </div>
                         <h3 class="text-xl font-black text-gray-800 text-center mb-5 relative z-10">${kid.display_name}</h3>
                         <div class="grid grid-cols-2 gap-3 text-center">
@@ -1206,9 +1658,9 @@
             const seeds = ['Bin', 'Na', 'Felix', 'Bella', 'Charlie', 'Molly', 'Coco', 'Buster'];
             const grid = document.getElementById(pickerId);
             grid.innerHTML = '';
-            
+
             let selectedUrl = currentUrl;
-            
+
             if (!selectedUrl) {
                 const initialSeed = seeds[Math.floor(Math.random() * seeds.length)];
                 selectedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${initialSeed}`;
@@ -1220,13 +1672,13 @@
                 const img = document.createElement('img');
                 img.src = url;
                 img.className = `w-14 h-14 rounded-full cursor-pointer border-2 transition-all hover:scale-110`;
-                
+
                 if (url === selectedUrl) {
                     img.classList.add('border-blue-500', 'shadow-md', 'scale-110');
                 } else {
                     img.classList.add('border-transparent');
                 }
-                
+
                 img.onclick = () => {
                     document.getElementById(urlInputId).value = url;
                     Array.from(grid.children).forEach(c => {
@@ -1236,7 +1688,7 @@
                     img.classList.remove('border-transparent');
                     img.classList.add('border-blue-500', 'shadow-md', 'scale-110');
                 };
-                
+
                 grid.appendChild(img);
             });
         }
@@ -1251,11 +1703,11 @@
                 const res = await fetch(`${API_BASE}/parent/kids`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        display_name: name, 
+                    body: JSON.stringify({
+                        display_name: name,
                         avatar_url: avatarUrl,
-                        birth_date: birthDate || null 
-                    }) 
+                        birth_date: birthDate || null
+                    })
                 });
 
                 if (!res.ok) {
@@ -1266,7 +1718,7 @@
                 closeModal('create-kid-modal');
                 document.getElementById('kid-form').reset();
                 loadKids();
-                if(currentTab === 'overview') loadOverview();
+                if (currentTab === 'overview') loadOverview();
             } catch (error) {
                 alert('❌ Lỗi: ' + error.message);
             }
@@ -1278,22 +1730,31 @@
             const name = document.getElementById('edit-kid-name').value;
             const avatarUrl = document.getElementById('edit-kid-avatar-url').value;
             const birthDate = document.getElementById('edit-kid-birth-date').value;
+            const isTeen = document.getElementById('edit-kid-teen-mode').checked;
 
             try {
                 const res = await fetch(`${API_BASE}/parent/kids/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        display_name: name, 
+                    body: JSON.stringify({
+                        display_name: name,
                         avatar_url: avatarUrl,
-                        birth_date: birthDate || null 
-                    }) 
+                        birth_date: birthDate || null
+                    })
                 });
 
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.detail || 'Sửa thất bại');
                 }
+
+                // Call Teen mode API if we need to change it
+                // Note: we can blindly call it, or check diff. We'll simply call it.
+                await fetch(`${API_BASE}/parent/kids/${id}/teen-mode`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_teen_mode: isTeen })
+                });
 
                 closeModal('edit-kid-modal');
                 loadKids();
@@ -1365,8 +1826,8 @@
                 const res = await fetch(`${API_BASE}/parent/tasks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        name, 
+                    body: JSON.stringify({
+                        name,
                         points_reward: parseInt(points),
                         category: category,
                         verification_type: verificationType
@@ -1398,8 +1859,8 @@
                 const res = await fetch(`${API_BASE}/parent/tasks/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        name, 
+                    body: JSON.stringify({
+                        name,
                         points_reward: parseInt(points),
                         category: category,
                         verification_type: verificationType
@@ -1480,7 +1941,7 @@
         async function loadPending() {
             const taskContainer = document.getElementById('pending-tasks-full');
             const rewardContainer = document.getElementById('pending-rewards-full');
-            
+
             taskContainer.innerHTML = '<div class="text-center py-8 text-gray-500">Đang tải nhiệm vụ...</div>';
             rewardContainer.innerHTML = '<div class="text-center py-8 text-gray-500">Đang tải yêu cầu đổi quà...</div>';
 
@@ -1618,8 +2079,8 @@
                 const listRes = await fetch(`${API_BASE}/parent/rewards`);
                 const list = await listRes.json();
                 const reward = list.find(r => r.id === rewardId);
-                
-                if(!reward) throw new Error("Không tìm thấy phần thưởng");
+
+                if (!reward) throw new Error("Không tìm thấy phần thưởng");
 
                 const updateRes = await fetch(`${API_BASE}/parent/rewards/${rewardId}`, {
                     method: 'PUT',
@@ -1650,24 +2111,24 @@
             document.getElementById('approve-log-id').value = logId;
             document.getElementById('approve-kid-name').innerText = kidName;
             document.getElementById('approve-task-name').innerText = taskName;
-            
+
             const avatarEl = document.getElementById('approve-kid-avatar');
             avatarEl.src = kidAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${kidName}`;
-            
+
             const imgContainer = document.getElementById('approve-image-container');
             const imgEl = document.getElementById('approve-image');
-            
+
             if (proofUrl && proofUrl !== 'null' && proofUrl !== '') {
                 imgEl.src = proofUrl;
                 imgContainer.classList.remove('hidden-section');
             } else {
                 imgContainer.classList.add('hidden-section');
             }
-            
+
             // Randomly suggest a praise
             const praises = ["Giỏi quá con yêu!", "Tiếp tục phát huy nhé!", "Bố mẹ rất tự hào về con!", "Làm rất tốt! 🌟", "Tuyệt vời ông mặt trời!"];
             document.getElementById('approve-comment').value = praises[Math.floor(Math.random() * praises.length)];
-            
+
             document.getElementById('approve-modal').classList.remove('hidden-section');
         }
 
@@ -1691,28 +2152,28 @@
                     const err = await res.json();
                     throw new Error(err.detail || 'Lỗi xử lý');
                 }
-                
+
                 closeModal('approve-modal');
                 // Refresh data
                 loadPending();
-                if(currentTab === 'overview') loadOverview();
+                if (currentTab === 'overview') loadOverview();
             } catch (error) {
                 alert('❌ Lỗi: ' + error.message);
             }
         }
 
         async function confirmDelivery(redemptionId) {
-            if(!confirm('Xác nhận bạn đã thực sự giao món quà này cho bé?')) return;
+            if (!confirm('Xác nhận bạn đã thực sự giao món quà này cho bé?')) return;
             try {
                 const res = await fetch(`${API_BASE}/parent/rewards/${redemptionId}/confirm`, { method: 'POST' });
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.detail || 'Lỗi xác nhận');
                 }
-                
+
                 // Refresh data
                 loadPending();
-                if(currentTab === 'overview') loadOverview();
+                if (currentTab === 'overview') loadOverview();
             } catch (error) {
                 alert('❌ Lỗi: ' + error.message);
             }
@@ -1734,7 +2195,7 @@
             const searchTerm = document.getElementById('audit-search').value;
             const tbody = document.getElementById('audit-list');
             tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải...</td></tr>';
-            
+
             try {
                 const queryParams = new URLSearchParams({
                     skip: auditSkip,
@@ -1746,9 +2207,9 @@
                 if (!res.ok) throw new Error('Không thể tải log');
                 const data = await res.json();
                 const logs = data.logs;
-                
+
                 document.getElementById('audit-total').innerText = data.total;
-                
+
                 // Update pagination buttons
                 document.getElementById('btn-audit-prev').disabled = auditSkip === 0;
                 document.getElementById('btn-audit-next').disabled = (auditSkip + auditLimit) >= data.total;
@@ -1763,10 +2224,10 @@
                     let statusClass = 'text-gray-500';
                     if (log.status === 'SUCCESS') statusClass = 'text-green-600 font-bold';
                     if (log.status === 'FAILED') statusClass = 'text-red-600 font-bold';
-                    
+
                     let detailsStr = '';
                     if (log.details) {
-                         detailsStr = Object.entries(log.details).map(([k,v]) => `${k}: ${v}`).join(', ');
+                        detailsStr = Object.entries(log.details).map(([k, v]) => `${k}: ${v}`).join(', ');
                     }
 
                     return `
@@ -1790,7 +2251,7 @@
                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">${error.message}</td></tr>`;
             }
         }
-        
+
         // --- Club Actions ---
         async function loadClubs() {
             try {
@@ -1836,7 +2297,7 @@
 
         function showCreateClubModal() {
             document.getElementById('create-club-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('club-name').focus(), 100);
+            setTimeout(() => document.getElementById('club-name').focus(), 100);
         }
 
         // --- Notification Modal ---
@@ -1851,20 +2312,20 @@
             event.preventDefault();
             const name = document.getElementById('club-name').value;
             const customCode = document.getElementById('club-custom-code').value;
-            
+
             try {
                 const payload = { name: name, is_active: true };
                 if (customCode) payload.custom_invite_code = customCode.toUpperCase();
-                
+
                 const res = await fetch(`${API_BASE}/clubs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
+
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Tạo nhóm thất bại');
-                
+
                 closeModal('create-club-modal');
                 document.getElementById('club-name').value = '';
                 document.getElementById('club-custom-code').value = '';
@@ -1885,12 +2346,12 @@
                 renderJoinClubMembers();
             }
             document.getElementById('join-club-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('join-club-code').focus(), 100);
+            setTimeout(() => document.getElementById('join-club-code').focus(), 100);
         }
-        
+
         function renderJoinClubMembers() {
             const container = document.getElementById('join-club-members-select');
-            
+
             // Add self (parent)
             let html = `
                 <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
@@ -1898,7 +2359,7 @@
                     <span class="ml-2 font-medium text-gray-700">Tôi (Admin)</span>
                 </label>
             `;
-            
+
             // Add kids
             html += allKids.map(kid => `
                 <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
@@ -1906,17 +2367,17 @@
                     <span class="ml-2 font-medium text-gray-700">${kid.display_name}</span>
                 </label>
             `).join('');
-            
+
             container.innerHTML = html;
         }
 
         async function joinClub(event) {
             event.preventDefault();
             const code = document.getElementById('join-club-code').value;
-            
+
             const checkboxes = document.querySelectorAll('.member-join-checkbox:checked');
             const userIds = Array.from(checkboxes).map(cb => cb.value);
-            
+
             if (userIds.length === 0) {
                 alert("Vui lòng chọn ít nhất một người tham gia.");
                 return;
@@ -1930,7 +2391,7 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Tham gia thất bại');
-                
+
                 alert('✅ ' + data.message);
                 closeModal('join-club-modal');
                 document.getElementById('join-club-code').value = '';
@@ -1947,30 +2408,30 @@
             document.getElementById('clubs-grid').classList.add('hidden-section');
             const section = document.getElementById('club-detail-section');
             section.classList.remove('hidden-section');
-            
+
             document.getElementById('lb-club-name').innerText = `Thông tin nhóm: ${clubName}`;
             const tbody = document.getElementById('leaderboard-list');
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-6">Đang tải...</td></tr>';
-            
+
             // Hide create task and invite buttons initially
             document.getElementById('btn-create-club-task').classList.add('hidden-section');
             document.getElementById('btn-invite-parent').classList.add('hidden-section');
-            
+
             try {
                 const res = await fetch(`${API_BASE}/clubs/${clubId}/leaderboard`);
-                if(!res.ok) throw new Error("Failed to load");
+                if (!res.ok) throw new Error("Failed to load");
                 const data = await res.json();
-                
+
                 // Determine if current user is admin of this club
                 const meInClub = data.members.find(m => m.user_id === currentUserId);
                 isCurrentClubAdmin = meInClub && meInClub.role === 'ADMIN';
-                
+
                 if (isCurrentClubAdmin) {
                     document.getElementById('btn-create-club-task').classList.remove('hidden-section');
                     document.getElementById('btn-invite-parent').classList.remove('hidden-section');
                 }
-                
-                if(data.members.length === 0) {
+
+                if (data.members.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Nhóm chưa có thành viên.</td></tr>';
                 } else {
                     tbody.innerHTML = data.members.map((m, idx) => {
@@ -1978,17 +2439,17 @@
                         if (idx === 0) rank = '🥇';
                         if (idx === 1) rank = '🥈';
                         if (idx === 2) rank = '🥉';
-                        
+
                         const isMe = m.user_id === currentUserId;
                         const roleBadge = m.role === 'ADMIN' ? '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Admin</span>' : '';
-                        
+
                         // Only Admin can remove members, but cannot remove self this way
                         const canDelete = isCurrentClubAdmin && !isMe;
-                        
+
                         let adminActions = '';
                         if (canDelete) {
                             adminActions += `<button onclick="removeClubMember('${clubId}', '${m.user_id}')" title="Xóa" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 font-bold border border-red-100">Xoá</button>`;
-                            
+
                             // Let admin promote/demote parents
                             if (m.user_global_role === 'PARENT') {
                                 if (m.role === 'MEMBER') {
@@ -1998,13 +2459,13 @@
                                 }
                             }
                         }
-                        
+
                         return `
                             <tr class="${isMe ? 'bg-yellow-50' : 'hover:bg-gray-50'}">
                                 <td class="py-3 text-center text-xl">${rank}</td>
                                 <td class="py-3">
                                     <div class="flex items-center gap-3">
-                                        <img src="${m.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+m.display_name}" class="w-8 h-8 rounded-full border border-gray-200">
+                                        <img src="${m.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + m.display_name}" class="w-8 h-8 rounded-full border border-gray-200">
                                         <div>
                                             <span class="font-bold text-gray-800 text-sm">${m.display_name} ${isMe ? '(Bạn)' : ''}</span>
                                         </div>
@@ -2019,17 +2480,17 @@
                         `;
                     }).join('');
                 }
-                
+
                 // Load tasks for this club
                 loadClubTasks(clubId);
-                
-            } catch(e) {
+
+            } catch (e) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-6">Không có quyền xem hoặc lỗi.</td></tr>`;
             }
         }
 
         async function changeClubRole(clubId, userId, newRole) {
-            if(!confirm(`Xác nhận ${newRole === 'ADMIN' ? 'thăng cấp' : 'giáng cấp'} người này?`)) return;
+            if (!confirm(`Xác nhận ${newRole === 'ADMIN' ? 'thăng cấp' : 'giáng cấp'} người này?`)) return;
             try {
                 const res = await fetch(`${API_BASE}/clubs/${clubId}/members/${userId}/role`, {
                     method: 'PUT',
@@ -2038,7 +2499,7 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Lỗi cập nhật quyền');
-                
+
                 openClubDetail(clubId, document.getElementById('lb-club-name').innerText.replace('Thông tin nhóm: ', ''));
             } catch (e) {
                 alert('❌ Lỗi: ' + e.message);
@@ -2099,7 +2560,7 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Lỗi gửi lời mời');
-                
+
                 alert('✅ Đã gửi lời mời thành công!');
                 closeModal('invite-parent-modal');
             } catch (e) {
@@ -2115,7 +2576,7 @@
         }
 
         async function removeClubMember(clubId, userId) {
-            if(!confirm("Xác nhận xóa thành viên này khỏi nhóm?")) return;
+            if (!confirm("Xác nhận xóa thành viên này khỏi nhóm?")) return;
             try {
                 const res = await fetch(`${API_BASE}/clubs/${clubId}/members/${userId}`, { method: 'DELETE' });
                 if (!res.ok) {
@@ -2134,14 +2595,14 @@
         async function loadClubTasks(clubId) {
             const container = document.getElementById('club-tasks-list');
             container.innerHTML = '<p class="text-gray-500 py-6 text-center text-sm">Đang tải nhiệm vụ...</p>';
-            
+
             try {
                 const res = await fetch(`${API_BASE}/clubs/${clubId}/tasks`);
-                if(!res.ok) throw new Error("Failed to load tasks");
+                if (!res.ok) throw new Error("Failed to load tasks");
                 const tasks = await res.json();
                 clubTasksData = tasks;
-                
-                if(tasks.length === 0) {
+
+                if (tasks.length === 0) {
                     container.innerHTML = '<p class="text-gray-400 py-6 text-center text-sm italic">Oa, Nhóm này chưa có nhiệm vụ nào cả!</p>';
                     return;
                 }
@@ -2150,7 +2611,7 @@
                     const isActive = t.is_active;
                     const dueBadge = t.due_date ? `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-bold ml-2">⏳ ${new Date(t.due_date).toLocaleDateString('vi-VN')}</span>` : '';
                     const opacityClass = isActive ? '' : 'opacity-60 grayscale';
-                    
+
                     let adminButtons = '';
                     if (isCurrentClubAdmin) {
                         adminButtons = `
@@ -2160,7 +2621,7 @@
                             </div>
                         `;
                     }
-                    
+
                     return `
                         <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-all ${opacityClass} ${isActive ? 'border-yellow-200' : 'border-gray-200'}">
                             <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
@@ -2180,8 +2641,8 @@
                         </div>
                     `;
                 }).join('');
-                
-            } catch(e) {
+
+            } catch (e) {
                 container.innerHTML = '<p class="text-red-500 py-6 text-center text-sm">Lỗi kết nối khi tải nhiệm vụ.</p>';
             }
         }
@@ -2189,22 +2650,22 @@
         function showCreateClubTaskModal() {
             document.getElementById('create-club-task-modal').classList.remove('hidden-section');
             document.getElementById('club-task-form').reset();
-            setTimeout(()=>document.getElementById('club-task-name').focus(), 100);
+            setTimeout(() => document.getElementById('club-task-name').focus(), 100);
         }
 
         async function createClubTask(event) {
             event.preventDefault();
-            if(!currentOpenedClubId) return;
-            
+            if (!currentOpenedClubId) return;
+
             const payload = {
                 name: document.getElementById('club-task-name').value,
                 description: document.getElementById('club-task-desc').value || null,
                 points_reward: parseInt(document.getElementById('club-task-points').value),
                 is_active: true
             };
-            
+
             const due = document.getElementById('club-task-due').value;
-            if(due) {
+            if (due) {
                 payload.due_date = new Date(due).toISOString();
             }
 
@@ -2214,51 +2675,51 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if(!res.ok) {
+                if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.detail || 'Lỗi tạo task');
                 }
                 closeModal('create-club-task-modal');
                 loadClubTasks(currentOpenedClubId);
-            } catch(e) {
+            } catch (e) {
                 alert("❌ Lỗi: " + e.message);
             }
         }
 
         function showEditClubTaskModal(taskId) {
             const task = clubTasksData.find(t => t.id === taskId);
-            if(!task) return;
-            
+            if (!task) return;
+
             document.getElementById('edit-club-task-id').value = task.id;
             document.getElementById('edit-club-task-name').value = task.name;
             document.getElementById('edit-club-task-desc').value = task.description || '';
             document.getElementById('edit-club-task-points').value = task.points_reward;
             document.getElementById('edit-club-task-active').checked = task.is_active;
-            
-            if(task.due_date) {
+
+            if (task.due_date) {
                 // Ensure correct date format for input[type="date"]
                 document.getElementById('edit-club-task-due').value = new Date(task.due_date).toISOString().split('T')[0];
             } else {
                 document.getElementById('edit-club-task-due').value = '';
             }
-            
+
             document.getElementById('edit-club-task-modal').classList.remove('hidden-section');
         }
 
         async function updateClubTask(event) {
             event.preventDefault();
-            if(!currentOpenedClubId) return;
+            if (!currentOpenedClubId) return;
             const taskId = document.getElementById('edit-club-task-id').value;
-            
+
             const payload = {
                 name: document.getElementById('edit-club-task-name').value,
                 description: document.getElementById('edit-club-task-desc').value || null,
                 points_reward: parseInt(document.getElementById('edit-club-task-points').value),
                 is_active: document.getElementById('edit-club-task-active').checked
             };
-            
+
             const due = document.getElementById('edit-club-task-due').value;
-            if(due) {
+            if (due) {
                 payload.due_date = new Date(due).toISOString();
             } else {
                 payload.due_date = null;
@@ -2270,30 +2731,30 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if(!res.ok) {
+                if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.detail || 'Lỗi cập nhật');
                 }
                 closeModal('edit-club-task-modal');
                 loadClubTasks(currentOpenedClubId);
-            } catch(e) {
+            } catch (e) {
                 alert("❌ Lỗi: " + e.message);
             }
         }
 
         async function deleteClubTask(clubId, taskId) {
-            if(!confirm("⚠️ Hành động này sẽ khóa (xoá tạm thời) nhiệm vụ để bé không thấy nữa. \nBạn có chắc chắn?")) return;
-            
+            if (!confirm("⚠️ Hành động này sẽ khóa (xoá tạm thời) nhiệm vụ để bé không thấy nữa. \nBạn có chắc chắn?")) return;
+
             try {
                 const res = await fetch(`${API_BASE}/clubs/${clubId}/tasks/${taskId}`, {
                     method: 'DELETE'
                 });
-                if(!res.ok) {
+                if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.detail || 'Lỗi xoá tác vụ');
                 }
                 loadClubTasks(clubId);
-            } catch(e) {
+            } catch (e) {
                 alert("❌ Lỗi: " + e.message);
             }
         }
@@ -2317,66 +2778,69 @@
 
         function showCreateAdminModal() {
             document.getElementById('create-admin-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('admin-name').focus(), 100);
+            setTimeout(() => document.getElementById('admin-name').focus(), 100);
         }
 
         function showCreateKidModal() {
             renderAvatarPicker('kid-avatar-picker', 'kid-avatar-url');
             document.getElementById('create-kid-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('kid-name').focus(), 100);
+            setTimeout(() => document.getElementById('kid-name').focus(), 100);
         }
-        
+
         function showEditKidModal(kidId) {
             const kid = allKids.find(k => k.id === kidId);
-            if(!kid) return;
-            
+            if (!kid) return;
+
             document.getElementById('edit-kid-id').value = kid.id;
             document.getElementById('edit-kid-name').value = kid.display_name;
             renderAvatarPicker('edit-kid-avatar-picker', 'edit-kid-avatar-url', kid.avatar_url);
-            
+
+            // Teen Mode flag (if backend exposes it, else default false)
+            document.getElementById('edit-kid-teen-mode').checked = kid.is_teen_mode === true;
+
             document.getElementById('edit-kid-modal').classList.remove('hidden-section');
         }
 
         function showCreateTaskModal() {
             document.getElementById('create-task-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('task-name').focus(), 100);
+            setTimeout(() => document.getElementById('task-name').focus(), 100);
         }
-        
+
         function showEditTaskModal(taskId) {
             const task = allTasks.find(t => t.id === taskId);
-            if(!task) return;
-            
+            if (!task) return;
+
             document.getElementById('edit-task-id').value = task.id;
             document.getElementById('edit-task-name').value = task.name;
             document.getElementById('edit-task-points').value = task.points_reward;
             document.getElementById('edit-task-category').value = task.category;
-            
+
             // Check correct radio button
             const radios = document.getElementsByName('edit-verification');
-            for(let i = 0; i < radios.length; i++) {
-                if(radios[i].value === task.verification_type) {
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].value === task.verification_type) {
                     radios[i].checked = true;
                     break;
                 }
             }
-            
+
             document.getElementById('edit-task-modal').classList.remove('hidden-section');
         }
 
         function showCreateRewardModal() {
             document.getElementById('create-reward-modal').classList.remove('hidden-section');
-            setTimeout(()=>document.getElementById('reward-name').focus(), 100);
+            setTimeout(() => document.getElementById('reward-name').focus(), 100);
         }
-        
+
         function showEditRewardModal(rewardId) {
             const reward = allRewards.find(r => r.id === rewardId);
-            if(!reward) return;
-            
+            if (!reward) return;
+
             document.getElementById('edit-reward-id').value = reward.id;
             document.getElementById('edit-reward-name').value = reward.name;
             document.getElementById('edit-reward-cost').value = reward.points_cost;
             document.getElementById('edit-reward-stock').value = reward.stock_limit || '';
-            
+
             document.getElementById('edit-reward-modal').classList.remove('hidden-section');
         }
 
@@ -2385,7 +2849,7 @@
         }
 
         // Close modals when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modals = ['edit-family-modal', 'create-admin-modal', 'create-kid-modal', 'edit-kid-modal', 'create-task-modal', 'edit-task-modal', 'create-reward-modal', 'edit-reward-modal', 'approve-modal', 'create-club-modal', 'join-club-modal'];
             modals.forEach(id => {
                 const modal = document.getElementById(id);
@@ -2398,8 +2862,8 @@
         async function logout() {
             try {
                 await fetch('/api/v1/auth/logout', { method: 'POST' });
-            } catch(e) {}
-            localStorage.removeItem('kidcoin_device_id'); 
+            } catch (e) { }
+            localStorage.removeItem('kidcoin_device_id');
             window.location.href = '/login';
         }
 
@@ -2428,16 +2892,16 @@
         });
 
         // --- Init ---
-        
+
         // --- Family Info Management ---
         let currentFamily = null;
 
         async function fetchFamilyInfo() {
             try {
-                const response = await fetch(`${API_BASE}/family`);
+                const response = await fetch(`${API_BASE}/parent/family`);
                 if (!response.ok) return;
                 currentFamily = await response.json();
-                
+
                 // Update UI
                 const familyNameEl = document.getElementById('display-family-name');
                 if (familyNameEl) familyNameEl.innerText = currentFamily.name;
@@ -2461,17 +2925,17 @@
             const extra_info = document.getElementById('family-form-info').value;
 
             try {
-                const response = await fetch(`${API_BASE}/family`, {
+                const response = await fetch(`${API_BASE}/parent/family`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, address, extra_info })
                 });
-                
+
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.detail || 'Lỗi cập nhật');
                 }
-                
+
                 alert('✅ Đã cập nhật thông tin nhà thành công!');
                 closeModal('edit-family-modal');
                 fetchFamilyInfo(); // Refresh UI
@@ -2479,14 +2943,14 @@
                 alert('❌ Lỗi: ' + error.message);
             }
         }
-    
+
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 console.debug('[DOMContentLoaded] init parent dashboard');
                 fetchCurrentUser();
                 fetchFamilyInfo();
                 loadOverview();
-            } catch(e) {
+            } catch (e) {
                 console.error('[DOMContentLoaded] initialization error', e);
             }
         });
@@ -2499,7 +2963,7 @@
                 const res = await fetch(`${API_BASE}/notifications`);
                 if (!res.ok) return;
                 const data = await res.json();
-                
+
                 const badge = document.getElementById('notification-badge');
                 if (data.unread_count > 0) {
                     badge.innerText = data.unread_count > 9 ? '9+' : data.unread_count;
@@ -2507,10 +2971,10 @@
                 } else {
                     badge.classList.add('hidden-section');
                 }
-                
+
                 currentNotifications = data.items;
                 renderNotifications(data.items);
-            } catch(e) {
+            } catch (e) {
                 console.error("Failed to load notifications");
             }
         }
@@ -2518,7 +2982,7 @@
         function toggleNotificationDropdown() {
             isNotificationOpen = !isNotificationOpen;
             const dropdown = document.getElementById('notification-dropdown');
-            if(isNotificationOpen) {
+            if (isNotificationOpen) {
                 dropdown.classList.remove('hidden-section');
                 fetchNotifications();
             } else {
@@ -2526,7 +2990,7 @@
             }
         }
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const bell = document.getElementById('notification-bell');
             if (bell && !bell.contains(event.target) && isNotificationOpen) {
                 toggleNotificationDropdown();
@@ -2535,17 +2999,17 @@
 
         function renderNotifications(items) {
             const list = document.getElementById('notification-list');
-            if(items.length === 0) {
+            if (items.length === 0) {
                 list.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Bạn không có thông báo nào</div>';
                 return;
             }
-            
+
             list.innerHTML = items.map(n => {
                 const isUnread = !n.is_read;
                 const bgClass = isUnread ? 'bg-blue-50/40' : 'bg-white';
                 const dotClass = isUnread ? '<div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>' : '<div class="w-2 h-2 flex-shrink-0"></div>';
 
-                
+
                 let actionHtml = '';
                 if (n.action_data && n.action_data.show_club_approve_modal) {
                     actionHtml = `<div class="mt-2 text-xs font-bold text-blue-600 block">Bấm để xem chi tiết 👉</div>`;
@@ -2568,26 +3032,26 @@
 
         async function handleNotificationClick(id) {
             const n = currentNotifications.find(x => x.id === id);
-            if(!n) return;
-            
+            if (!n) return;
+
             // Mark read
             if (!n.is_read) {
                 await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
                 n.is_read = true;
                 renderNotifications(currentNotifications);
-                
+
                 const badge = document.getElementById('notification-badge');
                 let curCount = parseInt(badge.innerText) || 0;
                 if (curCount > 0) curCount--;
-                if(curCount > 0) {
+                if (curCount > 0) {
                     badge.innerText = curCount;
                 } else {
                     badge.classList.add('hidden-section');
                 }
             }
-            
+
             toggleNotificationDropdown(); // Close dropdown
-            
+
             // Execute navigation
             if (n.action_data?.tab) {
                 // UX-05: Set highlightLogId if applicable
@@ -2596,7 +3060,7 @@
                 }
                 switchTab(n.action_data.tab);
             }
-            
+
             // Execute specific actions based on metadata
             if (n.action_data?.show_club_approve_modal) {
                 document.getElementById('cam-club-id').value = n.action_data.club_id;
@@ -2612,14 +3076,14 @@
             try {
                 await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
                 fetchNotifications();
-            } catch(e){}
+            } catch (e) { }
         }
 
         async function markAllNotificationsRead() {
             try {
                 await fetch(`${API_BASE}/notifications/read-all`, { method: 'PUT' });
                 fetchNotifications();
-            } catch(e){}
+            } catch (e) { }
         }
 
         async function respondClubNotice(clubId, invitationId, action, notifId) {
@@ -2631,17 +3095,234 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Lỗi thao tác');
-                
+
                 alert(`✅ Đã ${action === 'ACCEPT' ? 'Duyệt' : 'Từ chối'} thành công!`);
                 closeModal('club-approve-modal');
-                
+
                 // Nếu đang mở tab Club, reload
-                if(currentTab === 'clubs' && currentOpenedClubId === clubId) {
+                if (currentTab === 'clubs' && currentOpenedClubId === clubId) {
                     openClubDetail(clubId, document.getElementById('lb-club-name').innerText.replace('Thông tin nhóm: ', ''));
                 }
 
             } catch (e) {
                 alert('❌ Lỗi: ' + e.message);
+            }
+        }
+        // --- EXPANSION & FINANCE FUNCTIONS ---
+        async function loadKidsIfNeeded() {
+            if (!allKids || allKids.length === 0) {
+                const res = await fetchJsonSafe(`${API_BASE}/parent/kids`);
+                allKids = res || [];
+            }
+        }
+
+        async function fetchExpansionData() {
+            try {
+                // Ensure kids are loaded for dropdowns
+                await loadKidsIfNeeded();
+
+                try {
+                    // Fetch Loans
+                    const loans = await fetchJsonSafe(`${API_BASE}/parent/finance/loans`);
+                    const loansList = document.getElementById('parent-loans-list');
+                    if (loans && loans.length > 0) {
+                        loansList.innerHTML = loans.map(l => {
+                            const cycleText = {
+                                'ONE_TIME': 'Trả 1 lần',
+                                'DAILY': 'Hàng ngày',
+                                'WEEKLY': 'Hàng tuần',
+                                'MONTHLY': 'Hàng tháng'
+                            }[l.payment_cycle] || 'Không rõ';
+                            
+                            return `
+                                <div class="p-4 bg-white rounded-xl border-2 border-yellow-100 flex justify-between items-center shadow-sm hover:shadow-md transition-all">
+                                    <div>
+                                        <p class="font-bold text-gray-800">Khoản nợ: <span class="text-red-600">${l.total_owed} Xu</span></p>
+                                        <p class="text-xs text-gray-500 font-medium">
+                                            Gốc: ${l.loan_amount} Xu | Lãi: ${l.interest_rate}% | Trả ${l.installments_count} lần (${cycleText})
+                                        </p>
+                                        <div class="mt-2 flex items-center gap-2">
+                                            <div class="h-1.5 w-32 bg-gray-100 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-500" style="width: ${(l.repaid_amount / l.total_owed) * 100}%"></div>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-green-600">Đã trả: ${l.repaid_amount}/${l.total_owed}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-[10px] font-black rounded-lg uppercase">${l.status}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        loansList.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm italic">Chưa có khoản vay nào.</p>';
+                    }
+                } catch (e) {
+                    console.error("Loans fetch error", e);
+                    document.getElementById('parent-loans-list').innerHTML = '<p class="text-red-400 text-center py-4 text-sm italic">Lỗi tải khoản vay.</p>';
+                }
+
+                try {
+                    // Problem board 
+                    const problems = await fetchJsonSafe(`${API_BASE}/thinking/problems`);
+                    const problemsList = document.getElementById('parent-problems-list');
+                    if (problems && problems.length > 0) {
+                        problemsList.innerHTML = problems.map(p => `
+                            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-2">
+                                <p class="font-bold text-gray-800">${p.title} <span class="text-blue-600 text-sm">(${p.proposed_coins || p.reward_coins || 0} Xu)</span></p>
+                                <p class="text-xs text-gray-500 mt-1">${p.description || ''}</p>
+                                <p class="text-[10px] text-green-600 font-bold mt-1 uppercase">Trạng thái: ${p.status}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        problemsList.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm italic">Chưa có bài toán nào.</p>';
+                    }
+                } catch (e) {
+                    console.error("Problems fetch error", e);
+                    document.getElementById('parent-problems-list').innerHTML = '<p class="text-red-400 text-center py-4 text-sm italic">Lỗi tải bài toán.</p>';
+                }
+
+                try {
+                    // Wall of fame
+                    const wallPosts = await fetchJsonSafe(`${API_BASE}/social/wall`);
+                    const wallList = document.getElementById('parent-wall-list');
+                    if (wallPosts && wallPosts.length > 0) {
+                        wallList.innerHTML = wallPosts.map(w => `
+                            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex gap-4 mt-2">
+                                <img src="${w.kid_avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.kid_display_name}" class="w-10 h-10 rounded-full border border-gray-200">
+                                <div>
+                                    <p class="font-bold text-gray-800">${w.kid_display_name} <span class="text-xs text-gray-400 opacity-70 ml-2">Đăng bởi ${w.posted_by_name}</span></p>
+                                    <p class="text-sm text-gray-600 mt-1">${w.caption}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><span>❤️ ${w.likes_count}</span> <span>• ${new Date(w.created_at).toLocaleDateString()}</span></p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        wallList.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm col-span-full italic">Chưa có bài vinh danh nào.</p>';
+                    }
+                } catch (e) {
+                    console.error("Wall fetch error", e);
+                    document.getElementById('parent-wall-list').innerHTML = '<p class="text-red-400 text-center py-4 text-sm col-span-full italic">Lỗi tải bảng vinh danh.</p>';
+                }
+            } catch (error) {
+                console.error("Expansion data load error", error);
+            }
+        }
+
+        function populateKidsDropdown(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = '';
+
+            // Lọc ra danh sách kid từ allKids
+            const kids = allKids || [];
+            if (kids.length === 0) {
+                select.innerHTML = '<option disabled selected>Chưa có bé nào</option>';
+                return;
+            }
+            kids.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k.id;
+                opt.textContent = k.display_name;
+                select.appendChild(opt);
+            });
+        }
+
+        async function showCreateLoanModal() {
+            await loadKidsIfNeeded();
+            populateKidsDropdown('loan-kid-id');
+            document.getElementById('create-loan-modal').classList.remove('hidden-section');
+        }
+
+        async function createLoan(event) {
+            event.preventDefault();
+            const kidId = document.getElementById('loan-kid-id').value;
+            const amount = document.getElementById('loan-amount').value;
+            try {
+                const res = await fetch(`${API_BASE}/parent/finance/loans`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        kid_id: kidId,
+                        loan_amount: parseInt(amount),
+                        interest_rate: parseFloat(document.getElementById('loan-interest').value || 0),
+                        payment_cycle: document.getElementById('loan-cycle').value,
+                        installments_count: parseInt(document.getElementById('loan-installments').value || 1)
+                    })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi tạo khoản vay");
+                }
+                closeModal('create-loan-modal');
+                fetchExpansionData();
+                alert('Tạo khoản vay thành công!');
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        function showCreateProblemModal() {
+            document.getElementById('create-problem-modal').classList.remove('hidden-section');
+        }
+
+        async function createProblem(event) {
+            event.preventDefault();
+            const title = document.getElementById('problem-title').value;
+            const desc = document.getElementById('problem-desc').value;
+            const reward = document.getElementById('problem-reward').value;
+            try {
+                const res = await fetch(`${API_BASE}/parent/thinking/problems`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: title,
+                        description: desc,
+                        reward_coins: parseInt(reward),
+                        deadline: null
+                    })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi tạo bài toán");
+                }
+                closeModal('create-problem-modal');
+                fetchExpansionData();
+                alert('Tạo câu đố thành công!');
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        async function showCreateWallPostModal() {
+            await loadKidsIfNeeded();
+            populateKidsDropdown('wall-kid-id');
+            document.getElementById('create-wall-post-modal').classList.remove('hidden-section');
+        }
+
+        async function createWallPost(event) {
+            event.preventDefault();
+            const kidId = document.getElementById('wall-kid-id').value;
+            const caption = document.getElementById('wall-caption').value;
+            try {
+                const res = await fetch(`${API_BASE}/parent/social/wall`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        kid_id: kidId,
+                        caption: caption,
+                        image_url: null
+                    })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi đăng vinh danh");
+                }
+                closeModal('create-wall-post-modal');
+                fetchExpansionData();
+                alert('Đăng tin thành công!');
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
             }
         }
 
@@ -2650,33 +3331,46 @@
     </script>
 
     <!-- Modal: Chỉnh sửa thông tin Nhà -->
-    <div id="edit-family-modal" class="hidden-section fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+    <div id="edit-family-modal"
+        class="hidden-section fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden fade-in border border-gray-100">
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="font-black text-gray-800">🏠 Thông tin Nhà / Gia đình</h3>
-                <button onclick="closeModal('edit-family-modal')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                <button onclick="closeModal('edit-family-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
             <form id="edit-family-form" onsubmit="handleUpdateFamily(event)" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tên Nhà (Bắt buộc)</label>
-                    <input type="text" id="family-form-name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tên Nhà (Bắt
+                        buộc)</label>
+                    <input type="text" id="family-form-name" required
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Địa chỉ (Không bắt buộc)</label>
-                    <input type="text" id="family-form-address" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: 123 Đường Láng, Hà Nội">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Địa chỉ (Không
+                        bắt buộc)</label>
+                    <input type="text" id="family-form-address"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        placeholder="VD: 123 Đường Láng, Hà Nội">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mô tả thêm / Lời chào</label>
-                    <textarea id="family-form-info" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: Chào mừng tới ngôi nhà hạnh phúc của chúng mình!"></textarea>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mô tả thêm / Lời
+                        chào</label>
+                    <textarea id="family-form-info" rows="3"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        placeholder="VD: Chào mừng tới ngôi nhà hạnh phúc của chúng mình!"></textarea>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="closeModal('edit-family-modal')" class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Lưu thay đổi</button>
+                    <button type="button" onclick="closeModal('edit-family-modal')"
+                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Lưu
+                        thay đổi</button>
                 </div>
             </form>
         </div>
     </div>
-    
-</body>
-</html>
 
+</body>
+
+</html>

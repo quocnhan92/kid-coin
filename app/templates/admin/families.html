@@ -1,0 +1,106 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Families{% endblock %}
+{% block page_title %}Quản lý Gia đình{% endblock %}
+{% block page_subtitle %}Danh sách tất cả các gia đình và người dùng trên toàn hệ thống.{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-container">
+        <table id="families-table">
+            <thead>
+                <tr>
+                    <th>Gia đình</th>
+                    <th>ID</th>
+                    <th>Người dùng</th>
+                    <th>PIN</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populated by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Simple Modal for Adjustment -->
+<div id="adjust-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="card" style="width: 400px; padding: 2rem;">
+        <h2 style="margin-bottom: 1.5rem;">Điều chỉnh Coin</h2>
+        <input type="hidden" id="modal-user-id">
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem;">Số lượng (Có thể âm)</label>
+            <input type="number" id="modal-amount" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 0.5rem;">
+        </div>
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem;">Lý do</label>
+            <input type="text" id="modal-reason" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 0.5rem;">
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button class="btn" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-primary" onclick="submitAdjustment()">Xác nhận</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadFamilies() {
+    const response = await fetch('/api/v1/admin/families');
+    const families = await response.json();
+    
+    const tbody = document.querySelector('#families-table tbody');
+    tbody.innerHTML = families.map(f => `
+        <tr>
+            <td><strong>${f.name}</strong></td>
+            <td><small>${f.id}</small></td>
+            <td>
+                ${f.users.map(u => `
+                    <div style="margin-bottom: 0.25rem;">
+                        ${u.display_name} (${u.role}) 
+                        <button onclick="openModal('${u.id}')" style="background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.75rem;">[Adj]</button>
+                    </div>
+                `).join('')}
+            </td>
+            <td>${f.parent_pin}</td>
+            <td><span class="status-pills status-success">Active</span></td>
+            <td><button class="btn" disabled>Suspend</button></td>
+        </tr>
+    `).join('');
+}
+
+function openModal(userId) {
+    document.getElementById('modal-user-id').value = userId;
+    document.getElementById('adjust-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('adjust-modal').style.display = 'none';
+}
+
+async function submitAdjustment() {
+    const userId = document.getElementById('modal-user-id').value;
+    const amount = parseInt(document.getElementById('modal-amount').value);
+    const reason = document.getElementById('modal-reason').value;
+    
+    const response = await fetch(`/api/v1/admin/users/${userId}/adjust-coins`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, amount, reason })
+    });
+    
+    if (response.ok) {
+        alert("Điều chỉnh thành công!");
+        closeModal();
+        loadFamilies();
+    } else {
+        alert("Lỗi khi điều chỉnh!");
+    }
+}
+
+loadFamilies();
+</script>
+{% endblock %}

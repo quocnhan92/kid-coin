@@ -1,0 +1,127 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Master Data{% endblock %}
+{% block page_title %}Quản lý Dữ liệu Mẫu{% endblock %}
+{% block page_subtitle %}Cấu hình Tasks, Rewards, Avatar Items và Hệ thống Level.{% endblock %}
+
+{% block content %}
+<div class="tabs">
+    <div class="tab active" onclick="showTab('tasks')">Master Tasks</div>
+    <div class="tab" onclick="showTab('rewards')">Master Rewards</div>
+    <div class="tab" onclick="showTab('items')">Avatar Items</div>
+    <div class="tab" onclick="showTab('levels')">Levels</div>
+</div>
+
+<div id="tab-tasks" class="tab-content" style="display: block;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Danh sách Nhiệm vụ Mẫu</h3>
+            <button class="btn btn-primary">+ Thêm mới</button>
+        </div>
+        <div class="table-container">
+            <table id="tasks-table">
+                <thead>
+                    <tr><th>Icon</th><th>Tên</th><th>Giá gợi ý</th><th>Độ tuổi</th><th>Phân loại</th><th>Hành động</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="tab-rewards" class="tab-content" style="display: none;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Danh sách Phần thưởng Mẫu</h3>
+            <button class="btn btn-primary">+ Thêm mới</button>
+        </div>
+        <div class="table-container">
+            <table id="rewards-table">
+                <thead>
+                    <tr><th>Icon</th><th>Tên</th><th>Giá gợi ý</th><th>Độ tuổi</th><th>Hành động</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="tab-items" class="tab-content" style="display: none;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Cửa hàng Vật phẩm</h3>
+            <button class="btn btn-primary">+ Thêm mới</button>
+        </div>
+        <div class="table-container">
+            <table id="items-table">
+                <thead>
+                    <tr><th>Preview</th><th>Tên</th><th>Loại</th><th>Giá</th><th>Level yêu cầu</th><th>Hành động</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="tab-levels" class="tab-content" style="display: none;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Hệ thống Cấp độ (Levels)</h3>
+            <button class="btn btn-primary">+ Thêm mới</button>
+        </div>
+        <div class="table-container">
+            <table id="levels-table">
+                <thead>
+                    <tr><th>Cấp độ</th><th>Tên gọi</th><th>XP Yêu cầu</th><th>Mô tả</th><th>Hành động</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    event.target.classList.add('active');
+    loadData(tabName);
+}
+
+async function loadData(tabName) {
+    const endpoints = {
+        'tasks': '/api/v1/admin/master-tasks',
+        'rewards': '/api/v1/admin/master-rewards',
+        'items': '/api/v1/admin/avatar-items',
+        'levels': '/api/v1/admin/user-levels'
+    };
+    
+    const response = await fetch(endpoints[tabName]);
+    const data = await response.json();
+    const tbody = document.querySelector(`#${tabName}-table tbody`);
+    
+    if (tabName === 'tasks') {
+        tbody.innerHTML = data.map(t => `
+            <tr><td>${t.icon_url || ''}</td><td>${t.name}</td><td>${t.suggested_value}</td><td>${t.min_age}-${t.max_age}</td><td>${t.category}</td><td><button class="btn">Edit</button></td></tr>
+        `).join('');
+    } else if (tabName === 'items') {
+        tbody.innerHTML = data.map(i => `
+            <tr><td><img src="${i.image_url}" style="width: 30px; height: 30px;"></td><td>${i.name}</td><td>${i.item_type}</td><td>${i.price_coins}</td><td>${i.min_level}</td><td><button class="btn">Edit</button></td></tr>
+        `).join('');
+    } else if (tabName === 'levels') {
+        tbody.innerHTML = data.map(l => `
+            <tr><td>Lvl ${l.level}</td><td>${l.name}</td><td>${l.min_xp}</td><td>${l.description || ''}</td><td><button class="btn">Edit</button></td></tr>
+        `).join('');
+    } else if (tabName === 'rewards') {
+        tbody.innerHTML = data.map(r => `
+            <tr><td>${r.icon_url || ''}</td><td>${r.name}</td><td>${r.suggested_cost}</td><td>${r.min_age}-${r.max_age}</td><td><button class="btn">Edit</button></td></tr>
+        `).join('');
+    }
+}
+
+loadData('tasks');
+</script>
+{% endblock %}

@@ -12,6 +12,15 @@ from app.services.audit import AuditService, AuditStatus
 from app.schemas import reward as reward_schemas
 from app.models.audit import AuditLog
 from app.models.notifications import Notification, NotificationType
+from app.models.thinking import TaskBid, ProblemBoard, ProblemSolution, WeeklyReflection, SolutionStatus, ReflectionStatus
+from app.schemas import thinking as thinking_schemas
+from app.models.social import WallOfFame, FamilyChallenge, ChallengeStatus
+from app.models.teen import TeenContract, ContractStatus, ContractCheckin, CheckinStatus, PersonalProject, ProjectMilestoneLog, MilestoneStatus
+from app.schemas import social as social_schemas
+from app.schemas import teen as teen_schemas
+from app.schemas.finance import LoanAccountResponse, CreateLoanRequest
+from app.models.finance import LoanAccount, LoanStatus
+from app.services import thinking_service, finance_service, social_service, teen_service
 
 router = APIRouter()
 
@@ -807,20 +816,32 @@ async def approve_task(
 
             points = task.points_reward
 
-            # Create transaction
-            transaction = Transaction(
-                kid_id=kid.id,
-                amount=points,
-                transaction_type=TransactionType.TASK_COMPLETION,
-                reference_id=log.id,
-                description=f"Approved: {task.name}"
-            )
-            db.add(transaction)
+            points = task.points_reward
 
-            # Update kid's balance
-            kid.current_coin += points
+            # --- FINANCE & GAMIFICATION INTEGRATION ---
+            from app.services import streak_service, gamification_service, finance_service
+            
+            # 1. Update total earned score (XP) - Experience is always full points
             kid.total_earned_score += points
+            
+            # 2. Process Income (Auto-charity and net coins to balance)
+            finance_service.process_income(
+                db=db, 
+                user=kid, 
+                amount=points, 
+                description=f"Hoàn thành nhiệm vụ: {task.name}",
+                reference_id=str(log.id)
+            )
 
+            # 3. Update Streak
+            streak_service.update_streak(db, str(kid.id))
+            
+            # 4. Check Level Up
+            new_level_obj = gamification_service.check_level_up(db, kid)
+            # Logic: If we want to detect IF it's a NEW level up, we'd need to store current level.
+            # For Phase 2, we can just trigger a check. 
+            # (Note: In a more advanced version, we'd compare current vs old level)
+            
             AuditService.log(
                 db=db,
                 action="APPROVE_TASK",
@@ -1047,5 +1068,392 @@ async def get_audit_logs(
             details=log.details,
             created_at=log.created_at
         ))
+
+    return AuditLogPaginatedResponse(
+        total=total_count,
+        items=response_logs
+    )
+
+# --- THINKING & EXPANSION MANAGEMENT ---
+
+@router.get("/thinking/bids", response_model=List[thinking_schemas.TaskBidResponse])
+async def list_family_bids(
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """List all task bids in the family."""
+    return db.query(TaskBid).filter(TaskBid.family_id == current_user.family_id).all()
+
+@router.post("/thinking/bids/{bid_id}/respond")
+async def respond_to_bid(
+    bid_id: UUID,
+    request: thinking_schemas.TaskBidRespondRequest,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent responds to a kid's bid (Accept/Reject/Counter)."""
+    bid = thinking_service.process_bid_response(
+        db=db, 
+        bid_id=bid_id, 
+        action=request.action, 
+        comment=request.comment, 
+        counter_price=request.counter_price
+    )
+    if not bid:
+        raise HTTPException(status_code=404, detail="Bid not found or invalid action")
+    return {"status": "success", "bid_status": bid.status}
+
+@router.post("/thinking/problems", response_model=thinking_schemas.ProblemBoardResponse)
+async def create_problem(
+    request: thinking_schemas.ProblemBoardCreate,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent posts a problem to the family board."""
+    problem = ProblemBoard(
+        family_id=current_user.family_id,
+        created_by=current_user.id,
+        title=request.title,
+        description=request.description,
+        reward_coins=request.reward_coins,
+        deadline=request.deadline
+    )
+    db.add(problem)
+    db.commit()
+    db.refresh(problem)
+    return problem
+
+@router.post("/thinking/solutions/{solution_id}/verify")
+async def verify_solution(
+    solution_id: UUID,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent verifies a kid's solution and awards coins."""
+    solution = db.query(ProblemSolution).get(solution_id)
+    if not solution or solution.status != SolutionStatus.DONE:
+        raise HTTPException(status_code=404, detail="Solution not found or already verified")
+    
+    # Check family ownership via board
+    board = db.query(ProblemBoard).get(solution.board_id)
+    if board.family_id != current_user.family_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    try:
+        solution.status = SolutionStatus.VERIFIED
+        kid = db.query(User).get(solution.kid_id)
         
-    return {"total": total_count, "logs": response_logs}
+        # Reward via finance service (includes auto-charity)
+        finance_service.process_income(
+            db=db,
+            user=kid,
+            amount=board.reward_coins,
+            description=f"Giải quyết vấn đề: {board.title}",
+            reference_id=str(solution.id)
+        )
+        
+        # Notify kid
+        notif = Notification(
+            user_id=kid.id,
+            type=NotificationType.SYSTEM,
+            title="Giải đố thành công! 🧠",
+            content=f"Chúc mừng! Lời giải của bạn cho '{board.title}' đã được chấp nhận. Thưởng: {board.reward_coins} Coins.",
+            action_data={"problem_id": str(board.id)}
+        )
+        db.add(notif)
+        
+        db.commit()
+        return {"status": "success", "message": "Solution verified and reward issued"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/thinking/reflections", response_model=List[thinking_schemas.WeeklyReflectionResponse])
+async def list_reflections(
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """List all submitted reflections in the family."""
+    return db.query(WeeklyReflection).join(User).filter(
+        User.family_id == current_user.family_id,
+        WeeklyReflection.status == ReflectionStatus.SUBMITTED
+    ).all()
+
+@router.post("/thinking/reflections/{ref_id}/reward")
+async def reward_reflection(
+    ref_id: UUID,
+    request: thinking_schemas.ReflectionRewardRequest,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent rewards a weekly reflection."""
+    ref = db.query(WeeklyReflection).get(ref_id)
+    if not ref or ref.status != ReflectionStatus.SUBMITTED:
+        raise HTTPException(status_code=404, detail="Reflection not found or not submitted")
+    
+    kid = db.query(User).get(ref.kid_id)
+    if kid.family_id != current_user.family_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    try:
+        ref.status = ReflectionStatus.REWARDED
+        ref.bonus_coins = request.bonus_coins
+        
+        # Reward via finance service
+        finance_service.process_income(
+            db=db,
+            user=kid,
+            amount=request.bonus_coins,
+            description=f"Thưởng Nhìn lại tuần qua ({ref.week_start})",
+            reference_id=str(ref.id)
+        )
+        db.commit()
+        return {"status": "success"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- SOCIAL & TEEN MANAGEMENT ---
+
+@router.post("/social/wall", response_model=social_schemas.WallPostResponse)
+async def post_to_wall(
+    request: social_schemas.WallPostCreate,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent posts an achievement to the family wall."""
+    kid = db.query(User).get(request.kid_id)
+    if not kid or kid.family_id != current_user.family_id:
+        raise HTTPException(status_code=404, detail="Kid not found in your family")
+        
+    post = WallOfFame(
+        family_id=current_user.family_id,
+        kid_id=request.kid_id,
+        posted_by=current_user.id,
+        image_url=request.image_url,
+        caption=request.caption
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    
+    # Notify kid
+    notif = Notification(
+        user_id=kid.id,
+        type=NotificationType.SYSTEM,
+        title="Bạn đã được vinh danh! 🎉",
+        content=f"Bố/mẹ vừa đăng một bài viết về thành tựu của bạn lên bảng tin gia đình.",
+        action_data={"post_id": str(post.id)}
+    )
+    db.add(notif)
+    db.commit()
+    
+    return social_schemas.WallPostResponse(
+        id=post.id,
+        kid_id=post.kid_id,
+        kid_display_name=kid.display_name,
+        kid_avatar_url=kid.avatar_url,
+        posted_by_name=current_user.display_name,
+        image_url=post.image_url,
+        caption=post.caption,
+        likes_count=0,
+        created_at=post.created_at
+    )
+
+@router.post("/social/challenges", response_model=social_schemas.FamilyChallengeResponse)
+async def create_family_challenge(
+    request: social_schemas.FamilyChallengeCreate,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent creates a new family challenge."""
+    challenge = FamilyChallenge(
+        family_id=current_user.family_id,
+        created_by=current_user.id,
+        title=request.title,
+        description=request.description,
+        target_count=request.target_count,
+        duration_days=request.duration_days,
+        reward_coins=request.reward_coins,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        status=ChallengeStatus.ACTIVE
+    )
+    db.add(challenge)
+    db.commit()
+    db.refresh(challenge)
+    
+    # Notify all kids in family
+    kids = db.query(User).filter(User.family_id == current_user.family_id, User.role == Role.KID).all()
+    for kid in kids:
+        notif = Notification(
+            user_id=kid.id,
+            type=NotificationType.SYSTEM,
+            title="Thử thách gia đình mới! 🏃‍♂️",
+            content=f"Cả nhà cùng tham gia thử thách '{challenge.title}' nhé!",
+            action_data={"challenge_id": str(challenge.id)}
+        )
+        db.add(notif)
+    db.commit()
+
+    return social_schemas.FamilyChallengeResponse(
+        **challenge.__dict__,
+        current_progress=0
+    )
+
+@router.put("/kids/{kid_id}/teen-mode")
+async def toggle_teen_mode(
+    kid_id: UUID,
+    request: social_schemas.TeenModeToggleRequest,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Toggle Teen Mode for a specific kid."""
+    kid = db.query(User).filter(User.id == kid_id, User.family_id == current_user.family_id).first()
+    if not kid:
+        raise HTTPException(status_code=404, detail="Kid not found")
+        
+    kid.is_teen_mode = request.is_teen_mode
+    db.commit()
+    
+    # Notify kid
+    status_str = "kích hoạt" if request.is_teen_mode else "tắt"
+    notif = Notification(
+        user_id=kid.id,
+        type=NotificationType.SYSTEM,
+        title="Chế độ Teen Mode!",
+        content=f"Bố/mẹ đã {status_str} chế độ Teen Mode cho tài khoản của bạn.",
+        action_data={"is_teen_mode": kid.is_teen_mode}
+    )
+    db.add(notif)
+    db.commit()
+    
+
+# --- TEEN MANAGEMENT (PARENT SIDE) ---
+
+@router.get("/teen/contracts", response_model=List[teen_schemas.TeenContractResponse])
+async def list_teen_contracts(
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """List all teen contracts in the family."""
+    return db.query(TeenContract).filter(TeenContract.family_id == current_user.family_id).all()
+
+@router.post("/teen/contracts/{contract_id}/sign")
+async def parent_sign_contract(
+    contract_id: UUID,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent signs the contract."""
+    contract = db.query(TeenContract).filter(TeenContract.id == contract_id, TeenContract.family_id == current_user.family_id).first()
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+        
+    result = teen_service.sign_contract(db, contract_id, current_user.id)
+    return {"status": "success", "contract_status": result.status}
+
+@router.post("/teen/projects", response_model=teen_schemas.PersonalProjectResponse)
+async def create_teen_project(
+    request: teen_schemas.PersonalProjectCreate,
+    kid_id: UUID,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Parent creates a personal project for a teen."""
+    kid = db.query(User).filter(User.id == kid_id, User.family_id == current_user.family_id).first()
+    if not kid or not kid.is_teen_mode:
+        raise HTTPException(status_code=400, detail="Kid not found or NOT in Teen Mode")
+        
+    project = teen_service.create_project(db, kid_id, current_user.family_id, request.dict())
+    return project
+
+@router.post("/teen/projects/{project_id}/milestones/{milestone_idx}/verify")
+async def verify_project_milestone(
+    project_id: UUID,
+    milestone_idx: int,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Verify milestone and release coins."""
+    project = db.query(PersonalProject).filter(PersonalProject.id == project_id, PersonalProject.family_id == current_user.family_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    # Find the pending log for this milestone
+    log = db.query(ProjectMilestoneLog).filter(
+        ProjectMilestoneLog.project_id == project_id,
+        ProjectMilestoneLog.milestone_index == milestone_idx,
+        ProjectMilestoneLog.status == MilestoneStatus.PENDING
+    ).first()
+    
+    if not log:
+        raise HTTPException(status_code=404, detail="Pending milestone submission not found")
+        
+    # Verify and release coins
+    log.status = MilestoneStatus.VERIFIED
+    log.verified_by = current_user.id
+    
+    # Process reward
+    kid = db.query(User).get(project.kid_id)
+    finance_service.process_income(
+        db=db,
+        user=kid,
+        amount=log.coins_released,
+        description=f"Dự án {project.title}: Đạt mốc #{milestone_idx+1}",
+        reference_id=log.id
+    )
+    
+    db.commit()
+    return {"status": "success", "released_coins": log.coins_released}
+
+# --- FINANCE MANAGEMENT (PARENT SIDE) ---
+
+@router.get("/finance/loans", response_model=List[LoanAccountResponse])
+async def list_family_loans(
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """List all loans for kids in the family."""
+    return db.query(LoanAccount).filter(LoanAccount.family_id == current_user.family_id).all()
+
+@router.post("/finance/loans", response_model=LoanAccountResponse)
+async def create_loan(
+    request: CreateLoanRequest,
+    current_user: User = Depends(deps.require_role(Role.PARENT)),
+    db: Session = Depends(deps.get_db)
+):
+    """Create a new loan for a kid in the family."""
+    kid = db.query(User).filter(User.id == request.kid_id, User.family_id == current_user.family_id).first()
+    if not kid:
+        raise HTTPException(status_code=404, detail="Kid not found")
+        
+    loan = LoanAccount(
+        kid_id=request.kid_id,
+        family_id=current_user.family_id,
+        loan_amount=request.loan_amount,
+        interest_rate=request.interest_rate,
+        total_owed=int(request.loan_amount + (request.loan_amount * request.interest_rate / 100)),
+        payment_cycle=request.payment_cycle,
+        installments_count=request.installments_count,
+        repaid_amount=0,
+        due_date=request.due_date,
+        status=LoanStatus.ACTIVE,
+        approved_by=current_user.id
+    )
+    db.add(loan)
+    db.commit()
+    db.refresh(loan)
+    
+    # Notify Kid
+    notif = Notification(
+        user_id=kid.id,
+        type=NotificationType.SYSTEM,
+        title="Khoản vay mới! 💳",
+        content=f"Bố/mẹ vừa tạo một khoản vay {request.loan_amount} Xu cho bạn.",
+        action_data={"loan_id": str(loan.id)}
+    )
+    db.add(notif)
+    db.commit()
+    
+    return loan

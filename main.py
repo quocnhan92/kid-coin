@@ -16,6 +16,14 @@ from app.api.v1 import parent as parent_router
 from app.api.v1 import auth as auth_router
 from app.api.v1 import upload as upload_router
 from app.api.v1 import notifications as notifications_router
+from app.api.v1 import gamification as gamification_router
+from app.api.v1 import finance as finance_router
+from app.api.v1 import thinking as thinking_router
+from app.api.v1 import social as social_router
+from app.api.v1 import teen as teen_router
+from app.api.v1 import admin as admin_router
+from app.core.scheduler import start_scheduler, shutdown_scheduler
+from app.services import admin_service
 from app.core.middleware import RequestContextMiddleware
 from app.models.user_family import User, Role, Family
 from typing import Optional
@@ -61,9 +69,20 @@ app.include_router(parent_router.router, prefix="/api/v1/parent", tags=["Parent"
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(upload_router.router, prefix="/api/v1/upload", tags=["Upload"])
 app.include_router(notifications_router.router, prefix="/api/v1/notifications", tags=["Notifications"])
+app.include_router(gamification_router.router, prefix="/api/v1/gamification", tags=["Gamification"])
+app.include_router(finance_router.router, prefix="/api/v1/finance", tags=["Finance"])
+app.include_router(thinking_router.router, prefix="/api/v1/thinking", tags=["Thinking"])
+app.include_router(social_router.router, prefix="/api/v1/social", tags=["Social"])
+app.include_router(teen_router.router, prefix="/api/v1/teen", tags=["Teen"])
+app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(admin_router.router, prefix="/admin", tags=["Admin UI"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
+def startup_event():
+    seed_initial_data()
+    start_scheduler()
+
 def seed_initial_data():
     # NOTE: alembic upgrade head đã được chạy bởi entrypoint.sh trước khi uvicorn start.
     # Không gọi run_alembic_upgrade() ở đây để tránh double migration.
@@ -115,7 +134,7 @@ def seed_initial_data():
         db.add(kid2)
 
         # 4. Create Master Tasks (Dữ liệu mồi)
-        from app.models.tasks_rewards import MasterTask, Category, FamilyTask, VerificationType
+        from app.models.tasks_rewards import MasterTask, Category, FamilyTask, VerificationType, MasterReward
         
         tasks = [
             MasterTask(name="Đánh răng", category=Category.PERSONAL, suggested_value=5, icon_url="🪥", verification_type=VerificationType.AUTO_APPROVE),
@@ -123,6 +142,14 @@ def seed_initial_data():
             MasterTask(name="Làm bài tập", category=Category.STUDY, suggested_value=20, icon_url="📚", verification_type=VerificationType.REQUIRE_PARENT_CHECK),
         ]
         db.add_all(tasks)
+
+        # 4.1 Create Master Rewards
+        rewards_master = [
+            MasterReward(name="Xem TV 30p", suggested_cost=50, icon_url="📺"),
+            MasterReward(name="Ăn kem", suggested_cost=100, icon_url="🍦"),
+            MasterReward(name="Thêm 15p chơi game", suggested_cost=30, icon_url="🎮"),
+        ]
+        db.add_all(rewards_master)
         db.flush() # to get IDs
 
         # 5. Create Family Tasks (Assign to family)
@@ -140,11 +167,14 @@ def seed_initial_data():
 
         # 6. Create Rewards
         from app.models.tasks_rewards import FamilyReward
-        rewards = [
-            FamilyReward(family_id=family.id, name="Xem TV 30p", points_cost=50, is_active=True),
-            FamilyReward(family_id=family.id, name="Ăn kem", points_cost=100, is_active=True),
-        ]
-        db.add_all(rewards)
+        for mr in rewards_master[:2]: # Assign first 2 to family
+            fr = FamilyReward(
+                family_id=family.id,
+                name=mr.name,
+                points_cost=mr.suggested_cost,
+                is_active=True
+            )
+            db.add(fr)
 
         db.commit()
         logger.info("Seeding completed successfully!")
@@ -153,7 +183,13 @@ def seed_initial_data():
         logger.error(f"Seeding failed: {e}")
         db.rollback()
     finally:
+        # Seed Admin User
+        admin_service.seed_admin(db)
         db.close()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    shutdown_scheduler()
 
 # --- Helper to extract user from JWT cookie ---
 def get_user_from_cookie(access_token: Optional[str], db: Session) -> Optional[User]:

@@ -324,11 +324,17 @@ kidcoin_backend/
 
 ---
 
-## 6. KẾ HOẠCH TRIỂN KHAI (CI/CD DEPLOYMENT)
+## 7. CÁC TÍNH NĂNG MỞ RỘNG (PHASE 6 & 7)
 
-**Môi trường:** Oracle Cloud (Free Tier)
-**Công cụ:** Docker, GitHub Actions.
+### 7.1. Chế độ Thanh thiếu niên (Teen Mode)
+Khi trẻ đạt độ tuổi nhất định, cha mẹ có thể kích hoạt "Teen Mode" để tăng tính tự lập:
+* **Teen Contract**: Hợp đồng tự cam kết các đầu việc hàng ngày. Trẻ tự điểm danh và cha mẹ giám sát định kỳ.
+* **Personal Projects**: Cho phép trẻ tạo các dự án dài hạn (VD: Học chứng chỉ, Xây dựng thói quen). Mỗi dự án chia thành các cột mốc (Milestones), được giải ngân Coin ngay khi cha mẹ xác minh minh chứng.
 
-1. **Môi trường Local:** Sử dụng `docker-compose` để chạy DB PostgreSQL và Backend song song khi dev.
-2. **Database Migration:** Dùng Alembic.
-3. **CI/CD Pipeline (.github/workflows):** Push -> Deploy.
+### 7.2. Hệ thống Quản trị (Admin Panel)
+Cung cấp bộ công cụ cho quản trị viên hệ thống:
+* **Hệ quản trị Dữ liệu mẫu (Master Data)**: Quản lý thư viện nhiệm vụ và phần thưởng gợi ý cho toàn bộ các gia đình.
+* **Quản lý người dùng & Gia đình**: Xem danh sách toàn bộ các hộ gia đình tham gia hệ thống.
+* **Điều chỉnh số dư (Coin Adjustment)**: Admin có quyền can thiệp số dư ví trong các trường hợp hỗ trợ kỹ thuật hoặc tặng thưởng đặc biệt (có kèm Audit Log).
+* **Báo cáo & Phân tích (Analytics)**: Dashboard theo dõi dòng tiền (Coin) lưu thông, quỹ từ thiện và mức độ tương tác của người dùng.
+* **Giám sát hệ thống (Health Check)**: Theo dõi trạng thái Database và các tác vụ chạy ngầm (Background Jobs).

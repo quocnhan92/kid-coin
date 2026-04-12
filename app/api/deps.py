@@ -14,30 +14,30 @@ def get_db():
     finally:
         db.close()
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+def get_token_from_request(request: Request, cookie_name: str = "access_token") -> str:
     # 1. Try to get token from Cookie
-    token = request.cookies.get("access_token")
+    token = request.cookies.get(cookie_name)
     
     # 2. If no cookie, check for "Authorization" header (Bearer token)
     if not token:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
+    return token
 
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    token = get_token_from_request(request, "access_token")
     user = None
     if token:
         payload = decode_access_token(token)
         if payload and "sub" in payload:
             user_id = payload["sub"]
+            # Check if it's a user token (starts with UUID)
             try:
-                UUID(user_id) # Validate format
+                UUID(user_id)
                 user = db.query(User).filter(User.id == user_id).first()
             except ValueError:
                 pass
-
-    # 3. If still no user, Auto-Seed/Fallback (REMOVED)
-    # The initial seed logic exists in main.py startup event.
-    # We no longer fallback to the first parent automatically for security and registration implementation.
 
     if user is None:
         raise HTTPException(
@@ -48,6 +48,20 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     # Set context
     context.set_current_user_id(str(user.id))
     return user
+
+def get_current_admin(request: Request, db: Session = Depends(get_db)) -> str:
+    token = get_token_from_request(request, "admin_token")
+    if token:
+        payload = decode_access_token(token)
+        if payload and "sub" in payload:
+            subject = payload["sub"]
+            if subject.startswith("admin:"):
+                return subject # Return 'admin:<id>'
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Admin access required",
+    )
 
 def require_role(role: Role):
     def role_checker(current_user: User = Depends(get_current_user)):

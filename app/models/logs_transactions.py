@@ -20,6 +20,21 @@ class TransactionType(str, enum.Enum):
     REWARD_REDEMPTION = "REWARD_REDEMPTION"
     PENALTY = "PENALTY"
     BONUS = "BONUS"
+    AVATAR_PURCHASE = "AVATAR_PURCHASE"
+    SAVINGS_DEPOSIT = "SAVINGS_DEPOSIT"
+    SAVINGS_WITHDRAW = "SAVINGS_WITHDRAW"
+    LOAN_RECEIVE = "LOAN_RECEIVE"
+    LOAN_REPAY = "LOAN_REPAY"
+    CHARITY_DONATE = "CHARITY_DONATE"
+    STREAK_BONUS = "STREAK_BONUS"
+    BID_REWARD = "BID_REWARD"
+    PROBLEM_REWARD = "PROBLEM_REWARD"
+    REFLECTION_BONUS = "REFLECTION_BONUS"
+    CONTRACT_SALARY = "CONTRACT_SALARY"
+    PROJECT_MILESTONE = "PROJECT_MILESTONE"
+    ADMIN_ADJUSTMENT = "ADMIN_ADJUSTMENT"
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
 
 class TaskLog(Base):
     __tablename__ = "task_logs"
@@ -27,7 +42,7 @@ class TaskLog(Base):
         Index("idx_task_log_status", "status"),
         Index("idx_task_log_created_at", "created_at"),
         CheckConstraint(
-            "num_nonnulls(family_task_id, club_task_id) = 1",
+            "(family_task_id IS NOT NULL AND club_task_id IS NULL) OR (family_task_id IS NULL AND club_task_id IS NOT NULL)",
             name="chk_one_task_source"
         )
     )

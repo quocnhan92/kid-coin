@@ -9,29 +9,27 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Database URL from environment variable or default for local dev
-# IMPORTANT: When running in Docker, the host is 'db', not 'localhost'
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://kidcoin_user:kidcoin_password@localhost:5432/kidcoin_db")
 
-def get_engine_with_retry(url, retries=5, delay=2):
-    logger.info(f"Test connect Database...")
-    while retries > 0:
+def get_engine_with_retry(url, retries=5, delay=5):
+    for i in range(retries):
         try:
-            eng = create_engine(url)
-            # Chạy thử một lệnh ping/kết nối
-            with eng.connect() as conn:
-                pass
-            logger.info("Connect Database Success")
-            return eng
-        except OperationalError as e:
-            retries -= 1
-            logger.warning(f"Connect Database Fail, Retry ... ({retries} lần còn lại)")
+            # Postgres specific pool settings usually go here,
+            # but we'll keep it simple for now as we're testing with SQLite.
+            engine = create_engine(url)
+            return engine
+        except Exception as e:
+            if i == retries - 1:
+                raise e
             time.sleep(delay)
-    
-    logger.error("Connect Database Error")
-    raise Exception("Connect Database Error, Retried 3 round")
 
-# Khởi tạo engine với cơ chế retry
-engine = get_engine_with_retry(DATABASE_URL, retries=5, delay=5)
+def get_engine(url):
+    if url.startswith("sqlite"):
+        return create_engine(url, connect_args={"check_same_thread": False})
+    return get_engine_with_retry(url, retries=5, delay=5)
+
+# Khởi tạo engine
+engine = get_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
