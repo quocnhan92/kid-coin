@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "80:8000"
     environment:
       - DATABASE_URL=postgresql://kidcoin_user:kidcoin_password@db:5432/kidcoin_db
     depends_on:
@@ -34,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=kidcoin_password
       - POSTGRES_DB=kidcoin_db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kidcoin_user -d kidcoin_db"]
+      test: [ "CMD-SHELL", "pg_isready -U kidcoin_user -d kidcoin_db" ]
       interval: 15s
       timeout: 5s
       retries: 3
