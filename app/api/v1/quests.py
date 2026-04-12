@@ -210,9 +210,11 @@ async def get_master_tasks(
     if user_age is not None:
         # Sort: tasks within age range first, then by proximity to range
         def sort_key(t):
-            if t.min_age <= user_age <= t.max_age:
+            min_a = t.min_age if t.min_age is not None else 0
+            max_a = t.max_age if t.max_age is not None else 100
+            if min_a <= user_age <= max_a:
                 return (0, 0) # Top priority
-            dist = min(abs(t.min_age - user_age), abs(t.max_age - user_age))
+            dist = min(abs(min_a - user_age), abs(max_a - user_age))
             return (1, dist)
         
         master_tasks.sort(key=sort_key)

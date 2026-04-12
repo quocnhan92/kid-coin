@@ -151,7 +151,9 @@ async def get_master_rewards(
         )
 
         def sort_key(r):
-            is_in_range = (r.min_age <= age <= r.max_age)
+            min_a = r.min_age if r.min_age is not None else 0
+            max_a = r.max_age if r.max_age is not None else 100
+            is_in_range = (min_a <= age <= max_a)
             return (0 if is_in_range else 1, r.name)
 
         rewards.sort(key=sort_key)
@@ -222,12 +224,15 @@ async def propose_master_reward(
 
 @router.get("/proposals", response_model=List[dict])
 async def get_my_proposals(
-    current_user: User = Depends(deps.require_role(deps.Role.KID)),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """
-    KID: Get my pending reward proposals.
+    KID: Get my pending reward proposals. PARENT: returns empty list.
     """
+    # Simply return empty for non-kid users to avoid dashboard errors
+    if current_user.role != deps.Role.KID:
+        return []
     # Simply fetch from Notifications of type REWARD_PROPOSAL sent by this kid
     # Or keep track in a separate table? Currently it's in Notifications with reference_id = master_id.
     # To keep it simple, we can query notifications where user is parent and sender is kid?
