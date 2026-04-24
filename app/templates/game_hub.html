@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KidCoin Game Hub — Kho Game Mini Miễn Phí</title>
+  <meta name="description"
+    content="Chơi game miễn phí ngay trên trình duyệt! Rắn săn mồi, 2048, Lật bài, Flappy Bird và nhiều game mini thú vị dành cho trẻ em.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kidcoin.app/game">
+  <meta property="og:title" content="KidCoin Game Hub — Kho Game Mini Miễn Phí">
+  <meta property="og:description" content="Chơi game miễn phí ngay trên trình duyệt!">
+  <meta property="og:image" content="https://kidcoin.app/static/og-image.png">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d1a;
+      --surface: #141428;
+      --surface2: #1e1e3a;
+      --accent1: #7c3aed;
+      --accent2: #ec4899;
+      --accent3: #06b6d4;
+      --accent4: #f59e0b;
+      --text: #f1f0ff;
+      --text-muted: #8b8aa8;
+      --glow1: rgba(124, 58, 237, 0.4);
+      --glow2: rgba(236, 72, 153, 0.3);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 10%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 70%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 80%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 60%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 35% 50%, rgba(124, 58, 237, 0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 70% 85%, rgba(236, 72, 153, 0.4) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 26, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-icon {
+      font-size: 1.6rem;
+      filter: drop-shadow(0 0 8px var(--accent2));
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn-app {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .btn-app:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 72px 24px 48px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: 20px;
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(124, 58, 237, 0);
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent3), var(--accent1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* Section */
+    .section {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.5), transparent);
+    }
+
+    /* Game Grid */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .game-card {
+      position: relative;
+      background: var(--surface);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .game-card:hover .card-glow {
+      opacity: 1;
+    }
+
+    .card-glow {
+      position: absolute;
+      inset: -1px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .game-card[data-color="purple"] {
+      --card-color: #7c3aed;
+    }
+
+    .game-card[data-color="pink"] {
+      --card-color: #ec4899;
+    }
+
+    .game-card[data-color="cyan"] {
+      --card-color: #06b6d4;
+    }
+
+    .game-card[data-color="amber"] {
+      --card-color: #f59e0b;
+    }
+
+    .game-card[data-color="green"] {
+      --card-color: #10b981;
+    }
+
+    .game-card[data-color="red"] {
+      --card-color: #ef4444;
+    }
+
+    .game-card .card-glow {
+      background: linear-gradient(135deg, var(--card-color), transparent);
+      filter: blur(1px);
+    }
+
+    .game-card:hover {
+      box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--card-color);
+    }
+
+    .card-banner {
+      position: relative;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
+      overflow: hidden;
+    }
+
+    .card-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--card-color), transparent 60%);
+      opacity: 0.25;
+    }
+
+    .card-emoji {
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 4px 16px var(--card-color));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--card-color);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 50px;
+      z-index: 2;
+    }
+
+    .card-body {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 12px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .play-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-color);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .play-btn:hover {
+      opacity: 0.85;
+      transform: scale(1.05);
+    }
+
+    /* Coming soon card */
+    .card-coming-soon {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .card-coming-soon:hover {
+      transform: none;
+    }
+
+    /* Ad banner */
+    .ad-banner {
+      background: linear-gradient(135deg, var(--surface2), rgba(124, 58, 237, 0.1));
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 16px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .ad-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .ad-text strong {
+      color: var(--text);
+    }
+
+    .ad-placeholder {
+      background: rgba(124, 58, 237, 0.1);
+      border: 1px dashed rgba(124, 58, 237, 0.3);
+      border-radius: 12px;
+      padding: 12px 24px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      min-width: 300px;
+    }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .footer a {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .nav-links .hide-mobile {
+        display: none;
+      }
+
+      .hero {
+        padding: 48px 16px 32px;
+      }
+
+      .ad-banner {
+        flex-direction: column;
+      }
+
+      .ad-placeholder {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/game" class="logo">
+      <span class="logo-icon">🎮</span>
+      KidCoin Games
+    </a>
+    <div class="nav-links">
+      <a href="/game" class="hide-mobile">Tất cả Game</a>
+      <a href="/" class="hide-mobile">KidCoin App</a>
+      <!-- <a href="/login" class="btn-app">Đăng nhập →</a> -->
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">🕹️ Chơi miễn phí · Không cần đăng ký</div>
+    <h1>Kho Game Mini 🚀</h1>
+    <p>Chơi ngay trên trình duyệt, không cần cài đặt! Các mini game vui nhộn giúp bé học tư duy và giải trí lành mạnh.
+    </p>
+    <!-- <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-number">4+</div>
+        <div class="stat-label">MINI GAME</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">MIỄN PHÍ</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">0</div>
+        <div class="stat-label">CÀI ĐẶT</div>
+      </div>
+    </div> -->
+  </section>
+
+  <!-- Main content -->
+  <main class="section">
+    {% if show_ads %}
+    <!-- Ad banner slot -->
+    <div class="ad-banner">
+      <div class="ad-text">
+        <strong>📢 Không gian quảng cáo</strong><br>
+        Tiếp cận hàng nghìn phụ huynh và trẻ em hàng ngày
+      </div>
+      <div class="ad-placeholder">
+        🎯 Quảng cáo 728×90<br>
+        <small>Liên hệ để đặt quảng cáo</small>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Games section -->
+    <div class="section-header">
+      <h2 class="section-title">🕹️ Game đang có</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="game-grid">
+      <!-- Snake -->
+      <a href="/game/snake" id="game-snake" class="game-card" data-color="green">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #064e3b, #065f46);">
+          <span class="card-emoji" style="animation-delay:0s">🐍</span>
+          <span class="card-badge">HOT</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Rắn Săn Mồi</div>
+          <div class="card-desc">Điều khiển con rắn ăn mồi và tránh va vào tường. Càng ăn nhiều càng dài, thử xem bạn
+            đạt được bao nhiêu điểm!</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">⭐ 4.8</span>
+              <span class="meta-item">🎯 Dễ chơi</span>
+            </div>
+            <button class="play-btn">▶ Chơi</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- 2048 -->
+      <a href="/game/2048" id="game-2048" class="game-card" data-color="amber">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #78350f, #92400e);">
+          <span class="card-emoji" style="animation-delay:0.5s">🔢</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2048</div>
+          <div class="card-desc">Gộp các ô số để đạt đến 2048! Game tư duy chiến lược giúp bé rèn luyện khả năng tính
+            toán và lên kế hoạch.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">⭐ 4.9</span>
+              <span class="meta-item">🧠 Tư duy</span>
+            </div>
+            <button class="play-btn">▶ Chơi</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- Memory -->
+      <a href="/game/memory" id="game-memory" class="game-card" data-color="cyan">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #0c4a6e, #075985);">
+          <span class="card-emoji" style="animation-delay:1s">🃏</span>
+          <span class="card-badge">Mới</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Lật Bài Nhớ</div>
+          <div class="card-desc">Lật các ô bài để tìm cặp giống nhau! Game trí nhớ tuyệt vời giúp bé rèn luyện trí nhớ
+            và sự tập trung.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">⭐ 4.7</span>
+              <span class="meta-item">🧩 Trí nhớ</span>
+            </div>
+            <button class="play-btn">▶ Chơi</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- Flappy -->
+      <a href="/game/flappy" id="game-flappy" class="game-card" data-color="pink">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #500724, #831843);">
+          <span class="card-emoji" style="animation-delay:1.5s">🐦</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Flappy Coin</div>
+          <div class="card-desc">Nhấn để bay qua các cột! Tránh va vào cột và thu thập coin. Game phản xạ nhanh cực kỳ
+            hấp dẫn!</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">⭐ 4.6</span>
+              <span class="meta-item">⚡ Nhanh tay</span>
+            </div>
+            <button class="play-btn">▶ Chơi</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- Coming soon 1 -->
+      <div class="game-card card-coming-soon" data-color="purple">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #2e1065, #3b0764);">
+          <span class="card-emoji" style="animation: none">🧮</span>
+          <span class="card-badge">Sắp ra</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Math Blast</div>
+          <div class="card-desc">Game toán học vui nhộn — trả lời câu hỏi trước khi hết giờ! Rèn luyện tính nhẩm siêu
+            nhanh.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">📅 Tháng 5</span>
+            </div>
+            <button class="play-btn" disabled style="opacity:0.5;cursor:not-allowed">🔒 Soon</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming soon 2 -->
+      <div class="game-card card-coming-soon" data-color="red">
+        <div class="card-glow"></div>
+        <div class="card-banner" style="background: linear-gradient(135deg, #450a0a, #7f1d1d);">
+          <span class="card-emoji" style="animation: none">🧱</span>
+          <span class="card-badge">Sắp ra</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Block Breaker</div>
+          <div class="card-desc">Phá vỡ các khối gạch bằng quả bóng! Game cổ điển Breakout với đồ họa hiện đại và nhiều
+            level thú vị.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="meta-item">📅 Tháng 6</span>
+            </div>
+            <button class="play-btn" disabled style="opacity:0.5;cursor:not-allowed">🔒 Soon</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if show_ads %}
+    <!-- Bottom ad slot -->
+    <div style="margin-top: 48px;">
+      <div class="ad-banner" style="justify-content: center;">
+        <div class="ad-placeholder" style="min-width: 100%; max-width: 728px; padding: 20px;">
+          🎯 Banner quảng cáo 728×90 · Vị trí dưới game<br>
+          <small>Liên hệ: ads@kidcoin.app</small>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 <a href="/">KidCoin</a> · Ứng dụng Quản lý Việc nhà cho Trẻ em</p>
+    <p style="margin-top:8px">
+      <a href="/game">Game Hub</a> ·
+      <a href="/login">Đăng nhập</a> ·
+      <a href="mailto:contact@kidcoin.app">Liên hệ</a>
+    </p>
+  </footer>
+</body>
+
+</html>

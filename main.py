@@ -211,7 +211,7 @@ def get_user_from_cookie(access_token: Optional[str], db: Session) -> Optional[U
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, access_token: Optional[str] = Cookie(None)):
@@ -247,7 +247,7 @@ async def read_parent_dashboard(request: Request, access_token: Optional[str] = 
         response.delete_cookie("access_token")
         return response
 
-    return templates.TemplateResponse("parent_dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "parent_dashboard.html")
 
 @app.get("/kid", response_class=HTMLResponse)
 async def read_kid_dashboard(request: Request, access_token: Optional[str] = Cookie(None)):
@@ -263,7 +263,34 @@ async def read_kid_dashboard(request: Request, access_token: Optional[str] = Coo
         response.delete_cookie("access_token")
         return response
         
-    return templates.TemplateResponse("kid_dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "kid_dashboard.html")
+
+# --- Game Hub Routes (Independent Module) ---
+
+@app.get("/game", response_class=HTMLResponse)
+async def game_hub(request: Request):
+    """Trang chủ kho game mini"""
+    return templates.TemplateResponse(request, "game_hub.html")
+
+@app.get("/game/snake", response_class=HTMLResponse)
+async def game_snake(request: Request):
+    """Game Rắn săn mồi"""
+    return templates.TemplateResponse(request, "games/snake.html")
+
+@app.get("/game/2048", response_class=HTMLResponse)
+async def game_2048(request: Request):
+    """Game 2048"""
+    return templates.TemplateResponse(request, "games/2048.html")
+
+@app.get("/game/memory", response_class=HTMLResponse)
+async def game_memory(request: Request):
+    """Game Lật bài"""
+    return templates.TemplateResponse(request, "games/memory.html")
+
+@app.get("/game/flappy", response_class=HTMLResponse)
+async def game_flappy(request: Request):
+    """Game Flappy Coin"""
+    return templates.TemplateResponse(request, "games/flappy.html")
 
 
 # ===== SEO ROUTES =====

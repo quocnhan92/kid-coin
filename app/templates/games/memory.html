@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lật Bài Nhớ 🃏 — KidCoin Game Hub</title>
+    <meta name="description"
+        content="Rèn luyện trí nhớ tuyệt vời với game Lật bài! Tìm các cặp hình giống nhau vui nhộn dành cho trẻ em.">
+    <meta property="og:title" content="Lật Bài Nhớ 🃏 — KidCoin Game Hub">
+    <meta property="og:description" content="Bé có nhớ được hết các vị trí không? Thử ngay!">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #1e1e3a;
+            --accent: #06b6d4;
+            --text: #f1f0ff;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 10px;
+        }
+
+        .card {
+            width: 80px;
+            height: 110px;
+            background: var(--surface);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .card-back {
+            background: var(--accent);
+            transform: rotateY(0deg);
+        }
+
+        .card-front {
+            background: #fff;
+            transform: rotateY(180deg);
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        .stats {
+            margin-top: 20px;
+            font-weight: 700;
+        }
+
+        @media (min-width: 600px) {
+            .grid {
+                grid-template-columns: repeat(4, 100px);
+                gap: 15px;
+            }
+
+            .card {
+                width: 100px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/game" class="back-link">← Quay lại</a>
+    <div class="header">
+        <h1 style="color: var(--accent)">Lật Bài Nhớ 🃏</h1>
+        <p>Tìm các cặp hình giống nhau</p>
+    </div>
+
+    <div class="grid" id="gameGrid"></div>
+
+    <div class="stats">Lượt lật: <span id="moves">0</span> | Cặp: <span id="matches">0</span>/8</div>
+
+    <script>
+        const grid = document.getElementById('gameGrid');
+        const movesEl = document.getElementById('moves');
+        const matchesEl = document.getElementById('matches');
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+        let cards = [...emojis, ...emojis];
+        let flippedCards = [];
+        let moves = 0;
+        let matches = 0;
+        let canFlip = true;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createBoard() {
+            shuffle(cards);
+            grid.innerHTML = '';
+            cards.forEach((emoji, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.emoji = emoji;
+                card.innerHTML = `
+                    <div class="card-back">?</div>
+                    <div class="card-front">${emoji}</div>
+                `;
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (!canFlip || card.classList.contains('flipped') || flippedCards.length >= 2) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesEl.innerText = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [c1, c2] = flippedCards;
+            if (c1.dataset.emoji === c2.dataset.emoji) {
+                matches++;
+                matchesEl.innerText = matches;
+                flippedCards = [];
+                if (matches === emojis.length) {
+                    setTimeout(() => alert('Chúc mừng! Bạn đã hoàn thành trong ' + moves + ' lượt!'), 500);
+                }
+            } else {
+                canFlip = false;
+                setTimeout(() => {
+                    c1.classList.remove('flipped');
+                    c2.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+        }
+
+        createBoard();
+    </script>
+</body>
+
+</html>

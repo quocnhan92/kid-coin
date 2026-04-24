@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 2048 🔢 — KidCoin Game Hub</title>
+    <meta name="description" content="Thử thách trí tuệ với game 2048! Giúp bé rèn luyện khả năng tính toán và tư duy logic. Chơi ngay miễn phí.">
+    <meta property="og:title" content="Game 2048 🔢 — KidCoin Game Hub">
+    <meta property="og:description" content="Gộp các ô số để đạt đến 2048. Bé có làm được không?">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #1e1e3a;
+            --text: #f1f0ff;
+            --tile-bg: #cdc1b4;
+            --empty-bg: rgba(238, 228, 218, 0.35);
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .header { text-align: center; margin-bottom: 20px; }
+        .score-container {
+            background: var(--surface);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .grid-container {
+            width: 340px;
+            height: 340px;
+            background: #bbada0;
+            border-radius: 6px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 15px;
+            position: relative;
+            touch-action: none;
+        }
+        .grid-cell {
+            background: var(--empty-bg);
+            border-radius: 3px;
+            width: 100%;
+            height: 100%;
+        }
+        .tile {
+            position: absolute;
+            width: 66.25px; /* (340 - 15*5) / 4 */
+            height: 66.25px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            transition: all 0.1s ease-in-out;
+            user-select: none;
+            z-index: 2;
+        }
+        .tile-2 { background: #eee4da; color: #776e65; }
+        .tile-4 { background: #ede0c8; color: #776e65; }
+        .tile-8 { background: #f2b179; color: #f9f6f2; }
+        .tile-16 { background: #f59563; color: #f9f6f2; }
+        .tile-32 { background: #f67c5f; color: #f9f6f2; }
+        .tile-64 { background: #f65e3b; color: #f9f6f2; }
+        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 20px; }
+        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 20px; }
+        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 20px; }
+        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 16px; }
+        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 16px; box-shadow: 0 0 10px #edc22e; }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body>
+    <a href="/game" class="back-link">← Quay lại</a>
+    <div class="header">
+        <h1 style="color: #f59e0b">2048 🔢</h1>
+        <div class="score-container">Score: <span id="score">0</span></div>
+    </div>
+
+    <div class="grid-container" id="grid">
+        <!-- Cells -->
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const scoreEl = document.getElementById('score');
+        let board = Array(16).fill(0);
+        let score = 0;
+
+        function init() {
+            board = Array(16).fill(0);
+            score = 0;
+            addRandom();
+            addRandom();
+            render();
+        }
+
+        function addRandom() {
+            const empty = board.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if (empty.length) {
+                board[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function render() {
+            // Remove existing tiles
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(t => t.remove());
+
+            board.forEach((val, i) => {
+                if (val !== 0) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile tile-${val}`;
+                    tile.innerText = val;
+                    const r = Math.floor(i / 4);
+                    const c = i % 4;
+                    // 15px padding + col * (tile + gap)
+                    tile.style.top = `${15 + r * (66.25 + 15)}px`;
+                    tile.style.left = `${15 + c * (66.25 + 15)}px`;
+                    grid.appendChild(tile);
+                }
+            });
+            scoreEl.innerText = score;
+        }
+
+        function slide(row) {
+            let arr = row.filter(v => v);
+            for (let i = 0; i < arr.length - 1; i++) {
+                if (arr[i] === arr[i+1]) {
+                    arr[i] *= 2;
+                    score += arr[i];
+                    arr.splice(i+1, 1);
+                }
+            }
+            while (arr.length < 4) arr.push(0);
+            return arr;
+        }
+
+        function move(dir) {
+            let changed = false;
+            let oldBoard = [...board];
+
+            for (let i = 0; i < 4; i++) {
+                let row = [];
+                if (dir === 'left') row = [board[i*4], board[i*4+1], board[i*4+2], board[i*4+3]];
+                if (dir === 'right') row = [board[i*4+3], board[i*4+2], board[i*4+1], board[i*4+0]];
+                if (dir === 'up') row = [board[i], board[i+4], board[i+8], board[i+12]];
+                if (dir === 'down') row = [board[i+12], board[i+8], board[i+4], board[i]];
+
+                let newRow = slide(row);
+                
+                if (dir === 'left') [board[i*4], board[i*4+1], board[i*4+2], board[i*4+3]] = newRow;
+                if (dir === 'right') [board[i*4+3], board[i*4+2], board[i*4+1], board[i*4+0]] = newRow;
+                if (dir === 'up') [board[i], board[i+4], board[i+8], board[i+12]] = newRow;
+                if (dir === 'down') [board[i+12], board[i+8], board[i+4], board[i]] = newRow;
+            }
+
+            if (board.some((v, i) => v !== oldBoard[i])) {
+                addRandom();
+                render();
+            }
+        }
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') move('left');
+            if (e.key === 'ArrowRight') move('right');
+            if (e.key === 'ArrowUp') move('up');
+            if (e.key === 'ArrowDown') move('down');
+        });
+
+        // Swipe support
+        let touchStartX, touchStartY;
+        grid.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        grid.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (Math.abs(dx) > 30) move(dx > 0 ? 'right' : 'left');
+            } else {
+                if (Math.abs(dy) > 30) move(dy > 0 ? 'down' : 'up');
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

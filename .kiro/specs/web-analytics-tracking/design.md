@@ -843,3 +843,47 @@ geoip2==4.8.0             # GeoIP lookup (optional, dùng MaxMind GeoLite2 DB)
 
 - PostgreSQL 15 (đã có) — không cần external service
 - Alembic migration mới cho 3 tables: `web_page_views`, `web_sessions`, `web_daily_stats`
+
+---
+
+## Phụ lục: Mở rộng thiết kế cho Game Hub Tracking
+Dựa trên yêu cầu tracking chi tiết cho hệ thống Game Hub độc lập, thiết kế `web-analytics-tracking` hiện tại (dùng Middleware để track Page View) là **chưa đủ hoàn thiện** do đặc thù của game web (Single Page Application - SPA). Người dùng vào trang `/game/snake` và chơi liên tục 15 phút mà không gửi thêm bất kỳ HTTP Request nào, dẫn đến `duration_ms` của Middleware chỉ ghi nhận được vài milliseconds load trang ban đầu, và không track được các sự kiện bên trong game.
+
+### Các thành phần cần mở rộng:
+
+#### 1. Mở rộng Data Models (Hỗ trợ Custom Event)
+Cần bổ sung một model mới (hoặc mở rộng `WebPageView`) để hứng dữ liệu sự kiện từ client-side.
+```python
+class WebEvent(Base):
+    __tablename__ = "web_events"
+    id          = Column(UUID, primary_key=True, default=uuid4)
+    session_id  = Column(String(36), index=True) # Link với WebSession
+    user_id     = Column(UUID, nullable=True)    # Null nếu là user vãng lai
+    device_id   = Column(String(255), index=True)
+    
+    event_name  = Column(String(100), index=True) # VD: 'game_start', 'game_over', 'ad_click', 'ping'
+    event_data  = Column(JSONB, nullable=True)    # VD: {"game_id": "snake", "score": 150}
+    
+    url         = Column(String(500))
+    created_at  = Column(DateTime(timezone=True), server_default=func.now())
+```
+
+#### 2. Mở rộng Analytics API Router (Nhận Event từ Frontend)
+Cần thêm một endpoint `POST` để JavaScript từ Frontend (đặc biệt là Game Hub) có thể chủ động đẩy dữ liệu về thay vì chỉ phụ thuộc vào Middleware.
+```python
+# Cho phép Anonymous User gọi API này (cần rate limit chặt chẽ)
+POST /api/v1/analytics/events
+Body: {
+    "device_id": "uuid-from-localstorage",
+    "events": [
+        {"name": "game_over", "data": {"game": "snake", "score": 25}},
+        {"name": "ad_click", "data": {"ad_id": "top_banner"}}
+    ]
+}
+```
+*Background Task sẽ nhận batch events này và INSERT vào bảng `WebEvent`.*
+
+#### 3. Cập nhật Frontend Tracking Logic (Game Hub Client)
+- **Định danh Anonymous User:** Thêm script nhỏ vào `base_seo.html` để kiểm tra `localStorage.getItem('device_id')`. Nếu chưa có, tạo mới UUID (v4) và lưu lại. ID này sẽ được đính kèm vào mọi request gửi lên `/api/v1/analytics/events`. Điều này giúp nối (link) hành vi của họ lúc chơi game ẩn danh với lúc họ quyết định "Đăng nhập/Đăng ký".
+- **Time on Page Tracking (Ping/Beacon):** Trong các trang game, JavaScript sẽ gọi hàm `setInterval` (ví dụ mỗi 30 giây) để gửi một event `ping` về server. Background Task khi nhận event `ping` sẽ UPDATE trường `last_seen_at` của bảng `WebSession`. Điều này đảm bảo thời gian chơi (Play Time) được tính toán chính xác tuyệt đối ngay cả khi user không chuyển trang.
+- **Beacon API khi thoát trang:** Khi người dùng đóng tab, sử dụng `navigator.sendBeacon()` để gửi event cuối cùng (nhẹ và đảm bảo gửi thành công) thay vì AJAX `fetch` thông thường.

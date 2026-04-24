@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Baby 👶 — KidCoin Game Hub</title>
+    <meta name="description"
+        content="Chơi game Flappy Baby miễn phí! Giúp bé rèn luyện phản xạ và tư duy chiến thuật. Không cần cài đặt.">
+    <meta property="og:title" content="Flappy Baby 👶 — KidCoin Game Hub">
+    <meta property="og:description" content="Game mini vui nhộn cho trẻ em. Thử thách kỷ lục của bạn ngay!">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #1e1e3a;
+            --accent: #ec4899;
+            --text: #f1f0ff;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        canvas {
+            background: #70c5ce;
+            border: 4px solid var(--surface);
+            border-radius: 8px;
+            max-width: 100vw;
+            max-height: 80vh;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            z-index: 100;
+        }
+
+        .avatar-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .avatar-btn:hover {
+            background: var(--accent);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body onclick="jump()">
+    <a href="/game" class="back-link">← Quay lại</a>
+    <button class="avatar-btn" onclick="event.stopPropagation(); document.getElementById('avatarInput').click()">
+        📸 <span>Đổi Avatar</span>
+    </button>
+    <input type="file" id="avatarInput" hidden accept="image/*" capture="user" onchange="handleAvatar(this)">
+
+    <div class="header">
+        <h1 style="color: var(--accent); margin:0">Flappy Baby 👶</h1>
+        <div style="font-size: 2rem; font-weight: 900" id="score">0</div>
+    </div>
+
+    <canvas id="canvas" width="320" height="480"></canvas>
+
+    <div class="instructions">Chạm màn hình hoặc phím Cách để nhảy</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+
+        let bird = { x: 50, y: 150, w: 34, h: 34, velocity: 0, gravity: 0.1, jump: -3.7 };
+        let avatarImg = null;
+        let pipes = [];
+        let score = 0;
+        let gameOver = false;
+        let frame = 0;
+
+        function handleAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = () => { avatarImg = img; };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function createPipe() {
+            const gap = 150;
+            const minHeight = 50;
+            const height = Math.floor(Math.random() * (canvas.height - gap - minHeight * 2)) + minHeight;
+            pipes.push({ x: canvas.width, y: 0, w: 50, h: height, type: 'top', passed: false });
+            pipes.push({ x: canvas.width, y: height + gap, w: 50, h: canvas.height - height - gap, type: 'bottom' });
+        }
+
+        function jump() {
+            if (gameOver) { reset(); return; }
+            bird.velocity = bird.jump;
+        }
+
+        function reset() {
+            bird.y = 150; bird.velocity = 0;
+            pipes = []; score = 0; gameOver = false; frame = 0;
+            scoreEl.innerText = score;
+            requestAnimationFrame(update);
+        }
+
+        function update() {
+            if (gameOver) return;
+            frame++;
+
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            if (frame % 100 === 0) createPipe();
+
+            pipes.forEach(p => {
+                p.x -= 1.5;
+                // Collision
+                if (bird.x < p.x + p.w && bird.x + bird.w > p.x &&
+                    bird.y < p.y + p.h && bird.y + bird.h > p.y) {
+                    gameOver = true;
+                }
+                // Score
+                if (p.type === 'top' && !p.passed && bird.x > p.x + p.w) {
+                    p.passed = true;
+                    score++;
+                    scoreEl.innerText = score;
+                }
+            });
+
+            pipes = pipes.filter(p => p.x + p.w > 0);
+
+            if (bird.y + bird.h > canvas.height || bird.y < 0) gameOver = true;
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function draw() {
+            // Sky
+            ctx.fillStyle = '#70c5ce';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Bird
+            if (avatarImg) {
+                ctx.save();
+                // Draw circular avatar
+                ctx.beginPath();
+                ctx.arc(bird.x + bird.w / 2, bird.y + bird.h / 2, bird.w / 2, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                ctx.drawImage(avatarImg, bird.x, bird.y, bird.w, bird.h);
+                // Border for avatar
+                ctx.restore();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(bird.x + bird.w / 2, bird.y + bird.h / 2, bird.w / 2, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                ctx.font = `${bird.h}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('👶', bird.x + bird.w / 2, bird.y + bird.h / 2);
+            }
+
+            // Pipes
+            ctx.fillStyle = '#22c55e';
+            pipes.forEach(p => {
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.strokeRect(p.x, p.y, p.w, p.h);
+            });
+
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Nunito';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+                ctx.font = '20px Nunito';
+                ctx.fillText('Chạm để chơi lại', canvas.width / 2, canvas.height / 2 + 40);
+            }
+        }
+
+        window.addEventListener('keydown', e => { if (e.code === 'Space') jump(); });
+
+        createPipe();
+        update();
+    </script>
+</body>
+
+</html>
