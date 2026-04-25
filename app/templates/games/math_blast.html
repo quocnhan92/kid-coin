@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Blast 🚀 — KidCoin Game Hub</title>
+    <meta name="description"
+        content="Chơi game Math Blast miễn phí! Thử thách tính nhẩm nhanh và rèn luyện tư duy toán học cho trẻ em.">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #141428;
+            --surface2: #1e1e3a;
+            --accent: #7c3aed;
+            --accent2: #06b6d4;
+            --text: #f1f0ff;
+            --text-muted: #8b8aa8;
+            --success: #10b981;
+            --error: #ef4444;
+            
+            --color-kiddy: #10b981;
+            --color-starter: #3b82f6;
+            --color-explorer: #f59e0b;
+            --color-master: #ec4899;
+            --color-genius: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Stars background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 10%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 50% 70%, rgba(124, 58, 237, 0.2) 0%, transparent 100%);
+            z-index: -1;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        .level-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            z-index: 100;
+            font-family: inherit;
+            display: none;
+        }
+
+        .level-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(124, 58, 237, 0.1);
+            position: relative;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Level Selection Overlay */
+        #level-selection {
+            position: absolute;
+            inset: 0;
+            background: var(--surface);
+            z-index: 20;
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .level-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .level-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .level-btn:hover {
+            transform: translateX(5px);
+            border-color: var(--btn-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .level-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--btn-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px var(--btn-glow);
+        }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: var(--btn-color);
+        }
+
+        .level-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats & Problem UI */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: var(--surface2);
+            padding: 10px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--accent2);
+        }
+
+        #timer.warning {
+            color: var(--error);
+            animation: pulse-red 0.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .problem-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 30px 0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .answer-input-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        #answer-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 2px solid rgba(124, 58, 237, 0.2);
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            outline: none;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .num-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .num-btn:active {
+            transform: scale(0.95);
+            background: var(--accent);
+        }
+
+        .num-btn.clear { color: var(--error); }
+        .num-btn.submit { background: var(--success); }
+
+        .game-over-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 13, 26, 0.98);
+            border-radius: 24px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            padding: 32px;
+        }
+
+        .final-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .high-score-label {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .restart-btn, .change-level-btn {
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .restart-btn { background: linear-gradient(135deg, var(--accent), #ec4899); }
+        .change-level-btn { background: var(--surface2); border: 1px solid rgba(255,255,255,0.1); }
+
+        .restart-btn:hover, .change-level-btn:hover { transform: scale(1.03); }
+
+        .feedback-pop {
+            position: absolute;
+            font-weight: 900;
+            font-size: 2.5rem;
+            pointer-events: none;
+            animation: float-up 0.8s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+        }
+
+        /* Level Badge in Game */
+        .level-badge-active {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--level-color);
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            box-shadow: 0 4px 12px var(--level-glow);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/game" class="back-link">← Quay lại</a>
+    <button class="level-link" onclick="showLevelSelection()">🧭 Đổi cấp độ</button>
+
+    <div class="game-container">
+        <!-- Level Selection Screen -->
+        <div id="level-selection">
+            <h2 class="level-title">Toán Tư Duy 🧠</h2>
+            <p class="level-subtitle">Chọn cấp độ phù hợp để bắt đầu</p>
+            
+            <div class="level-grid">
+                <div class="level-btn" style="--btn-color: var(--color-kiddy); --btn-glow: rgba(16, 185, 129, 0.3)" onclick="selectLevel('KIDDY')">
+                    <div class="level-icon">👶</div>
+                    <div class="level-info">
+                        <div class="level-name">Kiddy</div>
+                        <div class="level-desc">Tiền tiểu học · Cộng trừ 0-10</div>
+                    </div>
+                </div>
+                
+                <div class="level-btn" style="--btn-color: var(--color-starter); --btn-glow: rgba(59, 130, 246, 0.3)" onclick="selectLevel('STARTER')">
+                    <div class="level-icon">🌱</div>
+                    <div class="level-info">
+                        <div class="level-name">Starter</div>
+                        <div class="level-desc">Lớp 1 · Cộng trừ 0-100</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-explorer); --btn-glow: rgba(245, 158, 11, 0.3)" onclick="selectLevel('EXPLORER')">
+                    <div class="level-icon">🧭</div>
+                    <div class="level-info">
+                        <div class="level-name">Explorer</div>
+                        <div class="level-desc">Lớp 2 · Cộng trừ 1000, Nhân 2, 5</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-master); --btn-glow: rgba(236, 72, 153, 0.3)" onclick="selectLevel('MASTER')">
+                    <div class="level-icon">🏆</div>
+                    <div class="level-info">
+                        <div class="level-name">Master</div>
+                        <div class="level-desc">Lớp 3 · Nhân chia bảng cửu chương</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-genius); --btn-glow: rgba(239, 68, 68, 0.3)" onclick="selectLevel('GENIUS')">
+                    <div class="level-icon">⚡</div>
+                    <div class="level-info">
+                        <div class="level-name">Genius</div>
+                        <div class="level-desc">Lớp 4 & 5 · Số lớn & Phép tính khó</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Content -->
+        <div id="game-badge" class="level-badge-active" style="display:none">KIDDY</div>
+        
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">Thời gian</div>
+                <div class="stat-value" id="timer">30</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Điểm số</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+        </div>
+
+        <div class="problem-display" id="problem">
+            <span id="num1">?</span>
+            <span id="operator">+</span>
+            <span id="num2">?</span>
+            <span>=</span>
+        </div>
+
+        <div class="answer-input-container">
+            <input type="number" id="answer-input" placeholder="?" readonly>
+        </div>
+
+        <div class="numpad">
+            <button class="num-btn" onclick="addNum(1)">1</button>
+            <button class="num-btn" onclick="addNum(2)">2</button>
+            <button class="num-btn" onclick="addNum(3)">3</button>
+            <button class="num-btn" onclick="addNum(4)">4</button>
+            <button class="num-btn" onclick="addNum(5)">5</button>
+            <button class="num-btn" onclick="addNum(6)">6</button>
+            <button class="num-btn" onclick="addNum(7)">7</button>
+            <button class="num-btn" onclick="addNum(8)">8</button>
+            <button class="num-btn" onclick="addNum(9)">9</button>
+            <button class="num-btn clear" onclick="clearInput()">C</button>
+            <button class="num-btn" onclick="addNum(0)">0</button>
+            <button class="num-btn submit" onclick="submitAnswer()">✓</button>
+        </div>
+
+        <div class="game-over-overlay" id="game-over">
+            <h2 id="over-title">HẾT GIỜ! ⏰</h2>
+            <div class="final-score" id="final-score">0</div>
+            <div class="high-score-label" id="high-score-text">Kỷ lục: 0</div>
+            
+            <div class="btn-group">
+                <button class="restart-btn" onclick="startGame()">Chơi lại 🚀</button>
+                <button class="change-level-btn" onclick="showLevelSelection()">Đổi cấp độ 🧭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timerEl = document.getElementById('timer');
+        const scoreEl = document.getElementById('score');
+        const num1El = document.getElementById('num1');
+        const num2El = document.getElementById('num2');
+        const operatorEl = document.getElementById('operator');
+        const inputEl = document.getElementById('answer-input');
+        const gameOverEl = document.getElementById('game-over');
+        const finalScoreEl = document.getElementById('final-score');
+        const highScoreEl = document.getElementById('high-score-text');
+        const levelSelectionEl = document.getElementById('level-selection');
+        const badgeEl = document.getElementById('game-badge');
+
+        const LEVELS = {
+            KIDDY: { name: 'Kiddy', time: 45, max: 10, ops: ['+', '-'], color: '#10b981' },
+            STARTER: { name: 'Starter', time: 40, max: 100, ops: ['+', '-'], color: '#3b82f6' },
+            EXPLORER: { name: 'Explorer', time: 35, max: 1000, ops: ['+', '-', 'x'], x_max: 5, color: '#f59e0b' },
+            MASTER: { name: 'Master', time: 30, max: 1000, ops: ['+', '-', 'x', '/'], x_max: 9, color: '#ec4899' },
+            GENIUS: { name: 'Genius', time: 30, max: 100000, ops: ['+', '-', 'x', '/'], x_max: 50, color: '#ef4444' }
+        };
+
+        let currentLevel = 'KIDDY';
+        let score = 0;
+        let timeLeft = 30;
+        let correctAnswer = 0;
+        let gameActive = false;
+        let timerInterval;
+
+        function showLevelSelection() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            levelSelectionEl.style.display = 'flex';
+            document.querySelector('.level-link').style.display = 'none';
+            gameOverEl.style.display = 'none';
+            badgeEl.style.display = 'none';
+        }
+
+        function selectLevel(lvl) {
+            currentLevel = lvl;
+            levelSelectionEl.style.display = 'none';
+            document.querySelector('.level-link').style.display = 'flex';
+            
+            // Set badge
+            badgeEl.innerText = LEVELS[lvl].name;
+            badgeEl.style.display = 'block';
+            badgeEl.style.setProperty('--level-color', LEVELS[lvl].color);
+            badgeEl.style.setProperty('--level-glow', LEVELS[lvl].color + '4d'); // 30% alpha
+            
+            startGame();
+        }
+
+        function startGame() {
+            const config = LEVELS[currentLevel];
+            score = 0;
+            timeLeft = config.time;
+            gameActive = true;
+            
+            scoreEl.innerText = '0';
+            timerEl.innerText = timeLeft;
+            timerEl.classList.remove('warning');
+            gameOverEl.style.display = 'none';
+            clearInput();
+            
+            generateProblem();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 5) timerEl.classList.add('warning');
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function generateProblem() {
+            const config = LEVELS[currentLevel];
+            const op = config.ops[Math.floor(Math.random() * config.ops.length)];
+            let n1, n2;
+
+            if (op === '+' || op === '-') {
+                n1 = Math.floor(Math.random() * config.max);
+                n2 = Math.floor(Math.random() * config.max);
+                if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
+                correctAnswer = op === '+' ? n1 + n2 : n1 - n2;
+            } else if (op === 'x') {
+                n1 = Math.floor(Math.random() * (currentLevel === 'GENIUS' ? 100 : 20)) + 2;
+                n2 = Math.floor(Math.random() * config.x_max) + 2;
+                correctAnswer = n1 * n2;
+            } else if (op === '/') {
+                // Div logic: result * divisor = dividend
+                let res = Math.floor(Math.random() * (currentLevel === 'GENIUS' ? 50 : 10)) + 2;
+                let div = Math.floor(Math.random() * config.x_max) + 2;
+                n1 = res * div;
+                n2 = div;
+                correctAnswer = res;
+            }
+
+            num1El.innerText = n1;
+            num2El.innerText = n2;
+            operatorEl.innerText = (op === 'x' ? '×' : (op === '/' ? '÷' : op));
+        }
+
+        function addNum(n) {
+            if (!gameActive) return;
+            if (inputEl.value.length < 8) {
+                inputEl.value += n;
+                if (parseInt(inputEl.value) === correctAnswer) {
+                    handleCorrect();
+                }
+            }
+        }
+
+        function clearInput() {
+            inputEl.value = '';
+            inputEl.classList.remove('correct', 'wrong');
+        }
+
+        function submitAnswer() {
+            if (!gameActive || inputEl.value === '') return;
+            if (parseInt(inputEl.value) === correctAnswer) handleCorrect();
+            else handleWrong();
+        }
+
+        function handleCorrect() {
+            score += 10;
+            scoreEl.innerText = score;
+            showFeedback('+', 'var(--success)');
+            
+            // Tiny bonus time for correct
+            timeLeft += 1;
+            timerEl.innerText = timeLeft;
+
+            setTimeout(() => {
+                clearInput();
+                generateProblem();
+            }, 150);
+        }
+
+        function handleWrong() {
+            inputEl.classList.add('wrong');
+            showFeedback('❌', 'var(--error)');
+            setTimeout(clearInput, 300);
+        }
+
+        function showFeedback(text, color) {
+            const fb = document.createElement('div');
+            fb.className = 'feedback-pop';
+            fb.innerText = text;
+            fb.style.color = color;
+            fb.style.left = (Math.random() * 40 + 30) + '%';
+            fb.style.top = '45%';
+            document.querySelector('.game-container').appendChild(fb);
+            setTimeout(() => fb.remove(), 800);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            finalScoreEl.innerText = score;
+            
+            // Per-level High Score
+            const key = `mathBlast_highScore_${currentLevel}`;
+            const highScore = localStorage.getItem(key) || 0;
+            if (score > highScore) {
+                localStorage.setItem(key, score);
+                highScoreEl.innerText = `Kỷ lục mới Cấp độ ${LEVELS[currentLevel].name}: ${score}! 🏆`;
+            } else {
+                highScoreEl.innerText = `Kỷ lục (${LEVELS[currentLevel].name}): ${highScore}`;
+            }
+            
+            gameOverEl.style.display = 'flex';
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            if (e.key >= '0' && e.key <= '9') addNum(e.key);
+            else if (e.key === 'Backspace' || e.key === 'c' || e.key === 'C') clearInput();
+            else if (e.key === 'Enter') submitAnswer();
+        });
+
+        // Initialize with selection
+        showLevelSelection();
+    </script>
+</body>
+
+</html>

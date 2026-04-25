@@ -289,8 +289,18 @@ async def game_memory(request: Request):
 
 @app.get("/game/flappy", response_class=HTMLResponse)
 async def game_flappy(request: Request):
-    """Game Flappy Coin"""
+    """Game Flappy Baby"""
     return templates.TemplateResponse(request, "games/flappy.html")
+
+@app.get("/game/math-blast", response_class=HTMLResponse)
+async def game_math_blast(request: Request):
+    """Game Math Blast"""
+    return templates.TemplateResponse(request, "games/math_blast.html")
+
+@app.get("/game/block-breaker", response_class=HTMLResponse)
+async def game_block_breaker(request: Request):
+    """Game Block Breaker"""
+    return templates.TemplateResponse(request, "games/block_breaker.html")
 
 
 # ===== SEO ROUTES =====

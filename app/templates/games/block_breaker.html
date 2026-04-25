@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Breaker Super 🧱 — KidCoin Game Hub</title>
+    <meta name="description"
+        content="Chơi game Block Breaker Super miễn phí! Phá gạch, giải đố toán học và tiếng Anh đầy thú vị.">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #141428;
+            --surface2: #1e1e3a;
+            --accent: #ef4444;
+            --accent2: #f97316;
+            --text: #f1f0ff;
+            --text-muted: #8b8aa8;
+            --success: #10b981;
+            --error: #ef4444;
+            --gold: #f59e0b;
+            --steel: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Nav links */
+        .nav-btn {
+            position: fixed;
+            top: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            z-index: 100;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .back-link {
+            left: 20px;
+        }
+
+        .level-link {
+            right: 20px;
+            display: none;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.1);
+            position: relative;
+            text-align: center;
+        }
+
+        /* Level Selection Overlay */
+        #level-selection {
+            position: absolute;
+            inset: 0;
+            background: var(--surface);
+            z-index: 200;
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .menu-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent);
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+
+        .level-card {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .level-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+
+        .level-num {
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+
+        .level-type {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Game UI */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .stat-group {
+            text-align: left;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .stat-val {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        .mission-bar {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        #gameCanvas {
+            background: #000;
+            border: 2px solid var(--surface2);
+            border-radius: 8px;
+            width: 100%;
+            height: auto;
+            touch-action: none;
+            cursor: none;
+        }
+
+        /* Overlays */
+        .game-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 13, 26, 0.95);
+            border-radius: 24px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            padding: 30px;
+        }
+
+        .overlay-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .overlay-msg {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+        }
+
+        /* Mobile specific hint */
+        .hint {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Power-up text */
+        .powerup-text {
+            position: absolute;
+            font-weight: 900;
+            animation: float-up-fade 1.5s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes float-up-fade {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/game" class="nav-btn back-link">← Quay lại</a>
+    <button class="nav-btn level-link" onclick="showLevelSelection()">🧭 Đổi màn</button>
+
+    <div class="game-container">
+        <!-- Level Selection Menu -->
+        <div id="level-selection">
+            <h2 class="menu-title">BLOCK BREAKER SUPER</h2>
+            <div class="level-grid" id="level-grid">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Game Header -->
+        <div class="game-header">
+            <div class="stat-group">
+                <div class="stat-label">Cấp độ</div>
+                <div class="stat-val" id="level-num">1</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat-label">Điểm</div>
+                <div class="stat-val" id="score">0</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat-label">Mạng</div>
+                <div class="stat-val" id="lives">3</div>
+            </div>
+        </div>
+
+        <div class="mission-bar" id="mission-text">
+            Phá hết gạch để chiến thắng!
+        </div>
+
+        <canvas id="gameCanvas" width="480" height="400"></canvas>
+
+        <div class="hint">Chuột / Phím mũi tên / Chạm để di chuyển</div>
+
+        <!-- End Game Overlay -->
+        <div class="game-overlay" id="end-overlay">
+            <h2 class="overlay-title" id="end-title">THẮNG RỒI! 🎉</h2>
+            <div class="overlay-msg" id="end-msg">Bạn đã hoàn thành màn chơi xuất sắc.</div>
+            <button class="btn-action" id="end-btn" onclick="nextLevelOrRestart()">Tiếp tục 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const levelNumEl = document.getElementById('level-num');
+        const missionEl = document.getElementById('mission-text');
+        const endOverlay = document.getElementById('end-overlay');
+        const endTitle = document.getElementById('end-title');
+        const endMsg = document.getElementById('end-msg');
+        const endBtn = document.getElementById('end-btn');
+        const levelSelectionEl = document.getElementById('level-selection');
+        const levelGrid = document.getElementById('level-grid');
+        const levelLink = document.querySelector('.level-link');
+
+        // --- LEVEL DEFINITIONS ---
+        // 0:Empty, 1:Normal, 2:Hard, 3:Gold, 4:Steel
+        const LEVELS = [
+            {
+                type: 'CLASSIC',
+                speed: 2.1,
+                paddle: 90,
+                mission: 'Phá hết gạch để bắt đầu hành trình!',
+                map: [
+                    [0, 1, 1, 1, 1, 1, 0],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 1, 1, 0]
+                ]
+            },
+            {
+                type: 'CLASSIC',
+                speed: 2.4,
+                paddle: 85,
+                mission: 'Cẩn thận với gạch Xanh (2 lần chạm)!',
+                map: [
+                    [2, 1, 2, 1, 2, 1, 2],
+                    [1, 2, 1, 3, 1, 2, 1],
+                    [2, 1, 2, 1, 2, 1, 2]
+                ]
+            },
+            {
+                type: 'CLASSIC',
+                speed: 2.7,
+                paddle: 80,
+                mission: 'Gạch Xám không thể phá hủy!',
+                map: [
+                    [4, 1, 4, 1, 4, 1, 4],
+                    [1, 3, 1, 2, 1, 3, 1],
+                    [4, 1, 4, 1, 4, 1, 4]
+                ]
+            },
+            {
+                type: 'LANGUAGE',
+                word: 'ACE',
+                speed: 2.5,
+                paddle: 90,
+                mission: 'Phá gạch để tìm chữ: A C E',
+                map: [
+                    [0, 1, 0, 0, 1, 1, 0],
+                    [1, 1, 1, 0, 1, 0, 0],
+                    [1, 0, 1, 0, 1, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 0, 1, 1, 1],
+                    [0, 1, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 0, 1, 1, 0]
+                ]
+            },
+            {
+                type: 'MATH',
+                problem: '5 + 4',
+                target: 9,
+                speed: 2.3,
+                paddle: 90,
+                mission: 'Giải phép tính: 5 + 4 = ? (Phá đủ số gạch)',
+                map: [
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1]
+                ]
+            },
+            {
+                type: 'REFLEX',
+                speed: 5.0,
+                paddle: 60,
+                mission: 'Tốc độ cực nhanh! Phản xạ ngay!',
+                map: [
+                    [2, 2, 2, 2, 2, 2, 2],
+                    [2, 3, 2, 3, 2, 3, 2],
+                    [2, 2, 2, 2, 2, 2, 2]
+                ]
+            }
+        ];
+
+        // --- GAME VARIABLES ---
+        let currentLevelIdx = 0;
+        let score = 0;
+        let lives = 3;
+        let bricksBroken = 0;
+        let gameRunning = false;
+        let animationId;
+
+        let ball = { x: 0, y: 0, dx: 0, dy: 0, radius: 8 };
+        let paddle = { x: 0, width: 80, height: 12 };
+        let bricks = [];
+
+        // --- INITIALIZATION ---
+        function initMenu() {
+            levelGrid.innerHTML = '';
+            LEVELS.forEach((lvl, i) => {
+                const card = document.createElement('div');
+                card.className = 'level-card';
+                card.innerHTML = `
+                    <div class="level-num">${i + 1}</div>
+                    <div class="level-type">${lvl.type}</div>
+                `;
+                card.onclick = () => selectLevel(i);
+                levelGrid.appendChild(card);
+            });
+        }
+
+        function showLevelSelection() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            levelSelectionEl.style.display = 'flex';
+            levelLink.style.display = 'none';
+            endOverlay.style.display = 'none';
+        }
+
+        function selectLevel(idx) {
+            currentLevelIdx = idx;
+            levelSelectionEl.style.display = 'none';
+            levelLink.style.display = 'flex';
+            resetGame();
+        }
+
+        function resetGame() {
+            const config = LEVELS[currentLevelIdx];
+            score = 0;
+            lives = 3;
+            bricksBroken = 0;
+            scoreEl.innerText = score;
+            livesEl.innerText = lives;
+            levelNumEl.innerText = currentLevelIdx + 1;
+            missionEl.innerText = config.mission;
+
+            paddle.width = config.paddle;
+            paddle.x = (canvas.width - paddle.width) / 2;
+
+            resetBall();
+            initBricks(config.map);
+
+            endOverlay.style.display = 'none';
+            gameRunning = true;
+            cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(update);
+        }
+
+        function resetBall() {
+            const config = LEVELS[currentLevelIdx];
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 40;
+            ball.dx = config.speed * (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = -config.speed;
+        }
+
+        function initBricks(map) {
+            bricks = [];
+            const rows = map.length;
+            const cols = map[0].length;
+            const padding = 8;
+            const offsetTop = 40;
+            const offsetLeft = 10;
+            const bWidth = (canvas.width - offsetLeft * 2 - padding * (cols - 1)) / cols;
+            const bHeight = 20;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const type = map[r][c];
+                    if (type !== 0) {
+                        bricks.push({
+                            x: c * (bWidth + padding) + offsetLeft,
+                            y: r * (bHeight + padding) + offsetTop,
+                            w: bWidth,
+                            h: bHeight,
+                            type: type,
+                            hits: type === 2 ? 2 : 1,
+                            active: true
+                        });
+                    }
+                }
+            }
+        }
+
+        // --- CONTROLS ---
+        document.addEventListener('mousemove', e => {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const relX = e.clientX - rect.left;
+            paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, relX - paddle.width / 2));
+        });
+
+        document.addEventListener('touchmove', e => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const relX = touch.clientX - rect.left;
+            paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, relX - paddle.width / 2));
+        }, { passive: false });
+
+        window.addEventListener('keydown', e => {
+            if (!gameRunning) return;
+            if (e.key === 'ArrowLeft') paddle.x = Math.max(0, paddle.x - 20);
+            if (e.key === 'ArrowRight') paddle.x = Math.min(canvas.width - paddle.width, paddle.x + 20);
+        });
+
+        // --- CORE LOGIC ---
+        function update() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBricks();
+            drawPaddle();
+            drawBall();
+
+            // Sub-stepping for physics (2 steps per frame) for higher precision
+            const steps = 2;
+            for (let i = 0; i < steps; i++) {
+                moveBall(1 / steps);
+                checkCollisions();
+            }
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        function moveBall(stepFactor = 1) {
+            ball.x += ball.dx * stepFactor;
+            ball.y += ball.dy * stepFactor;
+
+            // Walls
+            if (ball.x + ball.radius > canvas.width) {
+                ball.x = canvas.width - ball.radius;
+                ball.dx *= -1;
+            } else if (ball.x - ball.radius < 0) {
+                ball.x = ball.radius;
+                ball.dx *= -1;
+            }
+
+            if (ball.y - ball.radius < 0) {
+                ball.y = ball.radius;
+                ball.dy *= -1;
+            }
+
+            // Paddle
+            if (ball.y + ball.radius > canvas.height - paddle.height) {
+                if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                    ball.y = canvas.height - paddle.height - ball.radius;
+                    let hitPoint = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                    ball.dx = hitPoint * 5;
+                    ball.dy = -Math.abs(ball.dy);
+                } else if (ball.y > canvas.height + 20) {
+                    handleLifeLost();
+                    return;
+                }
+            }
+        }
+
+        function checkCollisions() {
+            for (let b of bricks) {
+                if (!b.active && b.type !== 4) continue;
+
+                // Ball-Brick collision check
+                const closestX = Math.max(b.x, Math.min(ball.x, b.x + b.w));
+                const closestY = Math.max(b.y, Math.min(ball.y, b.y + b.h));
+
+                const distanceX = ball.x - closestX;
+                const distanceY = ball.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+                if (distanceSquared < (ball.radius * ball.radius)) {
+                    // Collision detected!
+                    const distance = Math.sqrt(distanceSquared);
+
+                    // Simple side detection
+                    if (distance > 0) {
+                        const nx = distanceX / distance;
+                        const ny = distanceY / distance;
+
+                        // Reflect based on normal
+                        if (Math.abs(nx) > Math.abs(ny)) {
+                            ball.dx = Math.abs(ball.dx) * (nx > 0 ? 1 : -1);
+                            ball.x = closestX + nx * ball.radius;
+                        } else {
+                            ball.dy = Math.abs(ball.dy) * (ny > 0 ? 1 : -1);
+                            ball.y = closestY + ny * ball.radius;
+                        }
+                    } else {
+                        // Special case: ball center exactly inside (unlikely)
+                        ball.dy *= -1;
+                        ball.y += ball.dy;
+                    }
+
+                    if (b.type === 4) return; // Unbreakable
+
+                    b.hits--;
+                    if (b.hits <= 0) {
+                        b.active = false;
+                        score += 10;
+                        bricksBroken++;
+                        scoreEl.innerText = score;
+                        if (b.type === 3) spawnPowerUp(b.x + b.w / 2, b.y);
+                        checkWinCondition();
+                    }
+                    return;
+                }
+            }
+        }
+
+        function checkWinCondition() {
+            const config = LEVELS[currentLevelIdx];
+
+            if (config.type === 'MATH') {
+                if (bricksBroken === config.target) {
+                    showEndOverlay(true, "CHÍNH XÁC! 🔢", `Bạn đã phá đúng ${config.target} viên gạch.`);
+                } else if (bricksBroken > config.target) {
+                    showEndOverlay(false, "QUÁ TAY RỒI! 😅", `Phép tính ${config.problem} chỉ bằng ${config.target} thôi.`);
+                }
+                return;
+            }
+
+            const remaining = bricks.filter(b => b.active && b.type !== 4).length;
+            if (remaining === 0) {
+                showEndOverlay(true, "TUYỆT VỜI! 🌟", "Bạn đã dọn sạch các khối gạch.");
+            }
+        }
+
+        function handleLifeLost() {
+            lives--;
+            livesEl.innerText = lives;
+            if (lives <= 0) {
+                showEndOverlay(false, "HẾT MẠNG! 💔", "Đừng bỏ cuộc, hãy thử lại nhé.");
+            } else {
+                resetBall();
+            }
+        }
+
+        function spawnPowerUp(x, y) {
+            const effects = ['WIDE', 'SLOW', 'LIFE'];
+            const effect = effects[Math.floor(Math.random() * effects.length)];
+
+            if (effect === 'WIDE') {
+                paddle.width += 30;
+                showPowerText(x, y, "PADDLE UP! ⬆️", "var(--success)");
+                setTimeout(() => paddle.width -= 30, 8000);
+            } else if (effect === 'SLOW') {
+                ball.dx *= 0.7;
+                ball.dy *= 0.7;
+                showPowerText(x, y, "SLOW MO! 🧊", "var(--accent2)");
+                setTimeout(() => { ball.dx /= 0.7; ball.dy /= 0.7; }, 5000);
+            } else {
+                lives++;
+                livesEl.innerText = lives;
+                showPowerText(x, y, "EXTRA LIFE! ❤️", "var(--accent)");
+            }
+        }
+
+        function showPowerText(x, y, text, color) {
+            const div = document.createElement('div');
+            div.className = 'powerup-text';
+            div.innerText = text;
+            div.style.color = color;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.querySelector('.game-container').appendChild(div);
+            setTimeout(() => div.remove(), 1500);
+        }
+
+        // --- DRAWING ---
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#fff';
+            ctx.fill();
+            ctx.closePath();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.roundRect(paddle.x, canvas.height - paddle.height, paddle.width, paddle.height, 6);
+            ctx.fillStyle = 'var(--accent)';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'var(--accent)';
+            ctx.fill();
+            ctx.closePath();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawBricks() {
+            bricks.forEach(b => {
+                if (!b.active && b.type !== 4) return;
+
+                ctx.beginPath();
+                ctx.roundRect(b.x, b.y, b.w, b.h, 4);
+
+                let color = 'var(--accent)';
+                if (b.type === 2) color = b.hits === 2 ? '#3b82f6' : 'var(--accent)';
+                if (b.type === 3) color = 'var(--gold)';
+                if (b.type === 4) color = 'var(--steel)';
+
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.closePath();
+            });
+        }
+
+        // --- OVERLAYS ---
+        function showEndOverlay(win, title, msg) {
+            gameRunning = false;
+            endOverlay.style.display = 'flex';
+            endTitle.innerText = title;
+            endTitle.style.color = win ? 'var(--success)' : 'var(--error)';
+            endMsg.innerText = msg;
+            endBtn.innerText = win ? (currentLevelIdx < LEVELS.length - 1 ? "Màn tiếp theo 🚀" : "Chơi lại từ đầu 🔄") : "Thử lại 🔄";
+        }
+
+        function nextLevelOrRestart() {
+            endOverlay.style.display = 'none';
+            if (endTitle.innerText.includes("THẮNG") || endTitle.innerText.includes("CHÍNH XÁC")) {
+                if (currentLevelIdx < LEVELS.length - 1) currentLevelIdx++;
+                else currentLevelIdx = 0;
+            }
+            resetGame();
+        }
+
+        // --- INIT ---
+        initMenu();
+    </script>
+</body>
+
+</html>

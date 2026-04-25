@@ -180,12 +180,12 @@ Triển khai theo thứ tự ưu tiên: DB schema → Gamification → Finance �
   - [x] Tab Finance (Goals, Savings, Loans)
   - [x] Tab Thinking (Bids, Problems, Reflection)
 
-- [ ] 26. Parent Dashboard updates
-  - Thêm Finance management section
-  - Problem Board creation
-  - Wall of Fame section
-  - Challenge creation
-  - Teen mode controls
+- [x] 26. Parent Dashboard updates
+  - [x] Thêm Finance management section
+  - [x] Problem Board creation
+  - [x] Wall of Fame section
+  - [x] Challenge creation
+  - [x] Teen mode controls
 
 - [ ] 27. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.
