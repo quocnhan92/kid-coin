@@ -6,86 +6,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lật Bài Nhớ 🃏 — KidCoin Game Hub</title>
     <meta name="description"
-        content="Rèn luyện trí nhớ tuyệt vời với game Lật bài! Tìm các cặp hình giống nhau vui nhộn dành cho trẻ em.">
-    <meta property="og:title" content="Lật Bài Nhớ 🃏 — KidCoin Game Hub">
-    <meta property="og:description" content="Bé có nhớ được hết các vị trí không? Thử ngay!">
+        content="Rèn luyện trí nhớ và khám phá kiến thức xã hội, khoa học với game Lật bài siêu vui!">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0d0d1a;
-            --surface: #1e1e3a;
+            --surface: #141428;
+            --surface2: #1e1e3a;
             --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.3);
+            --success: #10b981;
+            --error: #ef4444;
             --text: #f1f0ff;
+            --text-muted: #8b8aa8;
+            --card-back: linear-gradient(135deg, #06b6d4, #3b82f6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: 'Nunito', sans-serif;
             background: var(--bg);
             color: var(--text);
-            margin: 0;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+        /* Nav links */
+        .card.matched {
+            animation: matchFade 0.8s forwards;
+            pointer-events: none;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 80px);
-            gap: 10px;
+        @keyframes matchFade {
+            0% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
         }
 
-        .card {
-            width: 80px;
-            height: 110px;
-            background: var(--surface);
-            border-radius: 8px;
-            cursor: pointer;
+        .card.bomb .card-front {
+            background: #ef4444 !important;
+            border-color: #f87171 !important;
+        }
+
+        .star-rating {
+            font-size: 1.5rem;
+            color: #fbbf24;
+            margin: 10px 0;
             display: flex;
-            align-items: center;
+            gap: 5px;
             justify-content: center;
-            font-size: 2.5rem;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.5s;
         }
 
-        .card.flipped {
-            transform: rotateY(180deg);
+        .star {
+            opacity: 0.3;
+            transition: opacity 0.5s;
         }
 
-        .card-front,
-        .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
+        .star.filled {
+            opacity: 1;
+            filter: drop-shadow(0 0 8px #fbbf24);
         }
 
-        .card-back {
-            background: var(--accent);
-            transform: rotateY(0deg);
+        .time-warning {
+            color: #ef4444 !important;
+            animation: pulse-red 0.5s infinite alternate;
         }
 
-        .card-front {
-            background: #fff;
-            transform: rotateY(180deg);
+        @keyframes pulse-red {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            to {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
-        .back-link {
+        .nav-btn {
             position: fixed;
             top: 20px;
-            left: 20px;
             color: var(--text);
             text-decoration: none;
             font-weight: 700;
@@ -98,112 +115,1645 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s;
             z-index: 100;
+            cursor: pointer;
+            font-family: inherit;
         }
 
-        .back-link:hover {
+        .nav-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            transform: translateX(-3px);
+            transform: scale(1.05);
         }
 
-        .stats {
-            margin-top: 20px;
+        .back-link {
+            left: 20px;
+        }
+
+        .menu-link {
+            right: 20px;
+            display: none;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            text-align: center;
+        }
+
+        /* Menu Selection */
+        #menu-selection {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--surface2);
+            padding: 5px;
+            border-radius: 12px;
+            margin: 20px 0;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* Mode & Difficulty Toggles */
+        .mode-selection {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 15px;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mode-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .mode-btn.active::before {
+            content: '✨';
+            font-size: 0.8rem;
+        }
+
+        #game-board {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .theme-card {
+            background: var(--surface2);
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .theme-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .theme-name {
+            font-weight: 900;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .theme-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+        }
+
+        /* Game Board */
+        #game-board {
+            display: none;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            perspective: 1000px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            aspect-ratio: 3/4;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-back {
+            background: var(--card-back);
+            z-index: 2;
+        }
+
+        .card-back::after {
+            content: '?';
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .card-front {
+            background: var(--surface2);
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        .card-emoji {
+            font-size: 2.2rem;
+            margin-bottom: 4px;
+        }
+
+        .card-label {
+            font-size: 0.65rem;
             font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
         }
 
-        @media (min-width: 600px) {
+        .card-front.shadow .card-emoji {
+            filter: brightness(0) contrast(1);
+            opacity: 0.9;
+        }
+
+        .card-front.large-text {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        #feedback-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface2);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 2px solid var(--accent);
+            font-weight: 900;
+            color: var(--text);
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #feedback-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .fact-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .fact-content {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid var(--accent);
+        }
+
+        .fact-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .fact-text {
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        #end-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 13, 26, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 24px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 480px) {
             .grid {
-                grid-template-columns: repeat(4, 100px);
-                gap: 15px;
+                grid-template-columns: repeat(3, 1fr);
             }
 
-            .card {
-                width: 100px;
-                height: 140px;
+            .card-emoji {
+                font-size: 1.8rem;
+            }
+
+            .menu-title {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <a href="/game" class="back-link">← Quay lại</a>
-    <div class="header">
-        <h1 style="color: var(--accent)">Lật Bài Nhớ 🃏</h1>
-        <p>Tìm các cặp hình giống nhau</p>
+    <a href="/game" class="nav-btn back-link">← Quay lại</a>
+    <button class="nav-btn menu-link" onclick="showMenu()">🧭 Menu</button>
+
+    <div class="game-container">
+        <!-- Menu Selection -->
+        <div id="menu-selection">
+            <h1 class="menu-title">Lật Bài Nhớ 🃏</h1>
+
+            <div class="tabs toggle-group">
+                <button class="tab-btn mode-btn active" id="tab-discovery" onclick="switchTab('DISCOVERY')">Khám
+                    Phá</button>
+                <button class="tab-btn mode-btn" id="tab-learning" onclick="switchTab('LEARNING')">Học Tập</button>
+                <button class="tab-btn mode-btn" id="tab-english" onclick="switchTab('ENGLISH')">Tiếng Anh</button>
+            </div>
+
+            <div class="theme-grid" id="theme-list"></div>
+
+            <div id="classic-modes-ui" class="mode-selection">
+                <p
+                    style="font-weight: 800; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                    Độ khó & Chế độ</p>
+
+                <div class="toggle-group">
+                    <button class="mode-btn" id="diff-easy" onclick="setDifficulty('EASY')">Dễ</button>
+                    <button class="mode-btn active" id="diff-normal" onclick="setDifficulty('NORMAL')">Vừa</button>
+                    <button class="mode-btn" id="diff-hard" onclick="setDifficulty('HARD')">Khó</button>
+                </div>
+
+                <div class="toggle-group">
+                    <button class="mode-btn active" id="mode-classic" onclick="setMode('CLASSIC')">Cơ bản</button>
+                    <button class="mode-btn" id="mode-master" onclick="setMode('MASTER')">Master</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-board">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-label">Thời gian</div>
+                    <div class="stat-value" id="timer">45</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Lượt lật</div>
+                    <div class="stat-value" id="moves">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tiến trình</div>
+                    <div class="stat-value" id="progress">0/0</div>
+                </div>
+            </div>
+
+            <div class="grid" id="card-grid"></div>
+
+            <div id="end-overlay">
+                <h2 id="end-title" style="font-size: 2.5rem; margin-bottom: 10px;">XUẤT SẮC!</h2>
+                <div class="star-rating" id="end-stars">
+                    <div class="star">⭐</div>
+                    <div class="star">⭐</div>
+                    <div class="star">⭐</div>
+                </div>
+                <p id="final-stats" style="font-size: 1.1rem; margin-bottom: 30px; opacity: 0.9;"></p>
+                <button class="btn btn-primary" onclick="showMenu()">Tiếp tục học tập</button>
+            </div>
+        </div>
     </div>
 
-    <div class="grid" id="gameGrid"></div>
+    <div id="feedback-toast">Đỉnh chóp!</div>
 
-    <div class="stats">Lượt lật: <span id="moves">0</span> | Cặp: <span id="matches">0</span>/8</div>
+    <div class="fact-modal" id="fact-modal" onclick="closeFact()">
+        <div class="fact-content" onclick="event.stopPropagation()">
+            <div class="fact-title" id="fact-title"></div>
+            <p class="fact-text" id="fact-text"></p>
+            <button class="btn-primary" onclick="closeFact()">Tiếp tục 🚀</button>
+        </div>
+    </div>
 
     <script>
-        const grid = document.getElementById('gameGrid');
-        const movesEl = document.getElementById('moves');
-        const matchesEl = document.getElementById('matches');
-        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
-        let cards = [...emojis, ...emojis];
-        let flippedCards = [];
-        let moves = 0;
-        let matches = 0;
-        let canFlip = true;
-
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        // --- DATA: CHỦ ĐỀ KHÁM PHÁ (DISCOVERY_THEMES) ---
+        const DISCOVERY_THEMES = {
+            SOCIAL: {
+                name: 'Xã hội & Văn hóa', icon: '🌍', desc: 'Nghề nghiệp, kỳ quan thế giới',
+                pairs: [
+                    { id: 1, vn: 'Lập trình viên', en: 'Developer', emoji: '💻', fact: 'Tạo ra các phần mềm và trò chơi bạn đang dùng!' },
+                    { id: 2, vn: 'Nhà khảo cổ', en: 'Archaeologist', emoji: '🏺', fact: 'Khám phá bí mật từ những món đồ cổ nghìn năm.' },
+                    { id: 3, vn: 'Vạn Lý Trường Thành', en: 'Great Wall', emoji: '🧱', fact: 'Bức tường dài nhất thế giới, nhìn thấy từ vũ trụ!' },
+                    { id: 4, vn: 'Vịnh Hạ Long', en: 'Ha Long Bay', emoji: '🚤', fact: 'Kỳ quan thiên nhiên với hàng ngàn đảo đá vôi.' },
+                    { id: 5, vn: 'Kim tự tháp', en: 'Pyramid', emoji: '📐', fact: 'Công trình cổ đại bí ẩn nhất của người Ai Cập.' },
+                    { id: 6, vn: 'Áo dài', en: 'Ao Dai', emoji: '👗', fact: 'Trang phục truyền thống thướt tha của Việt Nam.' },
+                    { id: 7, vn: 'Kimono', en: 'Kimono', emoji: '👘', fact: 'Trang phục mang đậm nét văn hóa của Nhật Bản.' },
+                    { id: 8, vn: 'Đầu bếp', en: 'Chef', emoji: '👨‍🍳', fact: 'Nghệ nhân tạo ra những món ăn ngon tuyệt vời.' },
+                    { id: 9, vn: 'Tháp Eiffel', en: 'Eiffel Tower', emoji: '🗼', fact: 'Biểu tượng bằng sắt tuyệt đẹp của thủ đô Paris, Pháp.' },
+                    { id: 10, vn: 'Nữ thần Tự do', en: 'Statue of Liberty', emoji: '🗽', fact: 'Bức tượng biểu tượng cho sự tự do tại Mỹ.' },
+                    { id: 11, vn: 'Đấu trường La Mã', en: 'Colosseum', emoji: '🏟️', fact: 'Nơi các võ sĩ giác đấu thi tài thời cổ đại.' },
+                    { id: 12, vn: 'Hanbok', en: 'Hanbok', emoji: '🎀', fact: 'Trang phục truyền thống rực rỡ của Hàn Quốc.' },
+                    { id: 13, vn: 'Sari', en: 'Sari', emoji: '🥻', fact: 'Trang phục lộng lẫy của phụ nữ Ấn Độ.' },
+                    { id: 14, vn: 'Cảnh sát', en: 'Police', emoji: '👮', fact: 'Người giữ gìn trật tự và bảo vệ an toàn cho mọi người.' },
+                    { id: 15, vn: 'Lính cứu hỏa', en: 'Firefighter', emoji: '🚒', fact: 'Những người hùng dũng cảm dập tắt đám cháy.' },
+                    { id: 16, vn: 'Nhà khoa học', en: 'Scientist', emoji: '🧪', fact: 'Người nghiên cứu và tạo ra các phát minh mới.' },
+                    { id: 17, vn: 'Nhà hát Sydney', en: 'Sydney Opera', emoji: '🏛️', fact: 'Nhà hát có hình dáng như những cánh buồm ở Úc.' },
+                    { id: 18, vn: 'Núi Phú Sĩ', en: 'Mount Fuji', emoji: '🗻', fact: 'Ngọn núi lửa cao nhất và là biểu tượng của Nhật Bản.' },
+                    { id: 19, vn: 'Đồng hồ Big Ben', en: 'Big Ben', emoji: '🕰️', fact: 'Tháp đồng hồ nổi tiếng nhất tại London, Anh.' },
+                    { id: 20, vn: 'Sombrero', en: 'Sombrero', emoji: '👒', fact: 'Chiếc mũ vành rộng truyền thống của người Mexico.' },
+                    { id: 21, vn: 'Phi công', en: 'Pilot', emoji: '✈️', fact: 'Người điều khiển máy bay trên bầu trời.' },
+                    { id: 22, vn: 'Thợ mộc', en: 'Carpenter', emoji: '🪚', fact: 'Người chế tác các đồ dùng từ gỗ.' },
+                    { id: 23, vn: 'Kỹ sư', en: 'Engineer', emoji: '👷', fact: 'Người thiết kế các công trình và máy móc phức tạp.' },
+                    { id: 24, vn: 'Vũ công', en: 'Dancer', emoji: '💃', fact: 'Nghệ sĩ biểu diễn qua các động tác cơ thể.' },
+                    { id: 25, vn: 'Ca sĩ', en: 'Singer', emoji: '🎤', fact: 'Người mang lời ca tiếng hát đến mọi người.' },
+                    { id: 26, vn: 'Bác sĩ thú y', en: 'Vet', emoji: '🐶', fact: 'Bác sĩ chuyên chữa bệnh cho các loài động vật.' },
+                    { id: 27, vn: 'Thợ làm bánh', en: 'Baker', emoji: '🥐', fact: 'Người nướng những chiếc bánh mì thơm ngon.' },
+                    { id: 28, vn: 'Taj Mahal', en: 'Taj Mahal', emoji: '🕌', fact: 'Cung điện bằng đá cẩm thạch trắng tuyệt đẹp tại Ấn Độ.' },
+                    { id: 29, vn: 'Đảo Phục Sinh', en: 'Easter Island', emoji: '🗿', fact: 'Hòn đảo nổi tiếng với các bức tượng đá khổng lồ.' },
+                    { id: 30, vn: 'Thợ lặn', en: 'Diver', emoji: '🤿', fact: 'Người khám phá thế giới bí ẩn dưới đáy đại dương.' },
+                    { id: 31, vn: 'Nhà văn', en: 'Writer', emoji: '✍️', fact: 'Người sáng tác ra những câu chuyện và quyển sách hay.' },
+                    { id: 32, vn: 'Họa sĩ', en: 'Painter', emoji: '🎨', fact: 'Người tạo ra những bức tranh rực rỡ sắc màu.' },
+                    { id: 33, vn: 'Giao hàng', en: 'Delivery', emoji: '🛵', fact: 'Người mang những món đồ đến tận nhà cho bạn.' },
+                    { id: 34, vn: 'Nhiếp ảnh gia', en: 'Photographer', emoji: '📸', fact: 'Người lưu giữ những khoảnh khắc đẹp qua ống kính.' },
+                    { id: 35, vn: 'Angkor Wat', en: 'Angkor Wat', emoji: '🛕', fact: 'Quần thể đền đài cổ kính và vĩ đại ở Campuchia.' },
+                    { id: 36, vn: 'Lều Yurt', en: 'Yurt', emoji: '⛺', fact: 'Ngôi nhà truyền thống của những người du mục Mông Cổ.' },
+                    { id: 37, vn: 'Giáo viên', en: 'Teacher', emoji: '👩‍🏫', fact: 'Người truyền đạt kiến thức và yêu thương học sinh.' },
+                    { id: 38, vn: 'Cầu Cổng Vàng', en: 'Golden Gate', emoji: '🌉', fact: 'Cây cầu treo màu đỏ cam nổi tiếng ở nước Mỹ.' },
+                    { id: 39, vn: 'Thợ cắt tóc', en: 'Barber', emoji: '💈', fact: 'Người tạo ra những kiểu tóc gọn gàng và thời trang.' },
+                    { id: 40, vn: 'Luật sư', en: 'Lawyer', emoji: '⚖️', fact: 'Người bảo vệ công lý và giúp đỡ mọi người về pháp luật.' }
+                ]
+            },
+            SCIENCE: {
+                name: 'Khoa học & Đời sống', icon: '🔬', desc: 'Phát minh và thiên nhiên',
+                pairs: [
+                    { id: 1, vn: 'Bóng đèn', en: 'Light Bulb', emoji: '💡', fact: 'Phát minh vĩ đại của Edison giúp chúng ta có ánh sáng.' },
+                    { id: 2, vn: 'Điện thoại', en: 'Telephone', emoji: '☎️', fact: 'Giúp mọi người trò chuyện dù ở cách xa nhau.' },
+                    { id: 3, vn: 'Máy bay', en: 'Airplane', emoji: '✈️', fact: 'Ước mơ bay liệng của con người đã thành sự thật.' },
+                    { id: 4, vn: 'Kính viễn vọng', en: 'Telescope', emoji: '🔭', fact: 'Dùng để quan sát các vì sao xa xôi trong vũ trụ.' },
+                    { id: 5, vn: 'Cầu vồng', en: 'Rainbow', emoji: '🌈', fact: 'Hiện tượng tán sắc ánh sáng tuyệt đẹp sau cơn mưa.' },
+                    { id: 6, vn: 'Nhật thực', en: 'Solar Eclipse', emoji: '🌑', fact: 'Khi Mặt Trăng che khuất Mặt Trời vào ban ngày.' },
+                    { id: 7, vn: 'Kính hiển vi', en: 'Microscope', emoji: '🔬', fact: 'Giúp các nhà khoa học nhìn thấy vi khuẩn siêu nhỏ.' },
+                    { id: 8, vn: 'La bàn', en: 'Compass', emoji: '🧭', fact: 'Dụng cụ chỉ hướng luôn hướng về phía Bắc.' },
+                    { id: 9, vn: 'Trái Đất', en: 'Earth', emoji: '🌍', fact: 'Hành tinh xanh duy nhất có sự sống trong hệ mặt trời.' },
+                    { id: 10, vn: 'Mặt Trăng', en: 'Moon', emoji: '🌕', fact: 'Vệ tinh tự nhiên quay quanh Trái Đất mỗi đêm.' },
+                    { id: 11, vn: 'Hệ Mặt Trời', en: 'Solar System', emoji: '🪐', fact: 'Gia đình các hành tinh xoay quanh Mặt Trời.' },
+                    { id: 12, vn: 'Điện mặt trời', en: 'Solar Power', emoji: '☀️', fact: 'Năng lượng xanh chuyển ánh nắng thành điện năng.' },
+                    { id: 13, vn: 'Tên lửa', en: 'Rocket', emoji: '🚀', fact: 'Phương tiện đưa con người tiến vào vũ trụ.' },
+                    { id: 14, vn: 'Nam châm', en: 'Magnet', emoji: '🧲', fact: 'Vật thể có khả năng hút các vật bằng sắt, thép.' },
+                    { id: 15, vn: 'Sấm sét', en: 'Lightning', emoji: '⚡', fact: 'Tia lửa điện khổng lồ phóng ra từ các đám mây.' },
+                    { id: 16, vn: 'Tuyết rơi', en: 'Snow', emoji: '❄️', fact: 'Nước đóng băng thành các tinh thể lấp lánh.' },
+                    { id: 17, vn: 'Lốc xoáy', en: 'Tornado', emoji: '🌪️', fact: 'Cột gió xoáy với sức mạnh rất khủng khiếp.' },
+                    { id: 18, vn: 'DNA', en: 'DNA', emoji: '🧬', fact: 'Chuỗi thông tin di truyền trong mỗi cơ thể sống.' },
+                    { id: 19, vn: 'Núi lửa', en: 'Volcano', emoji: '🌋', fact: 'Ngọn núi có thể phun trào nham thạch nóng đỏ.' },
+                    { id: 20, vn: 'Gió', en: 'Wind', emoji: '🌬️', fact: 'Sự di chuyển của không khí tạo nên các luồng gió.' },
+                    { id: 21, vn: 'Máy tính', en: 'Computer', emoji: '🖥️', fact: 'Cỗ máy tính toán nhanh chóng giúp chúng ta làm việc.' },
+                    { id: 22, vn: 'Bánh xe', en: 'Wheel', emoji: '🛞', fact: 'Phát minh vĩ đại giúp việc di chuyển trở nên dễ dàng.' },
+                    { id: 23, vn: 'Nhiệt kế', en: 'Thermometer', emoji: '🌡️', fact: 'Dụng cụ dùng để đo nhiệt độ cơ thể hoặc thời tiết.' },
+                    { id: 24, vn: 'Tàu ngầm', en: 'Submarine', emoji: '🛥️', fact: 'Tàu đặc biệt có thể lặn sâu dưới đáy đại dương.' },
+                    { id: 25, vn: 'Máy bay không người lái', en: 'Drone', emoji: '🛸', fact: 'Thiết bị bay được điều khiển từ xa.' },
+                    { id: 26, vn: 'Động đất', en: 'Earthquake', emoji: '🫨', fact: 'Sự rung chuyển dữ dội của vỏ Trái Đất.' },
+                    { id: 27, vn: 'Băng trôi', en: 'Iceberg', emoji: '🧊', fact: 'Khối băng khổng lồ trôi nổi trên đại dương lạnh giá.' },
+                    { id: 28, vn: 'Pin', en: 'Battery', emoji: '🔋', fact: 'Nơi lưu trữ điện năng để sử dụng cho các thiết bị.' },
+                    { id: 29, vn: 'Mưa sao băng', en: 'Meteor Shower', emoji: '🌠', fact: 'Những vệt sáng tuyệt đẹp khi đá vũ trụ bốc cháy.' },
+                    { id: 30, vn: 'Sao Hỏa', en: 'Mars', emoji: '🔴', fact: 'Hành tinh thứ tư tính từ Mặt Trời, có màu đỏ.' },
+                    { id: 31, vn: 'Vệ tinh', en: 'Satellite', emoji: '📡', fact: 'Thiết bị nhân tạo bay quanh Trái Đất để truyền tín hiệu.' },
+                    { id: 32, vn: 'Sóng thần', en: 'Tsunami', emoji: '🌊', fact: 'Cơn sóng khổng lồ sinh ra từ động đất dưới đáy biển.' },
+                    { id: 33, vn: 'Tế bào', en: 'Cell', emoji: '🦠', fact: 'Đơn vị nhỏ nhất cấu tạo nên mọi sinh vật sống.' },
+                    { id: 34, vn: 'Đồng hồ', en: 'Clock', emoji: '⏱️', fact: 'Phát minh giúp con người đo lường thời gian chính xác.' },
+                    { id: 35, vn: 'Điện năng', en: 'Electricity', emoji: '🔌', fact: 'Nguồn năng lượng quan trọng nhất của thế giới hiện đại.' },
+                    { id: 36, vn: 'Giọt sương', en: 'Dew', emoji: '💧', fact: 'Hơi nước ngưng tụ trên lá cây vào buổi sáng sớm.' },
+                    { id: 37, vn: 'Trọng lực', en: 'Gravity', emoji: '🍎', fact: 'Lực hút giúp mọi thứ gắn chặt trên mặt đất.' },
+                    { id: 38, vn: 'Robot', en: 'Robot', emoji: '🤖', fact: 'Cỗ máy tự động được lập trình để làm việc thay con người.' },
+                    { id: 39, vn: 'Giấy', en: 'Paper', emoji: '📄', fact: 'Phát minh từ Trung Quốc giúp ghi chép và lưu trữ tri thức.' },
+                    { id: 40, vn: 'Ngọn lửa', en: 'Fire', emoji: '🔥', fact: 'Khám phá vĩ đại giúp loài người sơ kì sưởi ấm và nấu chín thức ăn.' }
+                ]
+            },
+            SKILLS: {
+                name: 'Kỹ năng & Cảm xúc', icon: '🌱', desc: 'Cảm xúc và môi trường',
+                pairs: [
+                    { id: 1, vn: 'Vui vẻ', en: 'Happy', emoji: '😊', fact: 'Nụ cười giúp chúng ta hạnh phúc và khỏe mạnh hơn.' },
+                    { id: 2, vn: 'Ngạc nhiên', en: 'Surprised', emoji: '😲', fact: 'Cảm xúc khi chúng ta thấy điều gì đó thú vị.' },
+                    { id: 3, vn: 'Trồng cây', en: 'Planting', emoji: '🌳', fact: 'Hành động nhỏ giúp Trái Đất xanh và mát mẻ hơn.' },
+                    { id: 4, vn: 'Tái chế', en: 'Recycling', emoji: '♻️', fact: 'Biến rác thải thành đồ dùng mới hữu ích.' },
+                    { id: 5, vn: 'Hội họa', en: 'Painting', emoji: '🎨', fact: 'Dùng màu sắc để vẽ nên những ước mơ của bạn.' },
+                    { id: 6, vn: 'Múa rối nước', en: 'Puppetry', emoji: '🎭', fact: 'Nghệ thuật truyền thống độc đáo trên mặt nước.' },
+                    { id: 7, vn: 'Tắt điện', en: 'Save Energy', emoji: '💡', fact: 'Tiết kiệm điện là bảo vệ tài nguyên thiên nhiên.' },
+                    { id: 8, vn: 'Nhặt rác', en: 'Clean Up', emoji: '🧹', fact: 'Giữ cho môi trường xung quanh luôn sạch đẹp.' },
+                    { id: 9, vn: 'Buồn bã', en: 'Sad', emoji: '😢', fact: 'Đôi khi khóc một chút cũng giúp chúng ta nhẹ nhõm hơn.' },
+                    { id: 10, vn: 'Tức giận', en: 'Angry', emoji: '😡', fact: 'Hãy hít thở thật sâu để cơn giận mau chóng qua đi.' },
+                    { id: 11, vn: 'Sợ hãi', en: 'Scared', emoji: '😨', fact: 'Nỗi sợ giúp cảnh báo chúng ta về những sự nguy hiểm.' },
+                    { id: 12, vn: 'Yêu thương', en: 'Love', emoji: '❤️', fact: 'Trao đi những cái ôm cho những người thân yêu trong gia đình.' },
+                    { id: 13, vn: 'Đánh răng', en: 'Brush Teeth', emoji: '🪥', fact: 'Đánh răng 2 lần mỗi ngày để có nụ cười tỏa nắng.' },
+                    { id: 14, vn: 'Rửa tay', en: 'Wash Hands', emoji: '🧼', fact: 'Rửa tay bằng xà phòng giúp tiêu diệt vi khuẩn xấu.' },
+                    { id: 15, vn: 'Uống nước', en: 'Drink Water', emoji: '🥤', fact: 'Cơ thể chúng ta cần uống rất nhiều nước mỗi ngày.' },
+                    { id: 16, vn: 'Tập thể dục', en: 'Exercise', emoji: '🏃', fact: 'Vận động giúp cơ bắp chắc khỏe và cao lớn hơn.' },
+                    { id: 17, vn: 'Đọc sách', en: 'Read Books', emoji: '📚', fact: 'Sách là cánh cửa thần kỳ mở ra vô vàn kiến thức mới.' },
+                    { id: 18, vn: 'Ngủ sớm', en: 'Sleep Early', emoji: '🛏️', fact: 'Ngủ đủ giấc giúp trí não phát triển và tỉnh táo.' },
+                    { id: 19, vn: 'Chia sẻ', en: 'Share', emoji: '🤝', fact: 'Niềm vui sẽ nhân đôi khi ta biết chia sẻ đồ chơi với bạn.' },
+                    { id: 20, vn: 'Xin lỗi', en: 'Apologize', emoji: '🙇', fact: 'Biết nhận lỗi khi làm sai là biểu hiện của người dũng cảm.' },
+                    { id: 21, vn: 'Cảm ơn', en: 'Thank You', emoji: '🙏', fact: 'Lời cảm ơn giúp mọi người thấy được trân trọng và vui vẻ.' },
+                    { id: 22, vn: 'Chơi nhạc', en: 'Play Music', emoji: '🎸', fact: 'Âm nhạc giúp tâm trí thư giãn và sáng tạo hơn.' },
+                    { id: 23, vn: 'Ca hát', en: 'Singing', emoji: '🎤', fact: 'Hát vang giúp xua tan mọi căng thẳng mệt mỏi.' },
+                    { id: 24, vn: 'Chụp ảnh', en: 'Photography', emoji: '📷', fact: 'Lưu giữ lại những khoảnh khắc đẹp trong cuộc sống hàng ngày.' },
+                    { id: 25, vn: 'Bảo vệ động vật', en: 'Save Animals', emoji: '🐾', fact: 'Yêu thương và không làm hại các loài vật nhỏ bé.' },
+                    { id: 26, vn: 'Tiết kiệm nước', en: 'Save Water', emoji: '🚰', fact: 'Tắt vòi nước khi đang đánh răng để tiết kiệm nước sạch.' },
+                    { id: 27, vn: 'Làm việc nhà', en: 'Chores', emoji: '🧺', fact: 'Giúp đỡ bố mẹ những việc nhỏ trong gia đình.' },
+                    { id: 28, vn: 'Tập bơi', en: 'Swimming', emoji: '🏊', fact: 'Kỹ năng sinh tồn cực kỳ quan trọng khi ở dưới nước.' },
+                    { id: 29, vn: 'Xếp hàng', en: 'Queue Up', emoji: '🚶', fact: 'Chờ đến lượt mình là biểu hiện của người lịch sự.' },
+                    { id: 30, vn: 'Ăn rau củ', en: 'Eat Veggies', emoji: '🥦', fact: 'Rau xanh chứa nhiều vitamin giúp mắt sáng, dáng cao.' },
+                    { id: 31, vn: 'Tự hào', en: 'Proud', emoji: '😤', fact: 'Cảm giác tuyệt vời khi hoàn thành một việc khó khăn.' },
+                    { id: 32, vn: 'Mệt mỏi', en: 'Tired', emoji: '😫', fact: 'Khi cơ thể cần được nghỉ ngơi sau một ngày dài.' },
+                    { id: 33, vn: 'Xấu hổ', en: 'Shy', emoji: '😳', fact: 'Ai cũng có lúc cảm thấy bẽn lẽn trước đám đông.' },
+                    { id: 34, vn: 'Gấp chăn màn', en: 'Make Bed', emoji: '🛌', fact: 'Giữ giường ngủ luôn gọn gàng mỗi buổi sáng thức dậy.' },
+                    { id: 35, vn: 'Tập đi xe đạp', en: 'Ride a Bike', emoji: '🚲', fact: 'Giữ thăng bằng và đạp xe giúp đôi chân thêm cứng cáp.' },
+                    { id: 36, vn: 'An toàn giao thông', en: 'Traffic Safety', emoji: '🚦', fact: 'Luôn dừng lại khi đèn đỏ và đi đúng vạch kẻ đường.' },
+                    { id: 37, vn: 'Trượt patin', en: 'Skating', emoji: '🛼', fact: 'Môn thể thao giúp tăng cường sự khéo léo và thăng bằng.' },
+                    { id: 38, vn: 'Thiền định', en: 'Meditation', emoji: '🧘', fact: 'Ngồi yên lặng và hít thở sâu giúp tâm trí tĩnh lặng.' },
+                    { id: 39, vn: 'Lắng nghe', en: 'Listen', emoji: '👂', fact: 'Chú ý nghe người khác nói là một kỹ năng giao tiếp tuyệt vời.' },
+                    { id: 40, vn: 'Chào hỏi', en: 'Greeting', emoji: '👋', fact: 'Một câu chào kèm nụ cười sẽ làm bừng sáng ngày mới.' }
+                ]
+            },
+            FUNNY: {
+                name: 'Vui nhộn & Meme', icon: '🤪', desc: 'Động vật lầy lội tấu hài',
+                pairs: [
+                    { id: 1, vn: 'Mèo ngáo', en: 'Goofy Cat', emoji: '🤪', fact: 'Mèo là những diễn viên hài hước nhất thế giới động vật.' },
+                    { id: 2, vn: 'Vịt đeo kính', en: 'Cool Duck', emoji: '😎', fact: 'Phong cách thời trang chói lóa không đụng hàng!' },
+                    { id: 3, vn: 'Quái vật tròn', en: 'Round Monster', emoji: '👾', fact: 'Quái vật này rất hiền và chỉ thích ăn bánh quy thôi.' },
+                    { id: 4, vn: 'Gương mặt lầy', en: 'Meme Face', emoji: '🤡', fact: 'Khi bạn cố nhịn cười trong giờ học toán.' },
+                    { id: 5, vn: 'Dâu tây bay', en: 'Flying Berry', emoji: '🍓', fact: 'Một quả dâu tây đang tập bay lượn như siêu nhân.' },
+                    { id: 6, vn: 'Ếch tưng tửng', en: 'Silly Frog', emoji: '🐸', fact: 'Ếch đang nhảy điệu disco dưới đầm lầy vui nhộn.' },
+                    { id: 7, vn: 'Kem tan chảy', en: 'Melting Ice', emoji: '🍦', fact: 'Nhanh lên, kem đang muốn chạy trốn cái nóng!' },
+                    { id: 8, vn: 'Bóng bay bay', en: 'Balloon', emoji: '🎈', fact: 'Đừng buông tay kẻo tớ bay lên mặt trăng đấy nhé.' },
+                    { id: 9, vn: 'Chó lêu lêu', en: 'Silly Dog', emoji: '🐶', fact: 'Cún cưng đang thè lưỡi xin miếng xúc xích to.' },
+                    { id: 10, vn: 'Khỉ cười', en: 'Laughing Ape', emoji: '🐒', fact: 'Ai kể chuyện gì mà cười toe toét thế này cơ chứ?' },
+                    { id: 11, vn: 'Kỳ lân béo', en: 'Fat Unicorn', emoji: '🦄', fact: 'Ăn quá nhiều kẹo bông nên bay không nổi nữa rồi.' },
+                    { id: 12, vn: 'Khủng long', en: 'T-Rex', emoji: '🦖', fact: 'Tay ngắn quá không tự gãi lưng được, buồn ghê!' },
+                    { id: 13, vn: 'Pizza bay', en: 'Pizza', emoji: '🍕', fact: 'Đĩa đệm bay của người ngoài hành tinh vị phô mai.' },
+                    { id: 14, vn: 'Chuối nhảy', en: 'Dancing Banana', emoji: '🍌', fact: 'Cẩn thận trượt vỏ chuối là một môn nghệ thuật đấy.' },
+                    { id: 15, vn: 'Cười vỡ bụng', en: 'ROFL', emoji: '🤣', fact: 'Cười đến mức nước mắt giàn giụa không dừng được.' },
+                    { id: 16, vn: 'Ngủ gật', en: 'Sleepy', emoji: '😴', fact: 'Zzz... Đang mơ thấy một đống đồ chơi mới toanh.' },
+                    { id: 17, vn: 'Nổ não', en: 'Mind Blown', emoji: '🤯', fact: 'Biểu cảm khi giải xong một bài toán quá khó!' },
+                    { id: 18, vn: 'Mặt buồn ngủ', en: 'Yawning', emoji: '🥱', fact: 'Ngáp lây lan nhanh hơn cả vi rút trong lớp học.' },
+                    { id: 19, vn: 'Phi hành gia lợn', en: 'Space Pig', emoji: '🐷', fact: 'Heo con chuẩn bị đổ bộ lên mặt trăng tìm thức ăn.' },
+                    { id: 20, vn: 'Cua kẹp', en: 'Crab', emoji: '🦀', fact: 'Đi ngang nhưng bắt bẻ người khác là giỏi nhất.' },
+                    { id: 21, vn: 'Ma béo', en: 'Ghost', emoji: '👻', fact: 'Con ma này sợ bóng tối nên tối nào cũng phải bật đèn.' },
+                    { id: 22, vn: 'Người ngoài hành tinh', en: 'Alien', emoji: '👽', fact: 'Vừa hạ cánh xuống từ hành tinh Mì Tôm Hảo Hảo.' },
+                    { id: 23, vn: 'Cười nham hiểm', en: 'Smirk', emoji: '😏', fact: 'Chắc chắn là vừa bày ra một trò nghịch ngợm mới.' },
+                    { id: 24, vn: 'Mắt trái tim', en: 'Heart Eyes', emoji: '😍', fact: 'Nhìn thấy đùi gà rán là hai mắt sáng rực lên ngay.' },
+                    { id: 25, vn: 'Bánh mì biết nói', en: 'Talking Bread', emoji: '🍞', fact: 'Đừng ăn tớ, tớ biết hát bài Baby Shark đấy!' },
+                    { id: 26, vn: 'Cú đấm thép', en: 'Punch', emoji: '🥊', fact: 'Sẵn sàng hạ gục bất kỳ bài tập về nhà nào.' },
+                    { id: 27, vn: 'Rùa tốc độ', en: 'Fast Turtle', emoji: '🐢', fact: 'Đang gắn động cơ phản lực dưới mai để đua xe.' },
+                    { id: 28, vn: 'Nấm lùn', en: 'Mushroom', emoji: '🍄', fact: 'Ăn cây nấm này vào là biến to như Super Mario.' },
+                    { id: 29, vn: 'Cú mèo thức khuya', en: 'Night Owl', emoji: '🦉', fact: 'Mắt thao láo vì uống nhầm cốc trà sữa trân châu.' },
+                    { id: 30, vn: 'Lười biếng', en: 'Sloth', emoji: '🦥', fact: 'Đang... từ... từ... đưa... tay... lên... gãi... đầu.' },
+                    { id: 31, vn: 'Cà rốt tàng hình', en: 'Ninja Carrot', emoji: '🥕', fact: 'Ninja cà rốt giúp bảo vệ đôi mắt tinh anh của bạn.' },
+                    { id: 32, vn: 'Phân dễ thương', en: 'Cute Poop', emoji: '💩', fact: 'Xin chào, tớ là sản phẩm của một hệ tiêu hóa khỏe mạnh!' },
+                    { id: 33, vn: 'Hạt dẻ cười', en: 'Nut', emoji: '🌰', fact: 'Cười nhiều nứt cả vỏ ra rồi đây này.' },
+                    { id: 34, vn: 'Kính hiển vi', en: 'Nerd Face', emoji: '🤓', fact: 'Trông có vẻ mọt sách nhưng thực ra đang chơi game.' },
+                    { id: 35, vn: 'Bò lêu lỏng', en: 'Silly Cow', emoji: '🐮', fact: 'Đang nhai cỏ mà cứ thích làm mặt ngầu.' },
+                    { id: 36, vn: 'Xúc xích', en: 'Hotdog', emoji: '🌭', fact: 'Chiếc giường bánh mì kẹp thật ấm áp làm sao.' },
+                    { id: 37, vn: 'Bom nổ chậm', en: 'Bomb', emoji: '💣', fact: 'Cẩn thận! Quả bom cù lét chuẩn bị phát nổ!' },
+                    { id: 38, vn: 'Mắt lé', en: 'Dizzy', emoji: '😵', fact: 'Quay mòng mòng sau khi chơi trò chơi tàu lượn siêu tốc.' },
+                    { id: 39, vn: 'Nhện nhọ', en: 'Spider', emoji: '🕷️', fact: 'Giăng tơ khắp nơi nhưng lại tự mắc kẹt vào mạng của mình.' },
+                    { id: 40, vn: 'Nàng tiên cá', en: 'Mermaid', emoji: '🧜‍♀️', fact: 'Đang tập bơi ngửa để phơi nắng cho vảy thêm lấp lánh.' }
+                ]
             }
-            return array;
+        };
+
+        // --- DATA: CHỦ ĐỀ BÀI HỌC (LEARNING_THEMES) ---
+        const LEARNING_THEMES = {
+            PRESCHOOL_SHADOW: {
+                name: 'Ghép bóng 🌑', icon: '🦓', desc: 'Nhận diện hình khối (Mầm non)', badge: 'MẦM NON', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🦓', valB: '🦓', filterB: 'shadow', fact: 'Ngựa vằn có những sọc đen trắng độc nhất vô nhị.' },
+                    { id: 2, valA: '🐘', valB: '🐘', filterB: 'shadow', fact: 'Voi là loài động vật trên cạn lớn nhất thế giới.' },
+                    { id: 3, valA: '🦒', valB: '🦒', filterB: 'shadow', fact: 'Hươu cao cổ có chiếc cổ dài để ăn lá trên cao.' },
+                    { id: 4, valA: '🦁', valB: '🦁', filterB: 'shadow', fact: 'Sư tử được mệnh danh là chúa tể sơn lâm dũng mãnh.' },
+                    { id: 5, valA: '🦋', valB: '🦋', filterB: 'shadow', fact: 'Bướm trải qua quá trình lột xác vô cùng kỳ diệu.' },
+                    { id: 6, valA: '🐢', valB: '🐢', filterB: 'shadow', fact: 'Rùa có thể sống rất lâu, lên đến hàng trăm năm.' },
+                    { id: 7, valA: '🦀', valB: '🦀', filterB: 'shadow', fact: 'Cua đi ngang vì cấu tạo đặc biệt của đôi chân.' },
+                    { id: 8, valA: '🦉', valB: '🦉', filterB: 'shadow', fact: 'Cú mèo có thể quay đầu ra phía sau 270 độ.' },
+                    { id: 9, valA: '🦐', valB: '🦐', filterB: 'shadow', fact: 'Tôm bơi lùi rất nhanh khi gặp phải nguy hiểm.' },
+                    { id: 10, valA: '🐟', valB: '🐟', filterB: 'shadow', fact: 'Cá thở trong nước bằng mang thay vì bằng mũi.' },
+                    { id: 11, valA: '🍎', valB: '🍎', filterB: 'shadow', fact: 'Táo có hình tròn và một cái cuống nhỏ ở trên.' },
+                    { id: 12, valA: '🍌', valB: '🍌', filterB: 'shadow', fact: 'Chuối cong cong giống hệt như một vầng trăng khuyết.' },
+                    { id: 13, valA: '🍇', valB: '🍇', filterB: 'shadow', fact: 'Nho mọc thành từng chùm lúc lỉu trên giàn.' },
+                    { id: 14, valA: '🍉', valB: '🍉', filterB: 'shadow', fact: 'Dưa hấu có hình tròn to và vỏ sọc xanh đậm.' },
+                    { id: 15, valA: '🚗', valB: '🚗', filterB: 'shadow', fact: 'Ô tô có 4 bánh xe tròn quay đều trên mặt đường.' },
+                    { id: 16, valA: '✈️', valB: '✈️', filterB: 'shadow', fact: 'Máy bay dang rộng đôi cánh khổng lồ bay trên trời.' },
+                    { id: 17, valA: '🚢', valB: '🚢', filterB: 'shadow', fact: 'Tàu thủy nổi và di chuyển êm ru trên mặt nước biển.' },
+                    { id: 18, valA: '🚁', valB: '🚁', filterB: 'shadow', fact: 'Trực thăng bay lên nhờ cánh quạt xoay trên đỉnh đầu.' },
+                    { id: 19, valA: '🎸', valB: '🎸', filterB: 'shadow', fact: 'Đàn guitar có dáng cong uốn lượn như số 8.' },
+                    { id: 20, valA: '🔑', valB: '🔑', filterB: 'shadow', fact: 'Chìa khóa có răng cưa lởm chởm để mở ổ khóa.' },
+                    { id: 21, valA: '🚲', valB: '🚲', filterB: 'shadow', fact: 'Xe đạp có hai bánh tròn cần giữ thăng bằng để đi.' },
+                    { id: 22, valA: '🚀', valB: '🚀', filterB: 'shadow', fact: 'Tên lửa có hình trụ thuôn dài lao thẳng vào không gian.' },
+                    { id: 23, valA: '🏠', valB: '🏠', filterB: 'shadow', fact: 'Ngôi nhà có mái che tam giác che mưa nắng cho ta.' },
+                    { id: 24, valA: '🐌', valB: '🐌', filterB: 'shadow', fact: 'Ốc sên mang trên lưng chiếc vỏ xoắn ốc tuyệt đẹp.' },
+                    { id: 25, valA: '🐜', valB: '🐜', filterB: 'shadow', fact: 'Kiến nhỏ bé nhưng có thể vác vật nặng hơn cơ thể.' },
+                    { id: 26, valA: '🐝', valB: '🐝', filterB: 'shadow', fact: 'Ong chăm chỉ bay lượn để hút mật hoa ngọt ngào.' },
+                    { id: 27, valA: '🐞', valB: '🐞', filterB: 'shadow', fact: 'Bọ rùa có hình bán cầu nhỏ xíu và đáng yêu.' },
+                    { id: 28, valA: '🕷️', valB: '🕷️', filterB: 'shadow', fact: 'Nhện có tám chân dài để giăng tơ bắt mồi.' },
+                    { id: 29, valA: '🍓', valB: '🍓', filterB: 'shadow', fact: 'Dâu tây có hình nón và chấm bi li ti xung quanh.' },
+                    { id: 30, valA: '🍍', valB: '🍍', filterB: 'shadow', fact: 'Dứa đội vương miện lá xanh trên cái đầu xù xì.' },
+                    { id: 31, valA: '🥭', valB: '🥭', filterB: 'shadow', fact: 'Xoài hình bầu dục hơi cong và rất thơm ngon.' },
+                    { id: 32, valA: '🚌', valB: '🚌', filterB: 'shadow', fact: 'Xe buýt dài như một chiếc hộp chữ nhật có bánh xe.' },
+                    { id: 33, valA: '🚂', valB: '🚂', filterB: 'shadow', fact: 'Tàu hỏa chạy trên đường ray xình xịch nhả khói.' },
+                    { id: 34, valA: '⛵', valB: '⛵', filterB: 'shadow', fact: 'Thuyền buồm dùng sức gió để lướt đi trên mặt biển.' },
+                    { id: 35, valA: '☂️', valB: '☂️', filterB: 'shadow', fact: 'Chiếc ô xòe ra như một cây nấm lớn che mưa.' },
+                    { id: 36, valA: '✂️', valB: '✂️', filterB: 'shadow', fact: 'Cái kéo có hai lưỡi chéo nhau dùng để cắt giấy.' },
+                    { id: 37, valA: '🧸', valB: '🧸', filterB: 'shadow', fact: 'Gấu bông tròn trịa mập mạp rất êm ái khi ôm.' },
+                    { id: 38, valA: '🎈', valB: '🎈', filterB: 'shadow', fact: 'Quả bóng bay hình giọt nước có sợi dây ở dưới.' },
+                    { id: 39, valA: '👑', valB: '👑', filterB: 'shadow', fact: 'Vương miện lởm chởm đội trên đầu của vua và hoàng hậu.' },
+                    { id: 40, valA: '🔔', valB: '🔔', filterB: 'shadow', fact: 'Cái chuông nhỏ hình nón cụt kêu leng keng rất vui tai.' }
+                ]
+            },
+            PRESCHOOL_FAMILY: {
+                name: 'Mẹ và con 🍼', icon: '🐥', desc: 'Mối quan hệ sinh học (Mầm non)', badge: 'MẦM NON', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🐔', valB: '🐥', fact: 'Gà mái chăm sóc đàn gà con rất cẩn thận.' },
+                    { id: 2, valA: '🐕', valB: '🐶', fact: 'Chó con rất thích chơi đùa cùng chó mẹ.' },
+                    { id: 3, valA: '🐈', valB: '🐱', fact: 'Mèo mẹ dạy mèo con cách rình bắt chuột.' },
+                    { id: 4, valA: '🐄', valB: '🍼', fact: 'Bê con lớn lên nhờ dòng sữa mẹ ngọt ngào.' },
+                    { id: 5, valA: '🐑', valB: '🐑', fact: 'Cừu non có bộ lông trắng muốt và mềm mại.' },
+                    { id: 6, valA: '🦢', valB: '🥚', fact: 'Thiên nga bảo vệ trứng trong tổ rất kỹ.' },
+                    { id: 7, valA: '🦆', valB: '🐤', fact: 'Vịt con bơi lội theo mẹ ngay sau khi nở.' },
+                    { id: 8, valA: '🐷', valB: '🐽', fact: 'Heo con thích lăn lộn trong bùn bên heo mẹ.' },
+                    { id: 9, valA: '🐸', valB: '蝌蚪', typeB: 'text', fact: 'Nòng nọc đứt đuôi sẽ dần biến thành ếch con.' },
+                    { id: 10, valA: '🦋', valB: '🐛', fact: 'Sâu bướm ăn lá cây để chờ ngày hóa thành nhộng.' },
+                    { id: 11, valA: '🐧', valB: '🐧', fact: 'Chim cánh cụt bố mẹ luân phiên ấp trứng giữa trời tuyết.' },
+                    { id: 12, valA: '🐎', valB: '🐴', fact: 'Ngựa con có thể tự đứng vững ngay sau khi sinh ra.' },
+                    { id: 13, valA: '🐘', valB: '🐘', fact: 'Voi con ngậm lấy đuôi mẹ để không bị lạc khỏi đàn.' },
+                    { id: 14, valA: '🐯', valB: '🐅', fact: 'Hổ con thích đùa giỡn tập cắn với các anh chị em.' },
+                    { id: 15, valA: '🐻', valB: '🧸', fact: 'Gấu con bú sữa mẹ trong hang ấm áp suốt mùa đông.' },
+                    { id: 16, valA: '🐒', valB: '🐵', fact: 'Khỉ con bám thật chặt trước ngực mẹ khi di chuyển.' },
+                    { id: 17, valA: '🦐', valB: '🦐', fact: 'Tôm mẹ ôm bọc trứng nhỏ xíu dưới bụng để bảo vệ.' },
+                    { id: 18, valA: '🐟', valB: '🐠', fact: 'Cá mẹ đẻ ra hàng ngàn chú cá con biết bơi ngay.' },
+                    { id: 19, valA: '🦉', valB: '🦉', fact: 'Cú mẹ nhả thức ăn bón cho cú non trong hốc cây.' },
+                    { id: 20, valA: '캥거루', valB: '🦘', typeA: 'text', fact: 'Kangaroo con chui vào túi trước bụng của mẹ để lớn lên.' },
+                    { id: 21, valA: '🐐', valB: '🐐', fact: 'Dê con chạy nhảy tung tăng quanh mẹ trên bãi cỏ.' },
+                    { id: 22, valA: '🦌', valB: '🦌', fact: 'Hươu sao con có những đốm trắng đẹp tuyệt trên lưng.' },
+                    { id: 23, valA: '🦁', valB: '🦁', fact: 'Sư tử con được cả bầy đàn bảo vệ khỏi nguy hiểm.' },
+                    { id: 24, valA: '🦛', valB: '🦛', fact: 'Hà mã con cưỡi trên lưng mẹ khi bơi qua sông lớn.' },
+                    { id: 25, valA: '🦏', valB: '🦏', fact: 'Tê giác con có chiếc sừng nhỏ xíu rất đáng yêu.' },
+                    { id: 26, valA: '🐳', valB: '🐳', fact: 'Cá voi con uống dòng sữa đặc và béo ngậy của mẹ.' },
+                    { id: 27, valA: '🐬', valB: '🐬', fact: 'Cá heo con học cách nhảy múa trên mặt nước từ mẹ.' },
+                    { id: 28, valA: '🦭', valB: '🦭', fact: 'Hải cẩu con có lớp mỡ dày để giữ ấm trên tảng băng.' },
+                    { id: 29, valA: '🦦', valB: '🦦', fact: 'Rái cá mẹ ôm con ngủ trôi bồng bềnh trên mặt nước.' },
+                    { id: 30, valA: '🦊', valB: '🦊', fact: 'Cáo mẹ dạy cáo con cách lẩn trốn trong bụi rậm.' },
+                    { id: 31, valA: '🐺', valB: '🐺', fact: 'Sói con tru lên những tiếng nhỏ xíu gọi mẹ.' },
+                    { id: 32, valA: '🐿️', valB: '🐿️', fact: 'Sóc con nằm gọn trong chiếc tổ làm bằng lá khô.' },
+                    { id: 33, valA: '🦇', valB: '🦇', fact: 'Dơi mẹ treo ngược người ôm dơi con ngủ ban ngày.' },
+                    { id: 34, valA: '🦅', valB: '🦅', fact: 'Đại bàng mẹ mớm từng miếng mồi cho con trong tổ cao.' },
+                    { id: 35, valA: '🐢', valB: '🐢', fact: 'Rùa con phá vỏ trứng chui lên từ dưới lớp cát biển.' },
+                    { id: 36, valA: '🐍', valB: '🐍', fact: 'Rắn con đã biết tự đi săn mồi ngay khi vừa nở.' },
+                    { id: 37, valA: '🐊', valB: '🐊', fact: 'Cá sấu mẹ cõng đàn con trên miệng bơi qua đầm lầy.' },
+                    { id: 38, valA: '🐌', valB: '🐌', fact: 'Ốc sên con đã có chiếc vỏ nhỏ xíu trong suốt trên lưng.' },
+                    { id: 39, valA: '🕷️', valB: '🕷️', fact: 'Nhện mẹ cõng hàng trăm nhện con trên lưng đi dạo.' },
+                    { id: 40, valA: '🦩', valB: '🦩', fact: 'Hồng hạc con có lông màu xám, lớn lên mới thành hồng.' }
+                ]
+            },
+            GRADE1_CASE: {
+                name: 'Hoa & Thường 🔠', icon: 'Aa', desc: 'Bảng chữ cái (Lớp 1)', badge: 'LỚP 1', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: 'A', valB: 'a', type: 'text', fact: 'A là chữ cái đầu tiên trong bảng chữ cái.' },
+                    { id: 2, valA: 'Ă', valB: 'ă', type: 'text', fact: 'Ă có cái mũ ngược hình vành trăng trên đầu.' },
+                    { id: 3, valA: 'Â', valB: 'â', type: 'text', fact: 'Â đội chiếc nón xinh xắn che mưa nắng.' },
+                    { id: 4, valA: 'B', valB: 'b', type: 'text', fact: 'B là chữ cái đứng thứ hai, trong từ "Bố".' },
+                    { id: 5, valA: 'C', valB: 'c', type: 'text', fact: 'C có hình dáng cong cong như vầng trăng khuyết.' },
+                    { id: 6, valA: 'D', valB: 'd', type: 'text', fact: 'D giúp chúng ta ghép thành chữ "Dế", "Diều".' },
+                    { id: 7, valA: 'Đ', valB: 'đ', type: 'text', fact: 'Đ có nét gạch ngang đặc biệt trên thân.' },
+                    { id: 8, valA: 'E', valB: 'e', type: 'text', fact: 'E có trong chữ "Em bé", "Con ếch".' },
+                    { id: 9, valA: 'Ê', valB: 'ê', type: 'text', fact: 'Ê đội chiếc nón ngoan ngoãn trên đầu.' },
+                    { id: 10, valA: 'G', valB: 'g', type: 'text', fact: 'G bắt đầu trong từ "Con gà", "Cái gương".' },
+                    { id: 11, valA: 'H', valB: 'h', type: 'text', fact: 'H có trong chữ "Hoa hồng", "Học tập".' },
+                    { id: 12, valA: 'I', valB: 'i', type: 'text', fact: 'I ngắn có một dấu chấm nhỏ xíu trên đầu.' },
+                    { id: 13, valA: 'K', valB: 'k', type: 'text', fact: 'K đứng đầu trong từ "Kẹo ngọt", "Con kiến".' },
+                    { id: 14, valA: 'L', valB: 'l', type: 'text', fact: 'L cao lêu nghêu trong chữ "Lá cây".' },
+                    { id: 15, valA: 'M', valB: 'm', type: 'text', fact: 'M là chữ cái thiêng liêng trong tiếng gọi "Mẹ".' },
+                    { id: 16, valA: 'N', valB: 'n', type: 'text', fact: 'N đứng ngay phía sau chữ M trong bảng.' },
+                    { id: 17, valA: 'O', valB: 'o', type: 'text', fact: 'O tròn trĩnh như một quả trứng gà.' },
+                    { id: 18, valA: 'Ô', valB: 'ô', type: 'text', fact: 'Ô thì đội chiếc mũ bảo hiểm cho an toàn.' },
+                    { id: 19, valA: 'Ơ', valB: 'ơ', type: 'text', fact: 'Ơ thì được mọc thêm cái râu nhỏ bên phải.' },
+                    { id: 20, valA: 'P', valB: 'p', type: 'text', fact: 'P đứng đầu trong từ "Đèn pin", "Quả pin".' },
+                    { id: 21, valA: 'Q', valB: 'q', type: 'text', fact: 'Q luôn đi kèm với chữ U thành QU.' },
+                    { id: 22, valA: 'R', valB: 'r', type: 'text', fact: 'R phải rung lưỡi khi đọc chữ "Con rắn".' },
+                    { id: 23, valA: 'S', valB: 's', type: 'text', fact: 'S uốn lượn ngoằn ngoèo như một dòng sông.' },
+                    { id: 24, valA: 'T', valB: 't', type: 'text', fact: 'T có một nét gạch ngang nhỏ xíu trên đầu.' },
+                    { id: 25, valA: 'U', valB: 'u', type: 'text', fact: 'U trông giống như một chiếc cốc hứng nước.' },
+                    { id: 26, valA: 'Ư', valB: 'ư', type: 'text', fact: 'Ư mọc thêm cái râu nhỏ giống như chữ Ơ.' },
+                    { id: 27, valA: 'V', valB: 'v', type: 'text', fact: 'V nằm trong từ "Vịt con", "Quyển vở".' },
+                    { id: 28, valA: 'X', valB: 'x', type: 'text', fact: 'X có hai nét chéo đan chéo vào nhau.' },
+                    { id: 29, valA: 'Y', valB: 'y', type: 'text', fact: 'Y dài đứng cuối cùng trong bảng chữ cái Việt Nam.' },
+                    { id: 30, valA: 'CH', valB: 'ch', type: 'text', fact: 'Âm ghép dùng trong từ "Con chó", "Cái chăn".' },
+                    { id: 31, valA: 'TR', valB: 'tr', type: 'text', fact: 'Âm ghép dùng trong từ "Trái cây", "Bầu trời".' },
+                    { id: 32, valA: 'NH', valB: 'nh', type: 'text', fact: 'Âm ghép dùng trong từ "Ngôi nhà", "Quả nho".' },
+                    { id: 33, valA: 'PH', valB: 'ph', type: 'text', fact: 'Âm ghép dùng trong từ "Phố phường", "Pháo hoa".' },
+                    { id: 34, valA: 'TH', valB: 'th', type: 'text', fact: 'Âm ghép dùng trong từ "Con thỏ", "Thước kẻ".' },
+                    { id: 35, valA: 'GI', valB: 'gi', type: 'text', fact: 'Âm ghép dùng trong từ "Giường ngủ", "Gió thổi".' },
+                    { id: 36, valA: 'QU', valB: 'qu', type: 'text', fact: 'Âm ghép dùng trong từ "Quả cam", "Quyển sách".' },
+                    { id: 37, valA: 'NG', valB: 'ng', type: 'text', fact: 'Âm ghép dùng trong từ "Ngôi sao", "Con ngựa".' },
+                    { id: 38, valA: 'NGH', valB: 'ngh', type: 'text', fact: 'Âm ghép dùng trong từ "Nghỉ ngơi", "Nghề nghiệp".' },
+                    { id: 39, valA: 'KH', valB: 'kh', type: 'text', fact: 'Âm ghép dùng trong từ "Quả khế", "Khăn quàng".' },
+                    { id: 40, valA: 'GH', valB: 'gh', type: 'text', fact: 'Âm ghép dùng trong từ "Cái ghế", "Ghi chép".' }
+                ]
+            },
+            GRADE2_MATH: {
+                name: 'Toán Tư Duy 🔢', icon: '➗', desc: 'Phép tính nhẩm (Lớp 2)', badge: 'LỚP 2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '5 + 3', valB: '8', type: 'text', fact: 'Phép cộng giúp chúng ta tìm ra tổng số lượng.' },
+                    { id: 2, valA: '10 - 4', valB: '6', type: 'text', fact: 'Phép trừ dùng để tìm phần còn lại của phép tính.' },
+                    { id: 3, valA: '2 x 5', valB: '10', type: 'text', fact: 'Phép nhân là phép cộng lặp lại nhiều lần.' },
+                    { id: 4, valA: '12 / 3', valB: '4', type: 'text', fact: 'Phép chia giúp chúng ta chia đều đồ vật cho các bạn.' },
+                    { id: 5, valA: '7 + 8', valB: '15', type: 'text', fact: 'Tập trung tính nhẩm phép cộng qua mười.' },
+                    { id: 6, valA: '20 - 9', valB: '11', type: 'text', fact: 'Thử thách trừ lùi qua mười thật thú vị!' },
+                    { id: 7, valA: '3 x 4', valB: '12', type: 'text', fact: 'Bảng cửu chương là nền tảng vững chắc của toán học.' },
+                    { id: 8, valA: '15 / 5', valB: '3', type: 'text', fact: 'Chia 15 phần bánh cho 5 người, mỗi người được 3 phần.' },
+                    { id: 9, valA: '9 + 9', valB: '18', type: 'text', fact: 'Cộng hai số giống hệt nhau là gấp đôi số đó.' },
+                    { id: 10, valA: '25 - 5', valB: '20', type: 'text', fact: 'Trừ số tròn chục rất dễ tính nhẩm.' },
+                    { id: 11, valA: '4 x 5', valB: '20', type: 'text', fact: 'Bảng cửu chương nhân 4 học thuộc thật nhanh.' },
+                    { id: 12, valA: '20 / 2', valB: '10', type: 'text', fact: 'Chia đôi một số chính là cắt số đó làm 2 phần bằng nhau.' },
+                    { id: 13, valA: '11 + 11', valB: '22', type: 'text', fact: 'Phép cộng số có 2 chữ số đơn giản nhẩm cái là ra.' },
+                    { id: 14, valA: '30 - 15', valB: '15', type: 'text', fact: 'Một nửa của số 30 to đùng chính là số 15.' },
+                    { id: 15, valA: '5 x 5', valB: '25', type: 'text', fact: 'Bảng cửu chương 5 siêu dễ đọc và dễ nhớ.' },
+                    { id: 16, valA: '18 / 6', valB: '3', type: 'text', fact: 'Chia 18 cái kẹo cho 6 người bạn nhỏ.' },
+                    { id: 17, valA: '14 + 6', valB: '20', type: 'text', fact: 'Cộng nhẩm làm tròn số chục nhanh như chớp.' },
+                    { id: 18, valA: '50 - 10', valB: '40', type: 'text', fact: 'Trừ nhẩm hàng chục dễ như ăn kẹo bông gòn.' },
+                    { id: 19, valA: '2 x 8', valB: '16', type: 'text', fact: 'Gấp đôi số 8 lên ta sẽ được số 16.' },
+                    { id: 20, valA: '24 / 4', valB: '6', type: 'text', fact: 'Bài toán chia quen thuộc trong sách giáo khoa.' },
+                    { id: 21, valA: '13 + 7', valB: '20', type: 'text', fact: 'Kết bạn số 3 và số 7 để tạo thành 10 tròn trịa.' },
+                    { id: 22, valA: '100 - 50', valB: '50', type: 'text', fact: 'Một nửa của một trăm đồng chính là năm mươi đồng.' },
+                    { id: 23, valA: '3 x 6', valB: '18', type: 'text', fact: 'Bảng nhân 3 luyện trí nhớ siêu phàm.' },
+                    { id: 24, valA: '36 / 6', valB: '6', type: 'text', fact: 'Phép chia đặc biệt có thương và số chia bằng nhau.' },
+                    { id: 25, valA: '8 + 4', valB: '12', type: 'text', fact: 'Cộng qua mười cần lấy 8 thêm 2 cho đủ 10.' },
+                    { id: 26, valA: '17 - 8', valB: '9', type: 'text', fact: 'Phép trừ có nhớ cần mượn 1 chục để trừ.' },
+                    { id: 27, valA: '6 x 2', valB: '12', type: 'text', fact: 'Số 6 nhân hai chính là hai lần số 6.' },
+                    { id: 28, valA: '14 / 2', valB: '7', type: 'text', fact: 'Chia đôi số 14 được kết quả là số may mắn 7.' },
+                    { id: 29, valA: '15 + 15', valB: '30', type: 'text', fact: 'Hai số 15 cộng lại tạo thành ba chục tròn.' },
+                    { id: 30, valA: '40 - 20', valB: '20', type: 'text', fact: 'Bốn chục trừ hai chục còn lại hai chục.' },
+                    { id: 31, valA: '7 x 3', valB: '21', type: 'text', fact: 'Bảy lần ba là hăm mốt (hai mươi mốt).' },
+                    { id: 32, valA: '16 / 4', valB: '4', type: 'text', fact: 'Bốn lần bốn là mười sáu, nên chia lại ra 4.' },
+                    { id: 33, valA: '9 + 6', valB: '15', type: 'text', fact: 'Lấy 9 mượn 1 của 6 là thành 10, còn lại 5.' },
+                    { id: 34, valA: '12 - 5', valB: '7', type: 'text', fact: 'Trừ nhẩm để tìm số bánh còn lại trong đĩa.' },
+                    { id: 35, valA: '5 x 8', valB: '40', type: 'text', fact: 'Bảng nhân 5 luôn kết thúc bằng 0 hoặc 5.' },
+                    { id: 36, valA: '25 / 5', valB: '5', type: 'text', fact: 'Phép chia đặc biệt chia cho 5 ra kết quả 5.' },
+                    { id: 37, valA: '20 + 20', valB: '40', type: 'text', fact: 'Cộng hàng chục thật nhanh và dễ dàng.' },
+                    { id: 38, valA: '60 - 30', valB: '30', type: 'text', fact: 'Sáu trừ ba còn ba, thêm số không vào là xong.' },
+                    { id: 39, valA: '2 x 9', valB: '18', type: 'text', fact: 'Số lớn nhất của bảng nhân 2 cơ bản.' },
+                    { id: 40, valA: '27 / 3', valB: '9', type: 'text', fact: 'Chín lần ba là hai bảy, bài toán ngược của phép nhân.' }
+                ]
+            },
+            GRADE2_ENGLISH: {
+                name: 'Tiếng Anh 🇬🇧', icon: '🍎', desc: 'Từ vựng Flashcard (Lớp 2)', badge: 'LỚP 2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🍎', valB: 'Apple', typeB: 'text', fact: '"An apple a day keeps the doctor away."' },
+                    { id: 2, valA: '🍌', valB: 'Banana', typeB: 'text', fact: 'Chuối cung cấp nhiều năng lượng cho cơ thể bạn.' },
+                    { id: 3, valA: '🚗', valB: 'Car', typeB: 'text', fact: 'Car là phương tiện giao thông phổ biến trên đường.' },
+                    { id: 4, valA: '🏠', valB: 'House', typeB: 'text', fact: 'House là ngôi nhà thân yêu của gia đình chúng ta.' },
+                    { id: 5, valA: '🐱', valB: 'Cat', typeB: 'text', fact: 'Cat là người bạn nhỏ bốn chân rất đáng yêu và lười biếng.' },
+                    { id: 6, valA: '🐶', valB: 'Dog', typeB: 'text', fact: 'Dog được coi là người bạn trung thành nhất của con người.' },
+                    { id: 7, valA: '☀️', valB: 'Sun', typeB: 'text', fact: 'Sun cung cấp ánh sáng và nhiệt độ ấm áp cho Trái Đất.' },
+                    { id: 8, valA: '🌙', valB: 'Moon', typeB: 'text', fact: 'Moon tỏa sáng dịu nhẹ soi sáng bầu trời vào ban đêm.' },
+                    { id: 9, valA: '🌲', valB: 'Tree', typeB: 'text', fact: 'Cái cây xanh cho chúng ta bóng mát và oxy để thở.' },
+                    { id: 10, valA: '🌸', valB: 'Flower', typeB: 'text', fact: 'Bông hoa tỏa hương thơm ngát rực rỡ trong khu vườn.' },
+                    { id: 11, valA: '📖', valB: 'Book', typeB: 'text', fact: 'Quyển sách chứa đựng biết bao nhiêu bài học hay.' },
+                    { id: 12, valA: '✏️', valB: 'Pencil', typeB: 'text', fact: 'Bút chì dùng để viết bài và vẽ những bức tranh.' },
+                    { id: 13, valA: '🏫', valB: 'School', typeB: 'text', fact: 'Trường học là nơi ta học tập và vui chơi cùng bạn bè.' },
+                    { id: 14, valA: '👨‍👩‍👦', valB: 'Family', typeB: 'text', fact: 'Gia đình là tổ ấm ngập tràn tình yêu thương che chở.' },
+                    { id: 15, valA: '💧', valB: 'Water', typeB: 'text', fact: 'Nước rất cần thiết để duy trì sự sống trên hành tinh.' },
+                    { id: 16, valA: '🔥', valB: 'Fire', typeB: 'text', fact: 'Lửa sưởi ấm nhưng cũng rất nguy hiểm nếu không cẩn thận.' },
+                    { id: 17, valA: '🔴', valB: 'Red', typeB: 'text', fact: 'Màu đỏ rực rỡ như màu của trái táo chín mọng.' },
+                    { id: 18, valA: '🔵', valB: 'Blue', typeB: 'text', fact: 'Màu xanh lam của bầu trời bao la và đại dương sâu thẳm.' },
+                    { id: 19, valA: '🟡', valB: 'Yellow', typeB: 'text', fact: 'Màu vàng tươi tắn của hoa mai và ánh nắng mặt trời.' },
+                    { id: 20, valA: '🟢', valB: 'Green', typeB: 'text', fact: 'Màu xanh lá cây của những thảm cỏ và chiếc lá non.' },
+                    { id: 21, valA: '🐟', valB: 'Fish', typeB: 'text', fact: 'Con cá bơi lội tung tăng trong dòng suối mát.' },
+                    { id: 22, valA: '🐦', valB: 'Bird', typeB: 'text', fact: 'Con chim hót líu lo nhảy nhót trên cành cây cao.' },
+                    { id: 23, valA: '🐘', valB: 'Elephant', typeB: 'text', fact: 'Con voi to lớn có cái vòi dài và đôi tai như cái quạt.' },
+                    { id: 24, valA: '🐅', valB: 'Tiger', typeB: 'text', fact: 'Con hổ mạnh mẽ dũng mãnh là chúa tể của rừng xanh.' },
+                    { id: 25, valA: '🥛', valB: 'Milk', typeB: 'text', fact: 'Sữa tươi cung cấp canxi giúp xương chắc khỏe và cao lớn.' },
+                    { id: 26, valA: '🍞', valB: 'Bread', typeB: 'text', fact: 'Bánh mì là món ăn sáng quen thuộc của nhiều gia đình.' },
+                    { id: 27, valA: '🍚', valB: 'Rice', typeB: 'text', fact: 'Cơm gạo là thức ăn chính trong bữa cơm của người Việt Nam.' },
+                    { id: 28, valA: '🍖', valB: 'Meat', typeB: 'text', fact: 'Thịt cung cấp nhiều chất đạm cho cơ thể khỏe mạnh.' },
+                    { id: 29, valA: '🥚', valB: 'Egg', typeB: 'text', fact: 'Quả trứng có lòng trắng và lòng đỏ rất bổ dưỡng.' },
+                    { id: 30, valA: '🧀', valB: 'Cheese', typeB: 'text', fact: 'Phô mai béo ngậy là món ăn khoái khẩu của lũ chuột.' },
+                    { id: 31, valA: '👕', valB: 'Shirt', typeB: 'text', fact: 'Chiếc áo mặc trên người để giữ ấm và làm đẹp.' },
+                    { id: 32, valA: '👖', valB: 'Pants', typeB: 'text', fact: 'Cái quần che chắn cho đôi chân khi đi ra ngoài đường.' },
+                    { id: 33, valA: '🧢', valB: 'Hat', typeB: 'text', fact: 'Cái mũ đội trên đầu để che nắng che mưa.' },
+                    { id: 34, valA: '👟', valB: 'Shoes', typeB: 'text', fact: 'Đôi giày bảo vệ bàn chân khỏi đất đá sắc nhọn.' },
+                    { id: 35, valA: '🖐️', valB: 'Hand', typeB: 'text', fact: 'Bàn tay có năm ngón khéo léo để cầm nắm đồ vật.' },
+                    { id: 36, valA: '👁️', valB: 'Eye', typeB: 'text', fact: 'Đôi mắt tinh anh giúp chúng ta nhìn ngắm mọi vật xung quanh.' },
+                    { id: 37, valA: '👂', valB: 'Ear', typeB: 'text', fact: 'Cái tai để lắng nghe những âm thanh của cuộc sống.' },
+                    { id: 38, valA: '👃', valB: 'Nose', typeB: 'text', fact: 'Cái mũi dùng để hít thở không khí và ngửi mùi hương.' },
+                    { id: 39, valA: '👄', valB: 'Mouth', typeB: 'text', fact: 'Cái miệng xinh xắn để ăn uống và nói những lời hay ho.' },
+                    { id: 40, valA: '💇', valB: 'Hair', typeB: 'text', fact: 'Mái tóc mọc trên đầu cần được chải chuốt gội sạch mỗi ngày.' }
+                ]
+            },
+            PROFESSIONS: {
+                name: 'Nghề nghiệp 👔', icon: '👨‍🔬', desc: 'Công cụ lao động (Lớp 1-2)', badge: 'LỚP 1-2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '👨‍⚕️ Bác sĩ', valB: '🩺 Ống nghe', type: 'text', fact: 'Bác sĩ dùng ống nghe để kiểm tra nhịp tim của chúng mình.' },
+                    { id: 2, valA: '👨‍🍳 Đầu bếp', valB: '🍳 Chảo xào', type: 'text', fact: 'Đầu bếp tạo ra những món ăn ngon tuyệt từ căn bếp.' },
+                    { id: 3, valA: '👨‍🌾 Nông dân', valB: '🌾 Bó lúa', type: 'text', fact: 'Nông dân vất vả trồng lúa để chúng mình có bát cơm ăn.' },
+                    { id: 4, valA: '👷 Thợ xây', valB: '🧱 Viên gạch', type: 'text', fact: 'Thợ xây ghép những viên gạch để tạo nên ngôi nhà vững chãi.' },
+                    { id: 5, valA: '👩‍🏫 Giáo viên', valB: '📖 Quyển sách', type: 'text', fact: 'Giáo viên truyền dạy kiến thức bổ ích qua những trang sách.' },
+                    { id: 6, valA: '💻 Lập trình viên', valB: '⌨️ Bàn phím', type: 'text', fact: 'Lập trình viên gõ code để tạo ra các trò chơi và phần mềm.' },
+                    { id: 7, valA: '🎨 Họa sĩ', valB: '🖼️ Giá vẽ', type: 'text', fact: 'Họa sĩ dùng cọ màu để vẽ nên những bức tranh tuyệt đẹp.' },
+                    { id: 8, valA: '🚀 Phi hành gia', valB: '🌌 Vũ trụ', type: 'text', fact: 'Phi hành gia bay vào không gian để khám phá các hành tinh.' },
+                    { id: 9, valA: '👮 Cảnh sát', valB: '🚓 Xe tuần tra', type: 'text', fact: 'Cảnh sát lái xe đi tuần tra để giữ gìn an ninh trật tự.' },
+                    { id: 10, valA: '🚒 Lính cứu hỏa', valB: '🧯 Bình chữa cháy', type: 'text', fact: 'Lính cứu hỏa dùng bình bọt để dập tắt những ngọn lửa.' },
+                    { id: 11, valA: '✂️ Thợ cắt tóc', valB: '💈 Cây kéo', type: 'text', fact: 'Thợ làm tóc dùng kéo thiết kế những kiểu tóc thời trang.' },
+                    { id: 12, valA: '📷 Nhiếp ảnh gia', valB: '📸 Máy ảnh', type: 'text', fact: 'Nhiếp ảnh gia ghi lại những khoảnh khắc đẹp qua ống kính.' },
+                    { id: 13, valA: '✈️ Phi công', valB: '🛫 Buồng lái', type: 'text', fact: 'Phi công ngồi trong buồng lái điều khiển chuyến bay an toàn.' },
+                    { id: 14, valA: '🪚 Thợ mộc', valB: '🔨 Cái búa', type: 'text', fact: 'Thợ mộc đóng đinh bằng búa để làm ra bàn ghế bằng gỗ.' },
+                    { id: 15, valA: '🦐 Người nuôi tôm', valB: '🕸️ Lưới kéo', type: 'text', fact: 'Nông dân chăm sóc và kéo lưới bắt tôm cá dưới ao hồ.' },
+                    { id: 16, valA: '🎤 Ca sĩ', valB: '🎙️ Micro', type: 'text', fact: 'Ca sĩ cầm micro hát những bài hát hay trên sân khấu lớn.' },
+                    { id: 17, valA: '🔬 Nhà khoa học', valB: '🧪 Ống nghiệm', type: 'text', fact: 'Làm thí nghiệm pha chế các chất lỏng trong phòng nghiên cứu.' },
+                    { id: 18, valA: '🧹 Cô lao công', valB: '🗑️ Chổi quét', type: 'text', fact: 'Dùng chổi quét dọn giữ cho đường phố và trường học sạch sẽ.' },
+                    { id: 19, valA: '🧵 Thợ may', valB: '🪡 Máy khâu', type: 'text', fact: 'Thợ may đạp máy khâu ráp các mảnh vải thành quần áo đẹp.' },
+                    { id: 20, valA: '🔧 Thợ sửa xe', valB: '⚙️ Cờ lê', type: 'text', fact: 'Dùng cờ lê vặn ốc để sửa chữa máy móc và động cơ hỏng hóc.' },
+                    { id: 21, valA: '🦷 Nha sĩ', valB: '🪥 Bàn chải', type: 'text', fact: 'Nha sĩ dặn chúng ta phải đánh răng để không bị sâu răng.' },
+                    { id: 22, valA: '📭 Bưu tá', valB: '✉️ Bức thư', type: 'text', fact: 'Chú bưu tá đạp xe đưa thư và bưu phẩm đến từng nhà.' },
+                    { id: 23, valA: '⚖️ Thẩm phán', valB: '🔨 Búa gỗ', type: 'text', fact: 'Thẩm phán gõ búa trong phiên tòa để giữ sự công bằng.' },
+                    { id: 24, valA: '🕵️ Thám tử', valB: '🔍 Kính lúp', type: 'text', fact: 'Thám tử dùng kính lúp soi xét dấu vết để phá án tìm đồ tì.' },
+                    { id: 25, valA: '🪄 Nhà ảo thuật', valB: '🎩 Mũ phớt', type: 'text', fact: 'Nhà ảo thuật có thể hóa phép lấy ra chú thỏ từ chiếc mũ rỗng.' },
+                    { id: 26, valA: '🤡 Chú hề', valB: '🎈 Bóng bay', type: 'text', fact: 'Chú hề biểu diễn vặn bóng bay thành hình con vật tặng các bé.' },
+                    { id: 27, valA: '🥐 Thợ làm bánh', valB: '⏲️ Lò nướng', type: 'text', fact: 'Thợ làm bánh nướng bánh trong chiếc lò nóng hổi thơm phức.' },
+                    { id: 28, valA: '⚓ Thủy thủ', valB: '🚢 Mỏ neo', type: 'text', fact: 'Thủy thủ thả mỏ neo xuống biển để giữ tàu thuyền đứng yên.' },
+                    { id: 29, valA: '⛏️ Thợ mỏ', valB: '💎 Cây cuốc', type: 'text', fact: 'Thợ mỏ dùng cuốc chim để đào tìm than đá và kim cương.' },
+                    { id: 30, valA: '🪐 Nhà thiên văn', valB: '🔭 Kính thiên văn', type: 'text', fact: 'Nhà thiên văn học dùng ống kính to để ngắm các vì sao xa xôi.' },
+                    { id: 31, valA: '✍️ Nhà văn', valB: '🖋️ Cây bút', type: 'text', fact: 'Nhà văn dùng ngòi bút để viết nên những câu chuyện cổ tích.' },
+                    { id: 32, valA: '📚 Thủ thư', valB: '🗄️ Giá sách', type: 'text', fact: 'Thủ thư sắp xếp sách thật ngay ngắn trên các giá sách thư viện.' },
+                    { id: 33, valA: '🎸 Nhạc công', valB: '🎵 Nốt nhạc', type: 'text', fact: 'Nhạc công đọc bản nhạc để gảy đàn đánh trống cho thật hay.' },
+                    { id: 34, valA: '🎧 DJ', valB: '💿 Đĩa than', type: 'text', fact: 'DJ chỉnh nhạc xập xình bằng cách chà tay trên những chiếc đĩa.' },
+                    { id: 35, valA: '🪠 Thợ sửa ống nước', valB: '💧 Ống nước', type: 'text', fact: 'Chú thợ hàn ống nước bị vỡ để nhà không bị ngập lụt.' },
+                    { id: 36, valA: '⚡ Thợ điện', valB: '🔌 Dây điện', type: 'text', fact: 'Thợ điện nối các cuộn dây để mang ánh sáng tới mọi nhà.' },
+                    { id: 37, valA: '🎤 Phóng viên', valB: '📰 Tờ báo', type: 'text', fact: 'Phóng viên đưa tin tức nóng hổi lên báo chí và đài truyền hình.' },
+                    { id: 38, valA: '⚽ Trọng tài', valB: '哨 Còi', typeA: 'text', typeB: 'text', fact: 'Trọng tài thổi còi tuýt tuýt để điều khiển trận bóng đá công bằng.' },
+                    { id: 39, valA: '🔨 Thợ rèn', valB: '🗜️ Cái đe', type: 'text', fact: 'Thợ rèn đập những thanh sắt nóng đỏ trên một cái đe sắt to.' },
+                    { id: 40, valA: '🧑‍🚀 Phi công vũ trụ', valB: '🚀 Tên lửa', type: 'text', fact: 'Mặc bộ đồ bảo hộ đặc biệt bay lên mặt trăng bằng tên lửa khổng lồ.' }
+                ]
+            }
+        };
+
+        const ENGLISH_THEMES = {
+            ANIMALS: {
+                name: 'Animals 🐶', icon: '🐾', desc: 'Thế giới động vật', badge: 'LEVEL 1', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🐶', valB: 'Dog', typeB: 'text', fact: 'Dogs are loyal friends to humans.' },
+                    { id: 2, valA: '🐱', valB: 'Cat', typeB: 'text', fact: 'Cats like to catch mice and sleep.' },
+                    { id: 3, valA: '🦁', valB: 'Lion', typeB: 'text', fact: 'The lion is the king of the jungle.' },
+                    { id: 4, valA: '🐘', valB: 'Elephant', typeB: 'text', fact: 'Elephants have a long trunk.' },
+                    { id: 5, valA: '🦓', valB: 'Zebra', typeB: 'text', fact: 'Zebras have black and white stripes.' },
+                    { id: 6, valA: '🦒', valB: 'Giraffe', typeB: 'text', fact: 'Giraffes have very long necks.' },
+                    { id: 7, valA: '🐵', valB: 'Monkey', typeB: 'text', fact: 'Monkeys love eating bananas.' },
+                    { id: 8, valA: '🐼', valB: 'Panda', typeB: 'text', fact: 'Pandas love eating bamboo.' },
+                    { id: 9, valA: '🦊', valB: 'Fox', typeB: 'text', fact: 'Foxes are very clever and fast.' },
+                    { id: 10, valA: '🐻', valB: 'Bear', typeB: 'text', fact: 'Bears love eating sweet honey.' },
+                    { id: 11, valA: '🐰', valB: 'Rabbit', typeB: 'text', fact: 'Rabbits have long ears and love carrots.' },
+                    { id: 12, valA: '🐸', valB: 'Frog', typeB: 'text', fact: 'Frogs can jump very far.' },
+                    { id: 13, valA: '🐷', valB: 'Pig', typeB: 'text', fact: 'Pigs like to roll in the mud to stay cool.' },
+                    { id: 14, valA: '🐮', valB: 'Cow', typeB: 'text', fact: 'Cows give us fresh and healthy milk.' },
+                    { id: 15, valA: '🐔', valB: 'Chicken', typeB: 'text', fact: 'Chickens lay eggs for our breakfast.' },
+                    { id: 16, valA: '🦆', valB: 'Duck', typeB: 'text', fact: 'Ducks swim in the pond and quack.' },
+                    { id: 17, valA: '🐢', valB: 'Turtle', typeB: 'text', fact: 'Turtles carry their homes on their backs.' },
+                    { id: 18, valA: '🐍', valB: 'Snake', typeB: 'text', fact: 'Snakes have long bodies and no legs.' },
+                    { id: 19, valA: '🐊', valB: 'Crocodile', typeB: 'text', fact: 'Crocodiles have big and sharp teeth.' },
+                    { id: 20, valA: '🦈', valB: 'Shark', typeB: 'text', fact: 'Sharks are great hunters in the ocean.' },
+                    { id: 21, valA: '🐳', valB: 'Whale', typeB: 'text', fact: 'Whales are the biggest animals in the world.' },
+                    { id: 22, valA: '🐬', valB: 'Dolphin', typeB: 'text', fact: 'Dolphins are very smart and friendly.' },
+                    { id: 23, valA: '🐟', valB: 'Fish', typeB: 'text', fact: 'Fish breathe underwater using gills.' },
+                    { id: 24, valA: '🐙', valB: 'Octopus', typeB: 'text', fact: 'Octopuses have eight long arms.' },
+                    { id: 25, valA: '🦀', valB: 'Crab', typeB: 'text', fact: 'Crabs walk sideways on the beach.' },
+                    { id: 26, valA: '🐧', valB: 'Penguin', typeB: 'text', fact: 'Penguins can swim fast but cannot fly.' },
+                    { id: 27, valA: '🦉', valB: 'Owl', typeB: 'text', fact: 'Owls stay awake and hunt at night.' },
+                    { id: 28, valA: '🦇', valB: 'Bat', typeB: 'text', fact: 'Bats sleep hanging upside down.' },
+                    { id: 29, valA: '🐝', valB: 'Bee', typeB: 'text', fact: 'Bees collect nectar to make honey.' },
+                    { id: 30, valA: '🦋', valB: 'Butterfly', typeB: 'text', fact: 'Butterflies have beautiful colorful wings.' },
+                    { id: 31, valA: '🐜', valB: 'Ant', typeB: 'text', fact: 'Ants are tiny but very strong.' },
+                    { id: 32, valA: '🕷️', valB: 'Spider', typeB: 'text', fact: 'Spiders spin webs to catch insects.' },
+                    { id: 33, valA: '🐌', valB: 'Snail', typeB: 'text', fact: 'Snails move very slowly on the ground.' },
+                    { id: 34, valA: '🐛', valB: 'Caterpillar', typeB: 'text', fact: 'Caterpillars turn into beautiful butterflies.' },
+                    { id: 35, valA: '🐴', valB: 'Horse', typeB: 'text', fact: 'Horses can run very fast.' },
+                    { id: 36, valA: '🐑', valB: 'Sheep', typeB: 'text', fact: 'Sheep give us soft and warm wool.' },
+                    { id: 37, valA: '🐐', valB: 'Goat', typeB: 'text', fact: 'Goats can climb steep rocky mountains.' },
+                    { id: 38, valA: '🐫', valB: 'Camel', typeB: 'text', fact: 'Camels can survive in the hot desert.' },
+                    { id: 39, valA: '🦘', valB: 'Kangaroo', typeB: 'text', fact: 'Kangaroos jump and carry babies in pouches.' },
+                    { id: 40, valA: '🦥', valB: 'Sloth', typeB: 'text', fact: 'Sloths move very slowly in the trees.' }
+                ]
+            },
+            FRUITS: {
+                name: 'Fruits 🍎', icon: '🍓', desc: 'Trái cây tươi ngon', badge: 'LEVEL 1', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🍎', valB: 'Apple', typeB: 'text', fact: 'An apple a day keeps the doctor away.' },
+                    { id: 2, valA: '🍌', valB: 'Banana', typeB: 'text', fact: 'Bananas are yellow and sweet.' },
+                    { id: 3, valA: '🍇', valB: 'Grapes', typeB: 'text', fact: 'Grapes can be purple or green.' },
+                    { id: 4, valA: '🍉', valB: 'Watermelon', typeB: 'text', fact: 'Watermelon is red and very juicy.' },
+                    { id: 5, valA: '🍓', valB: 'Strawberry', typeB: 'text', fact: 'Strawberries are small, red and sweet.' },
+                    { id: 6, valA: '🍍', valB: 'Pineapple', typeB: 'text', fact: 'Pineapples have a prickly rough skin.' },
+                    { id: 7, valA: '🥭', valB: 'Mango', typeB: 'text', fact: 'Mangoes are yummy tropical fruits.' },
+                    { id: 8, valA: '🍒', valB: 'Cherry', typeB: 'text', fact: 'Cherries are small, round and red.' },
+                    { id: 9, valA: '🥝', valB: 'Kiwi', typeB: 'text', fact: 'Kiwis are brown outside and green inside.' },
+                    { id: 10, valA: '🥥', valB: 'Coconut', typeB: 'text', fact: 'Coconuts have fresh water inside them.' },
+                    { id: 11, valA: '🥑', valB: 'Avocado', typeB: 'text', fact: 'Avocados are very healthy and green.' },
+                    { id: 12, valA: '🍑', valB: 'Peach', typeB: 'text', fact: 'Peaches are soft, pink, and sweet.' },
+                    { id: 13, valA: '🍐', valB: 'Pear', typeB: 'text', fact: 'Pears are shaped like a little bell.' },
+                    { id: 14, valA: '🍋', valB: 'Lemon', typeB: 'text', fact: 'Lemons are yellow and very sour.' },
+                    { id: 15, valA: '🍊', valB: 'Orange', typeB: 'text', fact: 'Oranges are full of healthy Vitamin C.' },
+                    { id: 16, valA: '🍈', valB: 'Melon', typeB: 'text', fact: 'Melons are big, round, and sweet.' },
+                    { id: 17, valA: '🍅', valB: 'Tomato', typeB: 'text', fact: 'Tomatoes are red and great for salads.' },
+                    { id: 18, valA: '🍆', valB: 'Eggplant', typeB: 'text', fact: 'Eggplants are shiny and purple.' },
+                    { id: 19, valA: '🥒', valB: 'Cucumber', typeB: 'text', fact: 'Cucumbers are cool, green, and crunchy.' },
+                    { id: 20, valA: '🥦', valB: 'Broccoli', typeB: 'text', fact: 'Broccoli looks like a tiny green tree.' },
+                    { id: 21, valA: '🌽', valB: 'Corn', typeB: 'text', fact: 'Corn has sweet yellow kernels.' },
+                    { id: 22, valA: '🥕', valB: 'Carrot', typeB: 'text', fact: 'Rabbits love eating orange carrots.' },
+                    { id: 23, valA: '🥔', valB: 'Potato', typeB: 'text', fact: 'Potatoes are used to make french fries.' },
+                    { id: 24, valA: '🧅', valB: 'Onion', typeB: 'text', fact: 'Onions can make you cry when cutting.' },
+                    { id: 25, valA: '🧄', valB: 'Garlic', typeB: 'text', fact: 'Garlic smells strong but tastes good.' },
+                    { id: 26, valA: '🍄', valB: 'Mushroom', typeB: 'text', fact: 'Mushrooms grow in dark, damp places.' },
+                    { id: 27, valA: '🌶️', valB: 'Chili', typeB: 'text', fact: 'Chili peppers are very, very spicy.' },
+                    { id: 28, valA: '🫑', valB: 'Bell Pepper', typeB: 'text', fact: 'Bell peppers are sweet and crunchy.' },
+                    { id: 29, valA: '🥬', valB: 'Lettuce', typeB: 'text', fact: 'Lettuce is green leaves used in salads.' },
+                    { id: 30, valA: '🥜', valB: 'Peanut', typeB: 'text', fact: 'Peanuts actually grow under the ground.' },
+                    { id: 31, valA: '🌰', valB: 'Chestnut', typeB: 'text', fact: 'Chestnuts are delicious when roasted.' },
+                    { id: 32, valA: '🫐', valB: 'Blueberry', typeB: 'text', fact: 'Blueberries are tiny, blue, and tasty.' },
+                    { id: 33, valA: '🍏', valB: 'Green Apple', typeB: 'text', fact: 'Green apples are crunchy and sour.' },
+                    { id: 34, valA: '🍠', valB: 'Sweet Potato', typeB: 'text', fact: 'Sweet potatoes are warm and sweet.' },
+                    { id: 35, valA: '🎃', valB: 'Pumpkin', typeB: 'text', fact: 'Pumpkins are carved for Halloween.' },
+                    { id: 36, valA: '🫒', valB: 'Olive', typeB: 'text', fact: 'Olives are used to make healthy oil.' },
+                    { id: 37, valA: '🫛', valB: 'Pea', typeB: 'text', fact: 'Peas are small and live inside a green pod.' },
+                    { id: 38, valA: '🫘', valB: 'Bean', typeB: 'text', fact: 'Beans are very good for your health.' },
+                    { id: 39, valA: '🍈', valB: 'Honeydew', typeB: 'text', fact: 'Honeydews are pale green and very sweet.' },
+                    { id: 40, valA: '🍋', valB: 'Lime', typeB: 'text', fact: 'Limes are green and very sour like lemons.' }
+                ]
+            },
+            VEHICLES: {
+                name: 'Vehicles 🚗', icon: '🚀', desc: 'Phương tiện giao thông', badge: 'LEVEL 2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🚗', valB: 'Car', typeB: 'text', fact: 'People drive cars on the road.' },
+                    { id: 2, valA: '🚲', valB: 'Bicycle', typeB: 'text', fact: 'Riding a bicycle is fun and healthy.' },
+                    { id: 3, valA: '✈️', valB: 'Airplane', typeB: 'text', fact: 'Airplanes fly high in the sky.' },
+                    { id: 4, valA: '🚢', valB: 'Ship', typeB: 'text', fact: 'Ships sail on the deep blue ocean.' },
+                    { id: 5, valA: '🚁', valB: 'Helicopter', typeB: 'text', fact: 'Helicopters can land almost anywhere.' },
+                    { id: 6, valA: '🚀', valB: 'Rocket', typeB: 'text', fact: 'Rockets go to outer space to explore.' },
+                    { id: 7, valA: '🚂', valB: 'Train', typeB: 'text', fact: 'Trains run on long iron tracks.' },
+                    { id: 8, valA: '🚑', valB: 'Ambulance', typeB: 'text', fact: 'Ambulances carry sick people to hospitals.' },
+                    { id: 9, valA: '🚌', valB: 'Bus', typeB: 'text', fact: 'School buses take children to school.' },
+                    { id: 10, valA: '🚓', valB: 'Police Car', typeB: 'text', fact: 'Police cars have bright flashing lights.' },
+                    { id: 11, valA: '🚒', valB: 'Fire Truck', typeB: 'text', fact: 'Fire trucks are red and have loud sirens.' },
+                    { id: 12, valA: '🚜', valB: 'Tractor', typeB: 'text', fact: 'Farmers use tractors to work on the farm.' },
+                    { id: 13, valA: '🛵', valB: 'Scooter', typeB: 'text', fact: 'Scooters are fun to ride in the city.' },
+                    { id: 14, valA: '🏍️', valB: 'Motorcycle', typeB: 'text', fact: 'Motorcycles have two wheels and go fast.' },
+                    { id: 15, valA: '🚐', valB: 'Van', typeB: 'text', fact: 'Vans can carry many people or boxes.' },
+                    { id: 16, valA: '🛻', valB: 'Pickup Truck', typeB: 'text', fact: 'Pickup trucks have an open back for cargo.' },
+                    { id: 17, valA: '🚚', valB: 'Delivery Truck', typeB: 'text', fact: 'Delivery trucks bring packages to your door.' },
+                    { id: 18, valA: '🚛', valB: 'Semi Truck', typeB: 'text', fact: 'Semi trucks transport heavy goods very far.' },
+                    { id: 19, valA: '🏎️', valB: 'Race Car', typeB: 'text', fact: 'Race cars drive super fast on special tracks.' },
+                    { id: 20, valA: '🚕', valB: 'Taxi', typeB: 'text', fact: 'Taxis take people where they want to go.' },
+                    { id: 21, valA: '🚎', valB: 'Trolleybus', typeB: 'text', fact: 'Trolleybuses run on electricity from wires.' },
+                    { id: 22, valA: '🚋', valB: 'Tram', typeB: 'text', fact: 'Trams move along tracks in the city street.' },
+                    { id: 23, valA: '🚄', valB: 'High-speed Train', typeB: 'text', fact: 'High-speed trains travel super fast.' },
+                    { id: 24, valA: '🚇', valB: 'Subway', typeB: 'text', fact: 'Subways travel through tunnels underground.' },
+                    { id: 25, valA: '🛥️', valB: 'Motorboat', typeB: 'text', fact: 'Motorboats speed quickly across the water.' },
+                    { id: 26, valA: '⛵', valB: 'Sailboat', typeB: 'text', fact: 'Sailboats use the wind in their sails to move.' },
+                    { id: 27, valA: '🛶', valB: 'Canoe', typeB: 'text', fact: 'You use a paddle to move a canoe on the river.' },
+                    { id: 28, valA: '🚤', valB: 'Speedboat', typeB: 'text', fact: 'Speedboats are perfect for racing on water.' },
+                    { id: 29, valA: '🛳️', valB: 'Cruise Ship', typeB: 'text', fact: 'Cruise ships are like big floating hotels.' },
+                    { id: 30, valA: '⛴️', valB: 'Ferry', typeB: 'text', fact: 'Ferries carry cars and people across rivers.' },
+                    { id: 31, valA: '🛸', valB: 'UFO', typeB: 'text', fact: 'UFOs are spaceships from other planets.' },
+                    { id: 32, valA: '🛰️', valB: 'Satellite', typeB: 'text', fact: 'Satellites orbit the Earth high in space.' },
+                    { id: 33, valA: '🪂', valB: 'Parachute', typeB: 'text', fact: 'Parachutes help you land safely from the sky.' },
+                    { id: 34, valA: '🎈', valB: 'Hot Air Balloon', typeB: 'text', fact: 'Hot air balloons float gently in the clouds.' },
+                    { id: 35, valA: '🚠', valB: 'Cable Car', typeB: 'text', fact: 'Cable cars hang from thick wires in the air.' },
+                    { id: 36, valA: '🚡', valB: 'Gondola', typeB: 'text', fact: 'Gondolas take you safely up the mountains.' },
+                    { id: 37, valA: '🛹', valB: 'Skateboard', typeB: 'text', fact: 'Skateboards have a board and four small wheels.' },
+                    { id: 38, valA: '🛼', valB: 'Roller Skates', typeB: 'text', fact: 'Roller skates are special shoes with wheels.' },
+                    { id: 39, valA: '🛴', valB: 'Kick Scooter', typeB: 'text', fact: 'You push a kick scooter with your own foot.' },
+                    { id: 40, valA: '🦽', valB: 'Wheelchair', typeB: 'text', fact: 'Wheelchairs help people who cannot walk.' }
+                ]
+            },
+            BODY_PARTS: {
+                name: 'Body Parts 👁️', icon: '👂', desc: 'Cơ thể người (Lớp 2-3)', badge: 'LEVEL 2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '👁️', valB: 'Eye', typeB: 'text', fact: 'We use our eyes to see the world.' },
+                    { id: 2, valA: '👂', valB: 'Ear', typeB: 'text', fact: 'We use our ears to listen to music.' },
+                    { id: 3, valA: '👃', valB: 'Nose', typeB: 'text', fact: 'We use our nose to smell flowers.' },
+                    { id: 4, valA: '👄', valB: 'Mouth', typeB: 'text', fact: 'We use our mouth to eat and speak.' },
+                    { id: 5, valA: '🦷', valB: 'Tooth', typeB: 'text', fact: 'We need to brush our teeth every day.' },
+                    { id: 6, valA: '👅', valB: 'Tongue', typeB: 'text', fact: 'Our tongue helps us taste food.' },
+                    { id: 7, valA: '🖐️', valB: 'Hand', typeB: 'text', fact: 'We have five fingers on each hand.' },
+                    { id: 8, valA: '🦶', valB: 'Foot', typeB: 'text', fact: 'We use our feet to walk and run.' },
+                    { id: 9, valA: '💪', valB: 'Arm', typeB: 'text', fact: 'Exercise makes our arms strong.' },
+                    { id: 10, valA: '🦵', valB: 'Leg', typeB: 'text', fact: 'Our legs help us jump high.' },
+                    { id: 11, valA: '🧠', valB: 'Brain', typeB: 'text', fact: 'The brain helps us think and learn.' },
+                    { id: 12, valA: '🦴', valB: 'Bone', typeB: 'text', fact: 'Bones make up our skeleton.' },
+                    { id: 13, valA: '💇', valB: 'Hair', typeB: 'text', fact: 'Hair grows on top of our head.' },
+                    { id: 14, valA: '👍', valB: 'Thumb', typeB: 'text', fact: 'The thumb is a special short finger.' },
+                    { id: 15, valA: '🩸', valB: 'Blood', typeB: 'text', fact: 'Blood carries oxygen through the body.' },
+                    { id: 16, valA: '🫀', valB: 'Heart', typeB: 'text', fact: 'The heart pumps blood all day long.' },
+                    { id: 17, valA: '🫁', valB: 'Lungs', typeB: 'text', fact: 'Lungs help us breathe in air.' },
+                    { id: 18, valA: '👤', valB: 'Face', typeB: 'text', fact: 'Everyone has a unique face.' },
+                    { id: 19, valA: '💅', valB: 'Nail', typeB: 'text', fact: 'Nails protect the tips of fingers.' },
+                    { id: 20, valA: '🗣️', valB: 'Voice', typeB: 'text', fact: 'We use our voice to sing songs.' }
+                ]
+            },
+            HOUSE_FURNITURE: {
+                name: 'House & Furniture 🏠', icon: '🛋️', desc: 'Nhà cửa & Đồ đạc', badge: 'LEVEL 2', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🏠', valB: 'House', typeB: 'text', fact: 'A house is where a family lives.' },
+                    { id: 2, valA: '🚪', valB: 'Door', typeB: 'text', fact: 'We open the door to enter a room.' },
+                    { id: 3, valA: '🪟', valB: 'Window', typeB: 'text', fact: 'Windows let sunlight into the house.' },
+                    { id: 4, valA: '🛏️', valB: 'Bed', typeB: 'text', fact: 'We sleep comfortably on a bed.' },
+                    { id: 5, valA: '🛋️', valB: 'Sofa', typeB: 'text', fact: 'We sit on the sofa to watch TV.' },
+                    { id: 6, valA: '🪑', valB: 'Chair', typeB: 'text', fact: 'We sit on a chair at the table.' },
+                    { id: 7, valA: '🚽', valB: 'Toilet', typeB: 'text', fact: 'The toilet is in the bathroom.' },
+                    { id: 8, valA: '🛁', valB: 'Bathtub', typeB: 'text', fact: 'We take a relaxing bath in a bathtub.' },
+                    { id: 9, valA: '🚿', valB: 'Shower', typeB: 'text', fact: 'A shower is a quick way to get clean.' },
+                    { id: 10, valA: '🪞', valB: 'Mirror', typeB: 'text', fact: 'We look in the mirror to see ourselves.' },
+                    { id: 11, valA: '🕰️', valB: 'Clock', typeB: 'text', fact: 'A clock tells us what time it is.' },
+                    { id: 12, valA: '💡', valB: 'Lamp', typeB: 'text', fact: 'A lamp gives us light in the dark.' },
+                    { id: 13, valA: '📺', valB: 'Television', typeB: 'text', fact: 'We watch movies on television.' },
+                    { id: 14, valA: '📻', valB: 'Radio', typeB: 'text', fact: 'We listen to news and music on a radio.' },
+                    { id: 15, valA: '🧹', valB: 'Broom', typeB: 'text', fact: 'We use a broom to sweep the floor.' },
+                    { id: 16, valA: '🗑️', valB: 'Trash Can', typeB: 'text', fact: 'Put garbage in the trash can.' },
+                    { id: 17, valA: '🪴', valB: 'Plant', typeB: 'text', fact: 'Houseplants make the room look nice.' },
+                    { id: 18, valA: '🖼️', valB: 'Picture', typeB: 'text', fact: 'Pictures decorate the walls of a house.' },
+                    { id: 19, valA: '🔑', valB: 'Key', typeB: 'text', fact: 'Use a key to lock and unlock doors.' },
+                    { id: 20, valA: '🪜', valB: 'Ladder', typeB: 'text', fact: 'A ladder helps us reach high places.' }
+                ]
+            },
+            CLOTHES_WEATHER: {
+                name: 'Clothes & Weather 👕', icon: '☀️', desc: 'Trang phục & Thời tiết', badge: 'LEVEL 3', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '☀️ Sunny', valB: '👕 T-shirt', type: 'text', fact: 'Wear a cool T-shirt on a sunny day.' },
+                    { id: 2, valA: '🌧️ Rainy', valB: '🧥 Raincoat', type: 'text', fact: 'A raincoat keeps you dry in the rain.' },
+                    { id: 3, valA: '❄️ Snowy', valB: '🧣 Scarf', type: 'text', fact: 'Wrap a scarf around your neck when it snows.' },
+                    { id: 4, valA: '🌬️ Windy', valB: '🧥 Jacket', type: 'text', fact: 'A jacket protects you from the cold wind.' },
+                    { id: 5, valA: '☀️ Hot', valB: '🩳 Shorts', type: 'text', fact: 'Shorts are perfect for hot summer days.' },
+                    { id: 6, valA: '❄️ Cold', valB: '🧤 Gloves', type: 'text', fact: 'Gloves keep your hands warm in winter.' },
+                    { id: 7, valA: '🌧️ Puddles', valB: '👢 Boots', type: 'text', fact: 'Wear boots to jump in muddy puddles.' },
+                    { id: 8, valA: '☀️ Beach', valB: '🩱 Swimsuit', type: 'text', fact: 'Wear a swimsuit to swim at the beach.' },
+                    { id: 9, valA: '😎 Bright', valB: '🕶️ Sunglasses', type: 'text', fact: 'Sunglasses protect your eyes from the sun.' },
+                    { id: 10, valA: '🌤️ Cool', valB: '👖 Jeans', type: 'text', fact: 'Jeans are great for cool autumn weather.' },
+                    { id: 11, valA: '☔ Rain', valB: '☂️ Umbrella', type: 'text', fact: 'Hold an umbrella so you don\'t get wet.' },
+                    { id: 12, valA: '🥶 Freezing', valB: '🧥 Coat', type: 'text', fact: 'A heavy coat is needed for freezing weather.' },
+                    { id: 13, valA: '👟 Running', valB: '👟 Sneakers', type: 'text', fact: 'Sneakers are comfortable for running.' },
+                    { id: 14, valA: '🛌 Sleeping', valB: '👘 Pajamas', type: 'text', fact: 'Wear cozy pajamas when you go to sleep.' },
+                    { id: 15, valA: '👗 Party', valB: '👗 Dress', type: 'text', fact: 'A beautiful dress is nice for a party.' },
+                    { id: 16, valA: '🎩 Formal', valB: '👔 Tie', type: 'text', fact: 'A tie is worn with formal suits.' },
+                    { id: 17, valA: '🥶 Snow', valB: '❄️ Beanie', type: 'text', fact: 'A beanie keeps your head warm in the snow.' },
+                    { id: 18, valA: '🧦 Cold feet', valB: '🧦 Socks', type: 'text', fact: 'Socks keep your feet warm and clean.' },
+                    { id: 19, valA: '👚 Sunny', valB: '👒 Sun hat', type: 'text', fact: 'A sun hat protects your face from sunburn.' },
+                    { id: 20, valA: '👔 Work', valB: '💼 Briefcase', type: 'text', fact: 'Adults carry a briefcase to work.' }
+                ]
+            },
+            FOOD_DRINKS: {
+                name: 'Food & Drinks 🍔', icon: '🥤', desc: 'Đồ ăn thức uống', badge: 'LEVEL 3', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🍞', valB: 'Bread', typeB: 'text', fact: 'Bread is made from flour and baked.' },
+                    { id: 2, valA: '🧀', valB: 'Cheese', typeB: 'text', fact: 'Cheese is made from milk.' },
+                    { id: 3, valA: '🍗', valB: 'Chicken', typeB: 'text', fact: 'Chicken is a delicious source of protein.' },
+                    { id: 4, valA: '🥩', valB: 'Meat', typeB: 'text', fact: 'Meat gives us energy to grow strong.' },
+                    { id: 5, valA: '🥚', valB: 'Egg', typeB: 'text', fact: 'Eggs are often eaten for breakfast.' },
+                    { id: 6, valA: '🥗', valB: 'Salad', typeB: 'text', fact: 'Salad is a healthy mix of vegetables.' },
+                    { id: 7, valA: '🍕', valB: 'Pizza', typeB: 'text', fact: 'Pizza is round and cut into slices.' },
+                    { id: 8, valA: '🍔', valB: 'Burger', typeB: 'text', fact: 'A burger has meat between two buns.' },
+                    { id: 9, valA: '🌭', valB: 'Hot Dog', typeB: 'text', fact: 'A hot dog is a sausage in a bun.' },
+                    { id: 10, valA: '🍟', valB: 'Fries', typeB: 'text', fact: 'French fries are made from potatoes.' },
+                    { id: 11, valA: '🍝', valB: 'Spaghetti', typeB: 'text', fact: 'Spaghetti is a long, thin type of pasta.' },
+                    { id: 12, valA: '🍜', valB: 'Noodles', typeB: 'text', fact: 'Noodles are eaten with chopsticks or a fork.' },
+                    { id: 13, valA: '🍚', valB: 'Rice', typeB: 'text', fact: 'Rice is a staple food in many Asian countries.' },
+                    { id: 14, valA: '🥛', valB: 'Milk', typeB: 'text', fact: 'Drinking milk makes your bones strong.' },
+                    { id: 15, valA: '🧃', valB: 'Juice', typeB: 'text', fact: 'Juice is made from squeezing fresh fruit.' },
+                    { id: 16, valA: '☕', valB: 'Coffee', typeB: 'text', fact: 'Coffee gives adults energy in the morning.' },
+                    { id: 17, valA: '🍵', valB: 'Tea', typeB: 'text', fact: 'Tea is a warm and calming drink.' },
+                    { id: 18, valA: '🍦', valB: 'Ice Cream', typeB: 'text', fact: 'Ice cream is sweet and very cold.' },
+                    { id: 19, valA: '🎂', valB: 'Cake', typeB: 'text', fact: 'We eat cake on birthdays and celebrations.' },
+                    { id: 20, valA: '🍩', valB: 'Donut', typeB: 'text', fact: 'A donut is sweet and has a hole in the middle.' }
+                ]
+            },
+            ACTION_VERBS: {
+                name: 'Action Verbs 🏃', icon: '💃', desc: 'Động từ hành động (Lớp 4-5)', badge: 'LEVEL 4', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🏃', valB: 'Run', typeB: 'text', fact: 'Run fast to win the race!' },
+                    { id: 2, valA: '🚶', valB: 'Walk', typeB: 'text', fact: 'Walking is good for your health.' },
+                    { id: 3, valA: '🦘', valB: 'Jump', typeB: 'text', fact: 'Kangaroos can jump very high.' },
+                    { id: 4, valA: '🏊', valB: 'Swim', typeB: 'text', fact: 'Fish swim in the water.' },
+                    { id: 5, valA: '📖', valB: 'Read', typeB: 'text', fact: 'Read books to learn new things.' },
+                    { id: 6, valA: '✍️', valB: 'Write', typeB: 'text', fact: 'Use a pen to write a letter.' },
+                    { id: 7, valA: '🗣️', valB: 'Speak', typeB: 'text', fact: 'Speak clearly so others can hear you.' },
+                    { id: 8, valA: '👂', valB: 'Listen', typeB: 'text', fact: 'Listen carefully to the teacher.' },
+                    { id: 9, valA: '👀', valB: 'Look', typeB: 'text', fact: 'Look both ways before crossing the street.' },
+                    { id: 10, valA: '🍽️', valB: 'Eat', typeB: 'text', fact: 'Eat your vegetables to grow strong.' },
+                    { id: 11, valA: '🥛', valB: 'Drink', typeB: 'text', fact: 'Drink plenty of water every day.' },
+                    { id: 12, valA: '😴', valB: 'Sleep', typeB: 'text', fact: 'Sleep well to feel rested in the morning.' },
+                    { id: 13, valA: '🕺', valB: 'Dance', typeB: 'text', fact: 'Dance to your favorite music.' },
+                    { id: 14, valA: '🎤', valB: 'Sing', typeB: 'text', fact: 'Sing a happy song.' },
+                    { id: 15, valA: '🎨', valB: 'Draw', typeB: 'text', fact: 'Draw a beautiful picture with crayons.' },
+                    { id: 16, valA: '✂️', valB: 'Cut', typeB: 'text', fact: 'Use scissors carefully to cut paper.' },
+                    { id: 17, valA: '🍳', valB: 'Cook', typeB: 'text', fact: 'Cook a delicious meal for dinner.' },
+                    { id: 18, valA: '🧼', valB: 'Wash', typeB: 'text', fact: 'Wash your hands before eating.' },
+                    { id: 19, valA: '🧹', valB: 'Clean', typeB: 'text', fact: 'Clean your room so it looks nice.' },
+                    { id: 20, valA: '🎮', valB: 'Play', typeB: 'text', fact: 'Play games with your friends.' }
+                ]
+            },
+            OPPOSITES: {
+                name: 'Opposites ⚖️', icon: '↔️', desc: 'Từ trái nghĩa', badge: 'LEVEL 4', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '🐘 Big', valB: '🐜 Small', type: 'text', fact: 'An elephant is big, an ant is small.' },
+                    { id: 2, valA: '🚀 Fast', valB: '🐢 Slow', type: 'text', fact: 'A rocket is fast, a turtle is slow.' },
+                    { id: 3, valA: '🔥 Hot', valB: '🧊 Cold', type: 'text', fact: 'Fire is hot, ice is cold.' },
+                    { id: 4, valA: '😄 Happy', valB: '😢 Sad', type: 'text', fact: 'A smile means happy, a tear means sad.' },
+                    { id: 5, valA: '☀️ Day', valB: '🌙 Night', type: 'text', fact: 'The sun shines by day, the moon by night.' },
+                    { id: 6, valA: '⬆️ Up', valB: '⬇️ Down', type: 'text', fact: 'Look up at the sky, look down at the ground.' },
+                    { id: 7, valA: '🚪 Open', valB: '🔒 Closed', type: 'text', fact: 'Open the door to go in, close it when you leave.' },
+                    { id: 8, valA: '👵 Old', valB: '👶 Young', type: 'text', fact: 'A grandmother is old, a baby is young.' },
+                    { id: 9, valA: '🦒 Tall', valB: '🐕 Short', type: 'text', fact: 'A giraffe is tall, a dog is short.' },
+                    { id: 10, valA: '💪 Strong', valB: '🥀 Weak', type: 'text', fact: 'A bodybuilder is strong, a sick flower is weak.' },
+                    { id: 11, valA: '🐰 Soft', valB: '🪨 Hard', type: 'text', fact: 'A rabbit is soft, a rock is hard.' },
+                    { id: 12, valA: '🔊 Loud', valB: '🤫 Quiet', type: 'text', fact: 'A concert is loud, a library is quiet.' },
+                    { id: 13, valA: '🐷 Dirty', valB: '✨ Clean', type: 'text', fact: 'Mud makes you dirty, a bath makes you clean.' },
+                    { id: 14, valA: '🐘 Heavy', valB: '🪶 Light', type: 'text', fact: 'An elephant is heavy, a feather is light.' },
+                    { id: 15, valA: '🌧️ Wet', valB: '🏜️ Dry', type: 'text', fact: 'Rain makes you wet, a towel makes you dry.' },
+                    { id: 16, valA: '💰 Rich', valB: '🪙 Poor', type: 'text', fact: 'A king is rich, a beggar is poor.' },
+                    { id: 17, valA: '🍬 Sweet', valB: '🍋 Sour', type: 'text', fact: 'Candy is sweet, a lemon is sour.' },
+                    { id: 18, valA: '🐢 Slow', valB: '🐆 Fast', type: 'text', fact: 'A turtle is slow, a cheetah is fast.' },
+                    { id: 19, valA: '😁 Good', valB: '👿 Bad', type: 'text', fact: 'Sharing is good, stealing is bad.' },
+                    { id: 20, valA: '☀️ Light', valB: '🌑 Dark', type: 'text', fact: 'Daytime is light, nighttime is dark.' }
+                ]
+            },
+            HOBBIES_SPORTS: {
+                name: 'Hobbies & Sports ⚽', icon: '🎨', desc: 'Sở thích & Thể thao', badge: 'LEVEL 5', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '⚽', valB: 'Football', typeB: 'text', fact: 'Football is the most popular sport in the world.' },
+                    { id: 2, valA: '🏀', valB: 'Basketball', typeB: 'text', fact: 'You must bounce the ball in basketball.' },
+                    { id: 3, valA: '🎾', valB: 'Tennis', typeB: 'text', fact: 'Tennis is played with a racket and a small green ball.' },
+                    { id: 4, valA: '🏐', valB: 'Volleyball', typeB: 'text', fact: 'You hit the ball over a net in volleyball.' },
+                    { id: 5, valA: '🏸', valB: 'Badminton', typeB: 'text', fact: 'Badminton uses a shuttlecock instead of a ball.' },
+                    { id: 6, valA: '🏓', valB: 'Table Tennis', typeB: 'text', fact: 'Table tennis is also called ping pong.' },
+                    { id: 7, valA: '🏊', valB: 'Swimming', typeB: 'text', fact: 'Swimming is a great way to cool down in summer.' },
+                    { id: 8, valA: '🏃', valB: 'Running', typeB: 'text', fact: 'Running helps keep your heart healthy.' },
+                    { id: 9, valA: '🚴', valB: 'Cycling', typeB: 'text', fact: 'Cycling is riding a bicycle.' },
+                    { id: 10, valA: '🎿', valB: 'Skiing', typeB: 'text', fact: 'Skiing is sliding down snow on skis.' },
+                    { id: 11, valA: '🎨', valB: 'Painting', typeB: 'text', fact: 'Painting uses colors to create pictures.' },
+                    { id: 12, valA: '📸', valB: 'Photography', typeB: 'text', fact: 'Photography is taking pictures with a camera.' },
+                    { id: 13, valA: '🎤', valB: 'Singing', typeB: 'text', fact: 'Singing is making musical sounds with your voice.' },
+                    { id: 14, valA: '🎸', valB: 'Playing Guitar', typeB: 'text', fact: 'A guitar is a musical instrument with strings.' },
+                    { id: 15, valA: '🎹', valB: 'Playing Piano', typeB: 'text', fact: 'A piano has black and white keys.' },
+                    { id: 16, valA: '📖', valB: 'Reading', typeB: 'text', fact: 'Reading books takes you on an adventure.' },
+                    { id: 17, valA: '✍️', valB: 'Writing', typeB: 'text', fact: 'Writing helps you express your thoughts.' },
+                    { id: 18, valA: '🍳', valB: 'Cooking', typeB: 'text', fact: 'Cooking is preparing food to eat.' },
+                    { id: 19, valA: '🏕️', valB: 'Camping', typeB: 'text', fact: 'Camping is sleeping outside in a tent.' },
+                    { id: 20, valA: '🎣', valB: 'Fishing', typeB: 'text', fact: 'Fishing is trying to catch fish in the water.' }
+                ]
+            },
+            NATURE_LANDSCAPES: {
+                name: 'Nature & Landscapes ⛰️', icon: '🌲', desc: 'Thiên nhiên & Phong cảnh', badge: 'LEVEL 5', type: 'CONCEPT',
+                pairs: [
+                    { id: 1, valA: '⛰️', valB: 'Mountain', typeB: 'text', fact: 'A mountain is very high and steep.' },
+                    { id: 2, valA: '🏞️', valB: 'River', typeB: 'text', fact: 'A river is a large flowing body of water.' },
+                    { id: 3, valA: '🌲', valB: 'Forest', typeB: 'text', fact: 'A forest is a large area covered with trees.' },
+                    { id: 4, valA: '🏝️', valB: 'Island', typeB: 'text', fact: 'An island is land surrounded by water.' },
+                    { id: 5, valA: '🏖️', valB: 'Beach', typeB: 'text', fact: 'A beach is a sandy shore by the sea.' },
+                    { id: 6, valA: '🏜️', valB: 'Desert', typeB: 'text', fact: 'A desert is very dry and often sandy.' },
+                    { id: 7, valA: '🌋', valB: 'Volcano', typeB: 'text', fact: 'A volcano can erupt with hot lava.' },
+                    { id: 8, valA: '🌊', valB: 'Ocean', typeB: 'text', fact: 'The ocean is a huge body of saltwater.' },
+                    { id: 9, valA: '☁️', valB: 'Cloud', typeB: 'text', fact: 'Clouds are made of tiny water drops in the sky.' },
+                    { id: 10, valA: '☀️', valB: 'Sun', typeB: 'text', fact: 'The sun is a star that gives us light and heat.' },
+                    { id: 11, valA: '🌙', valB: 'Moon', typeB: 'text', fact: 'The moon orbits the Earth in space.' },
+                    { id: 12, valA: '⭐', valB: 'Star', typeB: 'text', fact: 'Stars twinkle in the night sky.' },
+                    { id: 13, valA: '🌧️', valB: 'Rain', typeB: 'text', fact: 'Rain is water falling from the clouds.' },
+                    { id: 14, valA: '❄️', valB: 'Snow', typeB: 'text', fact: 'Snow falls as soft white flakes in winter.' },
+                    { id: 15, valA: '🌈', valB: 'Rainbow', typeB: 'text', fact: 'A rainbow has seven beautiful colors.' },
+                    { id: 16, valA: '🌸', valB: 'Flower', typeB: 'text', fact: 'Flowers bloom and smell very nice.' },
+                    { id: 17, valA: '🍃', valB: 'Leaf', typeB: 'text', fact: 'Leaves grow on the branches of trees.' },
+                    { id: 18, valA: '🌱', valB: 'Plant', typeB: 'text', fact: 'Plants need sunlight and water to grow.' },
+                    { id: 19, valA: '🪨', valB: 'Rock', typeB: 'text', fact: 'Rocks are hard solid materials from the earth.' },
+                    { id: 20, valA: '🌍', valB: 'Earth', typeB: 'text', fact: 'Earth is the planet where we all live.' }
+                ]
+            }
+        };
+
+
+        const FEEDBACK_WIN = ["Đỉnh chóp!", "Mắt cú vãi!", "Quá dữ luôn!", "Hack à!", "Siêu nhân đây rồi!", "Thiên tài!", "Quá ghê gớm!"];
+        const FEEDBACK_LOSE = ["Hụt rồi, lêu lêu!", "Gần trúng rồi đấy!", "Mắt để đâu nà?", "Lại nhé!", "Nhầm chuồng rồi!", "Tập trung nào!", "Suýt trúng!"];
+
+        // --- STATE ---
+        let currentTab = 'DISCOVERY';
+        let currentTheme = 'SOCIAL';
+        let currentGameMode = 'CLASSIC';
+        let currentDifficulty = 'NORMAL';
+        let cards = [];
+        let flippedCards = [];
+        let matchedCount = 0;
+        let totalPairs = 6;
+        let moves = 0;
+        let timer = 45;
+        let timerInterval;
+        let canFlip = true;
+        let isPeeking = false;
+        let consecutiveMistakes = 0;
+        let lastMatchTime = 0;
+
+        // --- DOM ELEMENTS ---
+        const menuEl = document.getElementById('menu-selection');
+        const boardEl = document.getElementById('game-board');
+        const gridEl = document.getElementById('card-grid');
+        const themeListEl = document.getElementById('theme-list');
+        const timerEl = document.getElementById('timer');
+        const movesEl = document.getElementById('moves');
+        const progressEl = document.getElementById('progress');
+        const toastEl = document.getElementById('feedback-toast');
+        const endOverlay = document.getElementById('end-overlay');
+        const factModal = document.getElementById('fact-modal');
+        const factTitle = document.getElementById('fact-title');
+        const factText = document.getElementById('fact-text');
+        const menuLink = document.querySelector('.menu-link');
+        const classicModesUI = document.getElementById('classic-modes-ui');
+
+        // --- UI LOGIC ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-discovery').classList.toggle('active', tab === 'DISCOVERY');
+            document.getElementById('tab-learning').classList.toggle('active', tab === 'LEARNING');
+            document.getElementById('tab-english').classList.toggle('active', tab === 'ENGLISH');
+            classicModesUI.style.display = (tab === 'DISCOVERY') ? 'block' : 'none';
+            initThemes();
         }
 
-        function createBoard() {
-            shuffle(cards);
-            grid.innerHTML = '';
-            cards.forEach((emoji, i) => {
+        function initThemes() {
+            themeListEl.innerHTML = '';
+            let data;
+            if (currentTab === 'DISCOVERY') data = DISCOVERY_THEMES;
+            else if (currentTab === 'LEARNING') data = LEARNING_THEMES;
+            else data = ENGLISH_THEMES;
+
+            Object.keys(data).forEach(key => {
+                const theme = data[key];
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.emoji = emoji;
+                card.className = 'theme-card';
                 card.innerHTML = `
-                    <div class="card-back">?</div>
-                    <div class="card-front">${emoji}</div>
+                    ${theme.badge ? `<div class="badge">${theme.badge}</div>` : ''}
+                    <div class="theme-icon">${theme.icon}</div>
+                    <div class="theme-name">${theme.name}</div>
+                    <div class="theme-desc">${theme.desc}</div>
                 `;
+                card.onclick = () => selectTheme(key);
+                themeListEl.appendChild(card);
+            });
+        }
+
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            document.getElementById('diff-easy').classList.toggle('active', diff === 'EASY');
+            document.getElementById('diff-normal').classList.toggle('active', diff === 'NORMAL');
+            document.getElementById('diff-hard').classList.toggle('active', diff === 'HARD');
+
+            if (diff === 'EASY') totalPairs = 4;
+            else if (diff === 'NORMAL') totalPairs = 6;
+            else totalPairs = 8;
+        }
+
+        function setMode(mode) {
+            currentGameMode = mode;
+            document.getElementById('mode-classic').classList.toggle('active', mode === 'CLASSIC');
+            document.getElementById('mode-master').classList.toggle('active', mode === 'MASTER');
+        }
+
+        function selectTheme(key) {
+            currentTheme = key;
+            showBoard();
+            startGame();
+        }
+
+        function showMenu() {
+            menuEl.style.display = 'block';
+            boardEl.style.display = 'none';
+            menuLink.style.display = 'none';
+            clearInterval(timerInterval);
+        }
+
+        function showBoard() {
+            menuEl.style.display = 'none';
+            boardEl.style.display = 'block';
+            menuLink.style.display = 'flex';
+            endOverlay.style.display = 'none';
+        }
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            matchedCount = 0;
+            moves = 0;
+            timer = 45;
+            flippedCards = [];
+            canFlip = false;
+            isPeeking = true;
+            consecutiveMistakes = 0;
+            lastMatchTime = 0;
+            updateStats();
+            generateCards();
+
+            setTimeout(() => {
+                document.querySelectorAll('.card').forEach(c => c.classList.add('flipped'));
+                setTimeout(() => {
+                    document.querySelectorAll('.card:not(.matched)').forEach(c => c.classList.remove('flipped'));
+                    canFlip = true;
+                    isPeeking = false;
+                    initTimer();
+                }, currentDifficulty === 'HARD' ? 3000 : 5000);
+            }, 500);
+        }
+
+        function generateCards() {
+            let data;
+            if (currentTab === 'DISCOVERY') data = DISCOVERY_THEMES;
+            else if (currentTab === 'LEARNING') data = LEARNING_THEMES;
+            else data = ENGLISH_THEMES;
+
+            const theme = data[currentTheme];
+            const allPairs = [...theme.pairs].sort(() => Math.random() - 0.5);
+            const pairsData = allPairs.slice(0, totalPairs);
+            let gameData = [];
+
+            if (theme.type === 'CONCEPT') {
+                pairsData.forEach(item => {
+                    gameData.push({ id: item.id, content: item.valA, type: item.type || 'emoji', filter: item.filterA, side: 'A' });
+                    gameData.push({ id: item.id, content: item.valB, type: item.typeB || item.type || 'emoji', filter: item.filterB, side: 'B' });
+                });
+            } else {
+                if (currentGameMode === 'CLASSIC') {
+                    pairsData.forEach(item => {
+                        gameData.push({ id: item.id, emoji: item.emoji, vn: item.vn, type: 'classic' });
+                        gameData.push({ id: item.id, emoji: item.emoji, vn: item.vn, type: 'classic' });
+                    });
+                } else {
+                    pairsData.forEach(item => {
+                        gameData.push({ id: item.id, emoji: item.emoji, vn: item.vn, type: 'master_img' });
+                        gameData.push({ id: item.id, vn: item.vn, en: item.en, type: 'master_text' });
+                    });
+                }
+            }
+
+            if (currentDifficulty === 'HARD') {
+                gameData.push({ id: 'BOMB', content: '💣', type: 'emoji', isBomb: true });
+                gameData.push({ id: 'BOMB', content: '💣', type: 'emoji', isBomb: true });
+            }
+
+            gameData.sort(() => Math.random() - 0.5);
+
+            gridEl.innerHTML = '';
+            gridEl.className = 'grid';
+            gameData.forEach(data => {
+                const card = document.createElement('div');
+                card.className = 'card' + (data.isBomb ? ' bomb' : '');
+                card.dataset.id = data.id;
+                if (data.isBomb) card.dataset.isBomb = "true";
+
+                let contentHTML = '';
+                let extraClass = '';
+
+                if (data.type === 'classic') {
+                    contentHTML = `<div class="card-emoji">${data.emoji}</div><div class="card-label">${data.vn}</div>`;
+                } else if (data.type === 'master_img') {
+                    contentHTML = `<div class="card-emoji">${data.emoji}</div>`;
+                } else if (data.type === 'master_text') {
+                    contentHTML = `<div class="card-label" style="font-size:0.55rem">${data.vn}<br><span style="color:var(--accent)">${data.en}</span></div>`;
+                } else if (data.type === 'emoji') {
+                    contentHTML = `<div class="card-emoji">${data.content}</div>`;
+                    if (data.filter === 'shadow') extraClass = 'shadow';
+                } else if (data.type === 'text') {
+                    contentHTML = `<div class="card-text-val">${data.content}</div>`;
+                    extraClass = 'large-text';
+                }
+
+                card.innerHTML = `
+                    <div class="card-face card-back"></div>
+                    <div class="card-face card-front ${extraClass}">${contentHTML}</div>
+                `;
+
                 card.onclick = () => flipCard(card);
-                grid.appendChild(card);
+                gridEl.appendChild(card);
             });
         }
 
         function flipCard(card) {
-            if (!canFlip || card.classList.contains('flipped') || flippedCards.length >= 2) return;
-
+            if (!canFlip || isPeeking || card.classList.contains('flipped') || card.classList.contains('matched')) return;
             card.classList.add('flipped');
             flippedCards.push(card);
 
+            if (card.dataset.isBomb === "true") {
+                showToast("BÙM! -10 giây 💣");
+                timer = Math.max(0, timer - 10);
+                setTimeout(() => {
+                    card.classList.remove('flipped');
+                    flippedCards = flippedCards.filter(c => c !== card);
+                }, 1000);
+                return;
+            }
+
             if (flippedCards.length === 2) {
+                canFlip = false;
                 moves++;
-                movesEl.innerText = moves;
+                updateStats();
                 checkMatch();
             }
         }
 
         function checkMatch() {
             const [c1, c2] = flippedCards;
-            if (c1.dataset.emoji === c2.dataset.emoji) {
-                matches++;
-                matchesEl.innerText = matches;
-                flippedCards = [];
-                if (matches === emojis.length) {
-                    setTimeout(() => alert('Chúc mừng! Bạn đã hoàn thành trong ' + moves + ' lượt!'), 500);
-                }
+            if (c1.dataset.id === c2.dataset.id && c1 !== c2) {
+                handleMatch();
             } else {
-                canFlip = false;
-                setTimeout(() => {
-                    c1.classList.remove('flipped');
-                    c2.classList.remove('flipped');
-                    flippedCards = [];
-                    canFlip = true;
-                }, 1000);
+                handleMismatch();
             }
         }
 
-        createBoard();
+        function handleMatch() {
+            matchedCount++;
+            consecutiveMistakes = 0;
+            updateStats();
+
+            const now = Date.now();
+            if (lastMatchTime && now - lastMatchTime < 3000) {
+                timer += 5;
+                showToast("COMBO! +5 giây 🔥");
+            }
+            lastMatchTime = now;
+
+            const [c1, c2] = flippedCards;
+            setTimeout(() => {
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                flippedCards = [];
+                canFlip = true;
+                showToast(FEEDBACK_WIN[Math.floor(Math.random() * FEEDBACK_WIN.length)]);
+
+                const data = (currentTab === 'DISCOVERY') ? DISCOVERY_THEMES :
+                    (currentTab === 'LEARNING') ? LEARNING_THEMES : ENGLISH_THEMES;
+                const theme = data[currentTheme];
+                const item = theme.pairs.find(p => p.id == c1.dataset.id);
+                if (item) showFact(item);
+
+                if (matchedCount === totalPairs) endGame(true);
+            }, 500);
+        }
+
+        function handleMismatch() {
+            consecutiveMistakes++;
+            showToast(FEEDBACK_LOSE[Math.floor(Math.random() * FEEDBACK_LOSE.length)]);
+
+            if (currentDifficulty === 'HARD' && consecutiveMistakes >= 3) {
+                setTimeout(() => {
+                    shuffleUnmatched();
+                    consecutiveMistakes = 0;
+                    showToast("TRÁO ĐỔI VỊ TRÍ! 🌀");
+                }, 1000);
+            }
+
+            setTimeout(() => {
+                flippedCards.forEach(c => c.classList.remove('flipped'));
+                flippedCards = [];
+                canFlip = true;
+            }, 1000);
+        }
+
+        function shuffleUnmatched() {
+            const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
+            const cardsData = unmatched.map(c => ({
+                id: c.dataset.id,
+                html: c.innerHTML,
+                isBomb: c.dataset.isBomb === "true"
+            }));
+
+            cardsData.sort(() => Math.random() - 0.5);
+
+            unmatched.forEach((c, i) => {
+                c.dataset.id = cardsData[i].id;
+                c.innerHTML = cardsData[i].html;
+                if (cardsData[i].isBomb) c.dataset.isBomb = "true";
+                else delete c.dataset.isBomb;
+                c.className = 'card' + (cardsData[i].isBomb ? ' bomb' : '');
+            });
+        }
+
+        function updateStats() {
+            movesEl.innerText = moves;
+            progressEl.innerText = `${matchedCount}/${totalPairs}`;
+        }
+
+        function initTimer() {
+            clearInterval(timerInterval);
+            timerEl.innerText = timer;
+            timerEl.classList.remove('time-warning');
+
+            timerInterval = setInterval(() => {
+                timer--;
+                timerEl.innerText = timer;
+
+                if (timer <= 10) timerEl.classList.add('time-warning');
+                if (timer <= 0) {
+                    timer = 0;
+                    timerEl.innerText = 0;
+                    clearInterval(timerInterval);
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function showToast(msg) {
+            toastEl.innerText = msg;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 1500);
+        }
+
+        function showFact(item) {
+            let title;
+            if (currentTab === 'DISCOVERY') title = `${item.emoji} ${item.vn}`;
+            else if (currentTab === 'LEARNING' || currentTab === 'ENGLISH') title = `${item.valA || ''} ↔️ ${item.valB || ''}`;
+
+            factTitle.innerText = title;
+            factText.innerText = item.fact;
+            factModal.style.display = 'flex';
+        }
+
+        function closeFact() { factModal.style.display = 'none'; }
+
+        function endGame(won) {
+            clearInterval(timerInterval);
+            endOverlay.style.display = 'flex';
+            const title = document.getElementById('end-title');
+            const stats = document.getElementById('final-stats');
+            const starsContainer = document.getElementById('end-stars');
+
+            if (won) {
+                title.innerText = "XUẤT SẮC!";
+                stats.innerText = `Hoàn thành với ${timer} giây còn lại!`;
+
+                // Calculate stars
+                let stars = 1;
+                if (timer > 25) stars = 3;
+                else if (timer > 10) stars = 2;
+
+                const starDivs = starsContainer.querySelectorAll('.star');
+                starDivs.forEach((s, i) => s.classList.toggle('filled', i < stars));
+                starsContainer.style.display = 'flex';
+            } else {
+                title.innerText = "HẾT GIỜ RỒI!";
+                stats.innerText = "Đừng bỏ cuộc, hãy thử lại nhé!";
+                starsContainer.style.display = 'none';
+            }
+        }
+
+        // --- INIT ---
+        setDifficulty('NORMAL');
+        switchTab('DISCOVERY');
     </script>
 </body>
 

@@ -19,7 +19,7 @@
             --text-muted: #8b8aa8;
             --success: #10b981;
             --error: #ef4444;
-            
+
             --color-kiddy: #10b981;
             --color-starter: #3b82f6;
             --color-explorer: #f59e0b;
@@ -239,8 +239,15 @@
         }
 
         @keyframes pulse-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .problem-display {
@@ -297,8 +304,13 @@
             background: var(--accent);
         }
 
-        .num-btn.clear { color: var(--error); }
-        .num-btn.submit { background: var(--success); }
+        .num-btn.clear {
+            color: var(--error);
+        }
+
+        .num-btn.submit {
+            background: var(--success);
+        }
 
         .game-over-overlay {
             position: absolute;
@@ -332,7 +344,8 @@
             width: 100%;
         }
 
-        .restart-btn, .change-level-btn {
+        .restart-btn,
+        .change-level-btn {
             color: #fff;
             border: none;
             padding: 14px;
@@ -344,10 +357,19 @@
             width: 100%;
         }
 
-        .restart-btn { background: linear-gradient(135deg, var(--accent), #ec4899); }
-        .change-level-btn { background: var(--surface2); border: 1px solid rgba(255,255,255,0.1); }
+        .restart-btn {
+            background: linear-gradient(135deg, var(--accent), #ec4899);
+        }
 
-        .restart-btn:hover, .change-level-btn:hover { transform: scale(1.03); }
+        .change-level-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .restart-btn:hover,
+        .change-level-btn:hover {
+            transform: scale(1.03);
+        }
 
         .feedback-pop {
             position: absolute;
@@ -359,9 +381,20 @@
         }
 
         @keyframes float-up {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateY(-20px) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-60px) scale(1);
+                opacity: 0;
+            }
         }
 
         /* Level Badge in Game */
@@ -389,17 +422,19 @@
         <div id="level-selection">
             <h2 class="level-title">Toán Tư Duy 🧠</h2>
             <p class="level-subtitle">Chọn cấp độ phù hợp để bắt đầu</p>
-            
+
             <div class="level-grid">
-                <div class="level-btn" style="--btn-color: var(--color-kiddy); --btn-glow: rgba(16, 185, 129, 0.3)" onclick="selectLevel('KIDDY')">
+                <div class="level-btn" style="--btn-color: var(--color-kiddy); --btn-glow: rgba(16, 185, 129, 0.3)"
+                    onclick="selectLevel('KIDDY')">
                     <div class="level-icon">👶</div>
                     <div class="level-info">
                         <div class="level-name">Kiddy</div>
                         <div class="level-desc">Tiền tiểu học · Cộng trừ 0-10</div>
                     </div>
                 </div>
-                
-                <div class="level-btn" style="--btn-color: var(--color-starter); --btn-glow: rgba(59, 130, 246, 0.3)" onclick="selectLevel('STARTER')">
+
+                <div class="level-btn" style="--btn-color: var(--color-starter); --btn-glow: rgba(59, 130, 246, 0.3)"
+                    onclick="selectLevel('STARTER')">
                     <div class="level-icon">🌱</div>
                     <div class="level-info">
                         <div class="level-name">Starter</div>
@@ -407,7 +442,8 @@
                     </div>
                 </div>
 
-                <div class="level-btn" style="--btn-color: var(--color-explorer); --btn-glow: rgba(245, 158, 11, 0.3)" onclick="selectLevel('EXPLORER')">
+                <div class="level-btn" style="--btn-color: var(--color-explorer); --btn-glow: rgba(245, 158, 11, 0.3)"
+                    onclick="selectLevel('EXPLORER')">
                     <div class="level-icon">🧭</div>
                     <div class="level-info">
                         <div class="level-name">Explorer</div>
@@ -415,7 +451,8 @@
                     </div>
                 </div>
 
-                <div class="level-btn" style="--btn-color: var(--color-master); --btn-glow: rgba(236, 72, 153, 0.3)" onclick="selectLevel('MASTER')">
+                <div class="level-btn" style="--btn-color: var(--color-master); --btn-glow: rgba(236, 72, 153, 0.3)"
+                    onclick="selectLevel('MASTER')">
                     <div class="level-icon">🏆</div>
                     <div class="level-info">
                         <div class="level-name">Master</div>
@@ -423,7 +460,8 @@
                     </div>
                 </div>
 
-                <div class="level-btn" style="--btn-color: var(--color-genius); --btn-glow: rgba(239, 68, 68, 0.3)" onclick="selectLevel('GENIUS')">
+                <div class="level-btn" style="--btn-color: var(--color-genius); --btn-glow: rgba(239, 68, 68, 0.3)"
+                    onclick="selectLevel('GENIUS')">
                     <div class="level-icon">⚡</div>
                     <div class="level-info">
                         <div class="level-name">Genius</div>
@@ -435,7 +473,7 @@
 
         <!-- Game Content -->
         <div id="game-badge" class="level-badge-active" style="display:none">KIDDY</div>
-        
+
         <div class="stats-row">
             <div class="stat-box">
                 <div class="stat-label">Thời gian</div>
@@ -477,7 +515,7 @@
             <h2 id="over-title">HẾT GIỜ! ⏰</h2>
             <div class="final-score" id="final-score">0</div>
             <div class="high-score-label" id="high-score-text">Kỷ lục: 0</div>
-            
+
             <div class="btn-group">
                 <button class="restart-btn" onclick="startGame()">Chơi lại 🚀</button>
                 <button class="change-level-btn" onclick="showLevelSelection()">Đổi cấp độ 🧭</button>
@@ -526,13 +564,13 @@
             currentLevel = lvl;
             levelSelectionEl.style.display = 'none';
             document.querySelector('.level-link').style.display = 'flex';
-            
+
             // Set badge
             badgeEl.innerText = LEVELS[lvl].name;
             badgeEl.style.display = 'block';
             badgeEl.style.setProperty('--level-color', LEVELS[lvl].color);
             badgeEl.style.setProperty('--level-glow', LEVELS[lvl].color + '4d'); // 30% alpha
-            
+
             startGame();
         }
 
@@ -541,15 +579,15 @@
             score = 0;
             timeLeft = config.time;
             gameActive = true;
-            
+
             scoreEl.innerText = '0';
             timerEl.innerText = timeLeft;
             timerEl.classList.remove('warning');
             gameOverEl.style.display = 'none';
             clearInput();
-            
+
             generateProblem();
-            
+
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -612,7 +650,7 @@
             score += 10;
             scoreEl.innerText = score;
             showFeedback('+', 'var(--success)');
-            
+
             // Tiny bonus time for correct
             timeLeft += 1;
             timerEl.innerText = timeLeft;
@@ -643,9 +681,9 @@
         function endGame() {
             gameActive = false;
             clearInterval(timerInterval);
-            
+
             finalScoreEl.innerText = score;
-            
+
             // Per-level High Score
             const key = `mathBlast_highScore_${currentLevel}`;
             const highScore = localStorage.getItem(key) || 0;
@@ -655,7 +693,7 @@
             } else {
                 highScoreEl.innerText = `Kỷ lục (${LEVELS[currentLevel].name}): ${highScore}`;
             }
-            
+
             gameOverEl.style.display = 'flex';
         }
 
