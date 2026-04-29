@@ -318,7 +318,7 @@ Disallow: /api/
 Disallow: /analytics
 
 # Sitemap location
-Sitemap: https://kidcoin.app/sitemap.xml"""
+Sitemap: https://choimahoc.io.vn/sitemap.xml"""
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
@@ -330,11 +330,16 @@ async def sitemap_xml():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://kidcoin.app/login</loc>
+    <loc>https://choimahoc.io.vn/login</loc>
     <lastmod>{today}</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://choimahoc.io.vn/game</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://kidcoin.app/login"/>
   </url>
 </urlset>"""
     return Response(content=content, media_type="application/xml")
