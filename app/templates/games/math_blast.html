@@ -8,6 +8,8 @@
     <meta name="description"
         content="Chơi game Math Blast miễn phí! Thử thách tính nhẩm nhanh và rèn luyện tư duy toán học cho trẻ em.">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Game Utils -->
+    <script src="/static/js/game_utils.js"></script>
     <style>
         :root {
             --bg: #0d0d1a;
@@ -143,6 +145,7 @@
             margin-bottom: 8px;
             background: linear-gradient(135deg, var(--accent2), var(--accent));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -410,6 +413,55 @@
             font-weight: 900;
             box-shadow: 0 4px 12px var(--level-glow);
         }
+
+        /* Voice Status */
+        .voice-status {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            z-index: 100;
+            transition: all 0.3s;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .voice-status.active {
+            opacity: 1;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .mic-icon {
+            width: 15px;
+            height: 15px;
+            background: #ff3366;
+            border-radius: 50%;
+            animation: pulse-mic 1s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7);
+            }
+
+            70% {
+                transform: scale(1.3);
+                box-shadow: 0 0 0 10px rgba(255, 51, 102, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0);
+            }
+        }
     </style>
 </head>
 
@@ -523,6 +575,11 @@
         </div>
     </div>
 
+    <div id="voice-indicator" class="voice-status">
+        <div class="mic-icon"></div>
+        <span id="voice-text" style="font-weight: 700; color: #fff;">Máy đang nghe...</span>
+    </div>
+
     <script>
         const timerEl = document.getElementById('timer');
         const scoreEl = document.getElementById('score');
@@ -550,6 +607,7 @@
         let correctAnswer = 0;
         let gameActive = false;
         let timerInterval;
+        let recognition = null;
 
         function showLevelSelection() {
             gameActive = false;
@@ -588,6 +646,9 @@
 
             generateProblem();
 
+            // VOICE: Start continuous listening
+            startVoiceListening();
+
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -623,6 +684,40 @@
             num1El.innerText = n1;
             num2El.innerText = n2;
             operatorEl.innerText = (op === 'x' ? '×' : (op === '/' ? '÷' : op));
+
+            // VOICE: Speak question
+            let opText = op === '+' ? 'cộng' : (op === '-' ? 'trừ' : (op === 'x' ? 'nhân' : 'chia'));
+            GameUtils.speak(`${n1} ${opText} ${n2} bằng mấy?`);
+        }
+
+        function startVoiceListening() {
+            if (!gameActive) return;
+
+            const indicator = document.getElementById('voice-indicator');
+            const vText = document.getElementById('voice-text');
+
+            if (!recognition) {
+                recognition = GameUtils.createRecognition((transcript) => {
+                    // Ignore input if AI is currently speaking or game is over
+                    if (window.speechSynthesis.speaking || !gameActive) return;
+                    handleVoiceInput(transcript);
+                }, (status) => {
+                    if (status === 'listening') indicator.classList.add('active');
+                    else indicator.classList.remove('active');
+                }, true); // Enable CONTINUOUS mode
+            }
+
+            if (recognition) {
+                try { recognition.start(); } catch (e) { }
+            }
+        }
+
+        function handleVoiceInput(text) {
+            const num = GameUtils.textToNumber(text);
+            if (num !== null) {
+                inputEl.value = num;
+                submitAnswer(); // Immediately check answer
+            }
         }
 
         function addNum(n) {
@@ -664,6 +759,12 @@
         function handleWrong() {
             inputEl.classList.add('wrong');
             showFeedback('❌', 'var(--error)');
+
+            // VOICE: Feedback for wrong answer
+            if (gameActive) {
+                GameUtils.speak("Tính lại nhé!");
+            }
+
             setTimeout(clearInput, 300);
         }
 
@@ -681,6 +782,14 @@
         function endGame() {
             gameActive = false;
             clearInterval(timerInterval);
+
+            // VOICE: Stop listening and talking
+            if (recognition) {
+                try { recognition.stop(); } catch (e) { }
+            }
+            window.speechSynthesis.cancel();
+            document.getElementById('voice-indicator').classList.remove('active');
+            isConfirming = false;
 
             finalScoreEl.innerText = score;
 
