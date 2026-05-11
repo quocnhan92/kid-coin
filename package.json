@@ -1,0 +1,26 @@
+{
+  "name": "kid-coin",
+  "version": "1.0.0",
+  "description": "Đây là bản tái cấu trúc tài liệu thiết kế dự án **KidCoin** theo chuẩn Software Architecture Document (SAD), giúp bạn có một cái nhìn tổng thể, khoa học và dễ dàng theo dõi trong suốt quá trình phát triển dự án.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quocnhan92/kid-coin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quocnhan92/kid-coin/issues"
+  },
+  "homepage": "https://github.com/quocnhan92/kid-coin#readme",
+  "devDependencies": {
+    "javascript-obfuscator": "^5.4.2"
+  }
+}

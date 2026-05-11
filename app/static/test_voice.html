@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Voice Recognition - GameUtils</title>
+    <!-- Nhúng file game_utils gốc (chưa obfuscate) để test -->
+    <script src="/static/js/game_utils.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f0f4f8;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        button.stop {
+            background: #ef4444;
+        }
+
+        #status {
+            font-weight: bold;
+            color: #f59e0b;
+            margin-top: 10px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .log-container {
+            background: #1e293b;
+            color: #10b981;
+            padding: 10px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .transcript-box {
+            font-size: 18px;
+            min-height: 50px;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8fafc;
+            margin-top: 10px;
+        }
+
+        .number-box {
+            font-size: 24px;
+            font-weight: bold;
+            color: #7c3aed;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Công cụ Test Voice (GameUtils)</h2>
+
+    <div class="box">
+        <h3>1. Trình điều khiển</h3>
+        <button id="btn-start">Bắt đầu Nghe</button>
+        <button id="btn-stop" class="stop" disabled>Dừng Nghe</button>
+        <button id="btn-tts" style="background: #10b981;">Đọc thử TTS & Nghe</button>
+        <span id="status">Đang tắt</span>
+    </div>
+
+    <div class="box">
+        <h3>2. Kết quả nhận diện</h3>
+        <div>Văn bản thô (Transcript):</div>
+        <div id="transcript" class="transcript-box"></div>
+
+        <div style="margin-top: 15px;">Kết quả phân tích (GameUtils.textToNumber):</div>
+        <div id="number-result" class="number-box">--</div>
+    </div>
+
+    <div class="box">
+        <h3>3. Console Logs</h3>
+        <div id="logs" class="log-container"></div>
+    </div>
+
+    <script>
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const btnTts = document.getElementById('btn-tts');
+        const statusEl = document.getElementById('status');
+        const transcriptEl = document.getElementById('transcript');
+        const numResultEl = document.getElementById('number-result');
+        const logsEl = document.getElementById('logs');
+
+        let recognition = null;
+
+        function log(msg) {
+            console.log(msg);
+            const div = document.createElement('div');
+            div.innerText = `> ${msg}`;
+            logsEl.appendChild(div);
+            logsEl.scrollTop = logsEl.scrollHeight;
+        }
+
+        // Khởi tạo Recognition
+        function initMic() {
+            if (!recognition) {
+                log("Đang khởi tạo GameUtils.createRecognition...");
+                recognition = GameUtils.createRecognition(
+                    (text, isFinal) => {
+                        log(`[onResult] text: "${text}", isFinal: ${isFinal}`);
+
+                        // Hiển thị transcript
+                        transcriptEl.innerText = text + (isFinal ? "" : " ...");
+                        transcriptEl.style.color = isFinal ? "black" : "#64748b";
+
+                        // Test textToNumber
+                        const num = GameUtils.textToNumber(text);
+                        numResultEl.innerText = num !== null ? num : "Không tìm thấy số";
+                        if (num !== null) log(`[textToNumber] Trích xuất được số: ${num}`);
+                    },
+                    (status, detail) => {
+                        log(`[onStatusChange] Trạng thái: ${status}` + (detail ? ` (Chi tiết: ${detail})` : ""));
+
+                        if (status === 'listening') {
+                            statusEl.innerText = "Đang nghe... 🎤";
+                            statusEl.style.color = "#10b981";
+                            btnStart.disabled = true;
+                            btnStop.disabled = false;
+                        } else if (status === 'idle') {
+                            statusEl.innerText = "Tạm nghỉ (Idle)";
+                            statusEl.style.color = "#f59e0b";
+                        } else if (status === 'error') {
+                            if (detail === 'insecure-context') {
+                                statusEl.innerText = "❌ Lỗi: Cần truy cập qua localhost hoặc HTTPS";
+                                log("⚠️ Web Speech API không hoạt động trên địa chỉ IP LAN (192.168.x.x). Hãy dùng: http://localhost:8000 hoặc http://127.0.0.1:8000");
+                            } else if (detail === 'not-supported') {
+                                statusEl.innerText = "❌ Trình duyệt không hỗ trợ Voice. Dùng Chrome/Edge";
+                            } else if (detail === 'network') {
+                                statusEl.innerText = `⚠️ Lỗi mạng - đang thử lại...`;
+                            } else {
+                                statusEl.innerText = `Lỗi: ${detail} ❌`;
+                            }
+                            statusEl.style.color = "#ef4444";
+                            // Không disable nút Stop khi lỗi tạm thời (để user có thể dừng)
+                        }
+                    },
+                    true // autoRestart
+                );
+            }
+        }
+
+        btnStart.onclick = () => {
+            initMic();
+            if (recognition) {
+                log("Gọi recognition.startListening()...");
+                recognition.startListening();
+                btnStart.disabled = true;
+                btnStop.disabled = false;
+            }
+        };
+
+        btnStop.onclick = () => {
+            if (recognition) {
+                log("Gọi recognition.stopListening()...");
+                recognition.stopListening();
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                statusEl.innerText = "Đã dừng hẳn";
+                statusEl.style.color = "#64748b";
+            }
+        };
+
+        btnTts.onclick = () => {
+            initMic();
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+            log("Đang đọc TTS: 'Hai cộng ba bằng mấy?'...");
+
+            // Xóa mic nếu đang mở
+            if (recognition) {
+                try { recognition.abort(); } catch (e) { }
+            }
+
+            GameUtils.speak("Hai cộng ba bằng mấy?", () => {
+                log("TTS đọc xong! Bật mic lên nghe đáp án...");
+                // Chỉ bật lại mic nếu user chưa bấm Stop
+                if (recognition && recognition._shouldRestart) {
+                    // Abort lần nữa cho chắc ăn (xóa buffer)
+                    try { recognition.abort(); } catch (e) { }
+                    setTimeout(() => {
+                        if (recognition._shouldRestart) recognition.startListening();
+                    }, 400);
+                }
+            });
+        };
+
+    </script>
+</body>
+
+</html>

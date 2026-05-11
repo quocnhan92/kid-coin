@@ -302,6 +302,12 @@ async def game_block_breaker(request: Request):
     """Game Block Breaker"""
     return templates.TemplateResponse(request, "games/block_breaker.html")
 
+@app.get("/test_voice", response_class=HTMLResponse)
+async def test_voice_page():
+    """Trang test voice recognition"""
+    with open("app/static/test_voice.html", "r", encoding="utf-8") as f:
+        return f.read()
+
 
 # ===== SEO ROUTES =====
 
