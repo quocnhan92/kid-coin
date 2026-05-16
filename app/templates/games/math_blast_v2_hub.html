@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Blast v2 — Chọn chế độ chơi</title>
-  <meta name="description" content="Math Blast v2: Candy Map, Flappy Sprint, Arcade — một engine, ba trải nghiệm.">
+  <title>Math Blast V2 — Chọn chế độ chơi</title>
+  <meta name="description" content="Math Blast V2: Bản đồ Kẹo, Cuộc đua 60 giây, Giải trí — một lõi game, ba chế độ.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/math_blast_v2.css">
@@ -13,76 +13,74 @@
   <div class="mb-shell">
     <header class="mb-topbar">
       <a href="/game" class="mb-back">← Kho game</a>
-      <div class="mb-brand">Math Blast <span class="badge-v2">v2 Beta</span></div>
+      <button type="button" id="ga-nav-btn" class="ga-nav-auth-btn" style="font-size:0.75rem;padding:6px 12px">Đăng nhập</button>
+      <div class="mb-brand">Math Blast <span class="badge-v2">V2 Thử nghiệm</span></div>
       <div class="mb-profile">
         <span class="mb-avatar">🧒</span>
-        <span>Bé Minh · 128🪙</span>
+        <span id="mb-profile-label">…</span>
       </div>
     </header>
 
     <main class="mb-main">
       <section class="mb-hero">
         <h1>Chọn cách chơi</h1>
-        <p>Một engine — ba SKU. Chuyển qua lại bất cứ lúc nào bằng thanh dưới màn hình.</p>
+        <p>Một lõi game — ba chế độ. Chuyển qua lại bất cứ lúc nào bằng thanh dưới màn hình.</p>
       </section>
 
       <div class="mb-v1-banner">
-        <span>Đang chơi bản cũ? Math Blast v1 vẫn hoạt động bình thường.</span>
-        <a href="/game/math-blast">Mở Math Blast v1 →</a>
+        <span>Đang chơi bản cũ? Math Blast V1 vẫn hoạt động bình thường.</span>
+        <a href="/game/math-blast">Mở Math Blast V1 →</a>
       </div>
 
       <div class="mb-sku-grid">
         <a href="/game/math-blast-v2/candy" class="mb-sku-card candy">
           <div class="banner">🍬</div>
           <div class="body">
-            <h3>Candy Map</h3>
-            <p>Bản đồ 300 màn, sao vàng, thế giới/chương. Subscription — lộ trình dài hạn.</p>
+            <h3>Bản đồ Kẹo</h3>
+            <p>Bản đồ 300 màn, sao vàng, thế giới/chương. Gói trả phí — lộ trình dài hạn.</p>
             <div class="tags">
               <span class="mb-tag">L001–L300</span>
               <span class="mb-tag">3★</span>
-              <span class="mb-tag">Pro</span>
+              <span class="mb-tag">Cao cấp</span>
             </div>
           </div>
         </a>
         <a href="/game/math-blast-v2/flappy" class="mb-sku-card flappy">
           <div class="banner">🐦</div>
           <div class="body">
-            <h3>Flappy Sprint</h3>
-            <p>Sprint 60 giây, combo, bay 3 nấc. Free — viral, chia sẻ điểm cao.</p>
+            <h3>Cuộc đua 60 giây</h3>
+            <p>60 giây trả lời nhanh, chuỗi điểm, bay 3 nấc. Miễn phí — chia sẻ điểm cao.</p>
             <div class="tags">
-              <span class="mb-tag">60s</span>
-              <span class="mb-tag">Combo</span>
-              <span class="mb-tag">Free</span>
+              <span class="mb-tag">60 giây</span>
+              <span class="mb-tag">Chuỗi</span>
+              <span class="mb-tag">Miễn phí</span>
             </div>
           </div>
         </a>
         <a href="/game/math-blast-v2/arcade" class="mb-sku-card arcade">
           <div class="banner">🕹️</div>
           <div class="body">
-            <h3>Arcade</h3>
-            <p>Chọn level preset như v1, hoặc lớp học cho giáo viên. B2B / luyện nhanh.</p>
+            <h3>Giải trí</h3>
+            <p>Chọn màn có sẵn như V1, hoặc lớp học cho giáo viên. Luyện nhanh theo lớp.</p>
             <div class="tags">
-              <span class="mb-tag">LEVELS</span>
-              <span class="mb-tag">Class</span>
+              <span class="mb-tag">Màn</span>
+              <span class="mb-tag">Lớp</span>
               <span class="mb-tag">GV</span>
             </div>
           </div>
         </a>
       </div>
 
-      <p style="text-align:center;color:var(--mb-muted);font-size:0.8rem;">
-        Prototype UI — dữ liệu mock, chưa kết nối API play.
+      <p id="mb-hub-status" style="text-align:center;color:var(--mb-muted);font-size:0.8rem;">
+        Đang tải từ máy chủ…
       </p>
     </main>
 
     {% include "games/math_blast_v2_partials/sku_nav.html" %}
   </div>
 
-  <script src="/static/js/math_blast_v2/common.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      MathBlastV2.setActiveSkuNav('hub');
-    });
-  </script>
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/math_blast_v2/common.js?v=20260519"></script>
+  <script src="/static/js/math_blast_v2/hub.js?v=20260518"></script>
 </body>
 </html>

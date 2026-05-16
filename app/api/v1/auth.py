@@ -229,13 +229,105 @@ async def quick_login(
         details={"device": device.device_name}
     )
 
-    redirect_url = "/parent" if user.role == Role.PARENT else "/kid"
+    if payload.redirect_url and user.role == Role.KID:
+        redirect_url = payload.redirect_url
+    else:
+        redirect_url = "/parent" if user.role == Role.PARENT else "/kid"
+
+    if user.role == Role.KID:
+        from app.services.play_service import get_or_create_profile
+        get_or_create_profile(db, user)
 
     return {
         "message": f"Chào mừng {user.display_name}!",
         "role": user.role.value,
-        "redirect_url": redirect_url
+        "redirect_url": redirect_url,
     }
+
+
+@router.get("/me", response_model=auth_schemas.AuthMeResponse)
+async def auth_me(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+):
+    """Phiên đăng nhập hiện tại (cookie access_token)."""
+    token = deps.get_token_from_request(request, "access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    from app.core.security import decode_access_token
+    payload = decode_access_token(token)
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    try:
+        user_id = UUID(payload["sub"])
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return auth_schemas.AuthMeResponse(
+        id=user.id,
+        display_name=user.display_name,
+        role=user.role.value,
+        family_id=user.family_id,
+        avatar_url=user.avatar_url,
+        current_coin=int(user.current_coin or 0),
+    )
+
+
+@router.post("/register-kid", response_model=auth_schemas.UserContext)
+async def register_kid(
+    request: Request,
+    payload: auth_schemas.RegisterKidRequest,
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Thêm bé vào gia đình (thiết bị đã đăng ký + PIN bố/mẹ).
+    Tự tạo hồ sơ Play (math_blast) cho bé.
+    """
+    device = get_device_info(db, payload.device_id)
+    if not device:
+        raise HTTPException(status_code=403, detail="Thiết bị chưa được đăng ký.")
+
+    family = device.family
+    if family.parent_pin != payload.parent_pin:
+        raise HTTPException(status_code=401, detail="Mã PIN bố/mẹ không đúng.")
+
+    from uuid import uuid4
+    seed = payload.display_name.replace(" ", "")
+    kid = User(
+        id=uuid4(),
+        family_id=family.id,
+        role=Role.KID,
+        display_name=payload.display_name,
+        avatar_url=payload.avatar_url
+        or f"https://api.dicebear.com/7.x/avataaars/svg?seed={seed}",
+    )
+    db.add(kid)
+    db.commit()
+    db.refresh(kid)
+
+    from app.services.play_service import get_or_create_profile
+    get_or_create_profile(db, kid)
+
+    AuditService.log(
+        db=db,
+        action="REGISTER_KID_GAME",
+        resource_type="User",
+        resource_id=str(kid.id),
+        status=AuditStatus.SUCCESS,
+        ip_address=request.client.host,
+        user_agent=request.headers.get("user-agent", "Unknown"),
+        details={"display_name": payload.display_name},
+    )
+
+    return auth_schemas.UserContext(
+        id=kid.id,
+        display_name=kid.display_name,
+        avatar_url=kid.avatar_url,
+        role=kid.role.value,
+        has_pin=False,
+    )
 
 @router.post("/logout")
 async def logout(response: Response):

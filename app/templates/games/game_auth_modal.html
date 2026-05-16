@@ -1,0 +1,92 @@
+<div id="game-auth-overlay" class="ga-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ga-title">
+  <div class="ga-modal">
+    <div id="ga-session-expired" class="ga-session-expired hidden" role="alert">
+      <strong>Phiên đăng nhập đã hết hạn</strong>
+      <span>Chọn lại tài khoản bé bên dưới để tiếp tục chơi và lưu tiến độ.</span>
+    </div>
+    <h2 id="ga-title">Chơi mà học — một tài khoản cho mọi game</h2>
+    <p class="ga-sub" id="ga-sub-default">
+      Đăng ký / đăng nhập một lần: dùng cho <strong>Kid Coin</strong> (việc nhà, Coin) và
+      <strong>Math Blast V2</strong> (tiến độ, điểm, bản đồ).
+    </p>
+    <div class="ga-badges">
+      <span class="ga-badge">🏠 Kid Coin</span>
+      <span class="ga-badge">🚀 Math Blast</span>
+      <span class="ga-badge">🍬 Kẹo · 🐦 Bay</span>
+    </div>
+
+    <div id="ga-view-loading" class="ga-loading">Đang kiểm tra…</div>
+
+    <div id="ga-view-device" class="ga-panel">
+      <div class="ga-tabs">
+        <button type="button" class="ga-tab active" data-ga-tab="login">Đã có nhà</button>
+        <button type="button" class="ga-tab" data-ga-tab="register">Tạo nhà mới</button>
+      </div>
+      <form id="ga-form-login" class="ga-panel active" data-ga-panel="login">
+        <div class="ga-field">
+          <label>Tài khoản bố/mẹ</label>
+          <input type="text" id="ga-login-username" placeholder="VD: botuan" autocomplete="username" />
+        </div>
+        <div class="ga-field">
+          <label>PIN 4 số</label>
+          <input type="password" id="ga-login-pin" maxlength="4" placeholder="1234" autocomplete="current-password" />
+        </div>
+        <button type="submit" class="ga-btn ga-btn-primary">Kết nối thiết bị</button>
+      </form>
+      <form id="ga-form-register" class="ga-panel" data-ga-panel="register">
+        <div class="ga-field">
+          <label>Tên gia đình</label>
+          <input type="text" id="ga-reg-family" required placeholder="Gia đình Gấu Bự" />
+        </div>
+        <div class="ga-field">
+          <label>Tên bố/mẹ</label>
+          <input type="text" id="ga-reg-parent" required placeholder="Bố Tuấn" />
+        </div>
+        <div class="ga-field">
+          <label>Tài khoản đăng nhập</label>
+          <input type="text" id="ga-reg-username" required placeholder="botuan" />
+        </div>
+        <div class="ga-field">
+          <label>PIN 4 số</label>
+          <input type="password" id="ga-reg-pin" maxlength="4" required placeholder="1234" />
+        </div>
+        <button type="submit" class="ga-btn ga-btn-green">Tạo nhà &amp; thiết bị</button>
+      </form>
+      <p class="ga-error" id="ga-device-error"></p>
+    </div>
+
+    <div id="ga-view-pick" class="ga-panel">
+      <p class="ga-sub" style="margin-bottom:8px">Chọn bé để chơi · <span id="ga-family-name">—</span></p>
+      <div id="ga-user-grid" class="ga-user-grid"></div>
+      <button type="button" class="ga-btn ga-btn-ghost" id="ga-show-add-kid">+ Thêm bé mới</button>
+      <p class="ga-error" id="ga-pick-error"></p>
+    </div>
+
+    <div id="ga-view-add-kid" class="ga-panel">
+      <p class="ga-sub">Thêm bé vào nhà (cần PIN bố/mẹ)</p>
+      <form id="ga-form-add-kid">
+        <div class="ga-field">
+          <label>Tên bé</label>
+          <input type="text" id="ga-kid-name" required placeholder="Bé Minh" />
+        </div>
+        <div class="ga-field">
+          <label>PIN bố/mẹ</label>
+          <input type="password" id="ga-kid-pin" maxlength="4" required />
+        </div>
+        <button type="submit" class="ga-btn ga-btn-green">Thêm bé &amp; chơi</button>
+      </form>
+      <button type="button" class="ga-btn ga-btn-ghost" id="ga-back-pick">← Quay lại chọn bé</button>
+      <p class="ga-error" id="ga-kid-error"></p>
+    </div>
+
+    <div id="ga-view-parent-pin" class="ga-panel">
+      <p class="ga-sub">Nhập PIN quản trị</p>
+      <img id="ga-pin-avatar" src="" alt="" width="64" height="64" style="border-radius:50%;display:block;margin:0 auto 12px" />
+      <div class="ga-pin-row" id="ga-pin-dots"></div>
+      <div class="ga-numpad" id="ga-numpad"></div>
+      <button type="button" class="ga-btn ga-btn-ghost" id="ga-pin-back">← Quay lại</button>
+    </div>
+
+    <button type="button" class="ga-btn ga-btn-ghost hidden" id="ga-close-btn">Đóng (đã đăng nhập)</button>
+  </div>
+</div>

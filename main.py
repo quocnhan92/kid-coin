@@ -22,6 +22,7 @@ from app.api.v1 import thinking as thinking_router
 from app.api.v1 import social as social_router
 from app.api.v1 import teen as teen_router
 from app.api.v1 import admin as admin_router
+from app.api.v1.play import router as play_router
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services import admin_service
 from app.core.middleware import RequestContextMiddleware
@@ -83,6 +84,7 @@ app.include_router(social_router.router, prefix="/api/v1/social", tags=["Social"
 app.include_router(teen_router.router, prefix="/api/v1/teen", tags=["Teen"])
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin UI"])
+app.include_router(play_router, prefix="/api/v1/play", tags=["Play"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
@@ -96,6 +98,9 @@ def seed_initial_data():
 
     db = SessionLocal()
     try:
+        from app.services.play_catalog_seed import seed_play_catalog
+        seed_play_catalog(db)
+
         # Check if any user exists
         if db.query(User).first():
             logger.info("Data already exists. Skipping seed.")

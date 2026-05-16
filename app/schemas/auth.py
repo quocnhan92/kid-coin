@@ -19,7 +19,24 @@ class FamilyRegistrationRequest(BaseModel):
 class QuickLoginRequest(BaseModel):
     user_id: UUID
     device_id: str
-    pin: Optional[str] = None # Required if role is PARENT
+    pin: Optional[str] = None  # Required if role is PARENT
+    redirect_url: Optional[str] = None  # Override redirect (e.g. stay on /game)
+
+
+class RegisterKidRequest(BaseModel):
+    device_id: str
+    parent_pin: str
+    display_name: str
+    avatar_url: Optional[str] = None
+
+
+class AuthMeResponse(BaseModel):
+    id: UUID
+    display_name: str
+    role: str
+    family_id: UUID
+    avatar_url: Optional[str] = None
+    current_coin: Optional[int] = None
 
 class UserContext(BaseModel):
     id: UUID

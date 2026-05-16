@@ -58,7 +58,7 @@ def get_me(current_user: User = Depends(deps.get_current_user)):
         "avatar_url": current_user.avatar_url,
         "current_coin": current_user.current_coin,
         "total_earned_score": current_user.total_earned_score,
-        "role": current_user.role
+        "role": current_user.role.value if hasattr(current_user.role, "value") else current_user.role,
     }
 
 @router.put("/me")

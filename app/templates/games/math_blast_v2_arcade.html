@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Blast v2 — Arcade</title>
+  <title>Math Blast V2 — Giải trí</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/math_blast_v2.css">
@@ -25,34 +25,34 @@
 <body class="mb-v2">
   <div class="mb-shell">
     <header class="mb-topbar">
-      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ v2</a>
-      <div class="mb-brand">🕹️ Arcade</div>
-      <div class="mb-profile"><span class="mb-avatar">🧒</span><span>Arcade</span></div>
+      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ V2</a>
+      <div class="mb-brand">🕹️ Giải trí</?div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
     </header>
 
     <main class="mb-main">
       <section class="mb-hero" style="padding:8px 0 12px;">
-        <h1 style="font-size:1.35rem;-webkit-text-fill-color:#a7f3d0;">Chọn level</h1>
-        <p>Preset giống Math Blast v1 — hoặc lớp học cho GV</p>
+        <h1 style="font-size:1.35rem;-webkit-text-fill-color:#a7f3d0;">Chọn màn</h1>
+        <p>Màn có sẵn giống Math Blast V1 — hoặc lớp học cho giáo viên</p>
       </section>
 
       <div class="mb-mode-tabs">
-        <button type="button" class="mb-mode-tab active" data-arcade-mode="free">Arcade free</button>
-        <button type="button" class="mb-mode-tab" data-arcade-mode="class">Lớp học (GV)</button>
+        <button type="button" class="mb-mode-tab active" data-arcade-mode="free">Tự do</button>
+        <button type="button" class="mb-mode-tab" data-arcade-mode="class">Lớp học (giáo viên)</button>
       </div>
 
       <div id="arcade-level-grid" class="mb-level-grid"></div>
 
       <div id="arcade-class-panel" class="mb-class-panel hidden">
         <p style="font-weight:800;margin-bottom:8px;">Mã lớp: <code style="color:var(--mb-arcade)">MB-4A-2026</code></p>
-        <p style="font-size:0.85rem;color:var(--mb-muted);">GV tạo preset · học sinh vào bằng mã (mock)</p>
+        <p style="font-size:0.85rem;color:var(--mb-muted);">Giáo viên tạo màn · học sinh vào bằng mã lớp</p>
       </div>
 
       <div id="arcade-play-panel" class="mb-play-panel hidden">
-        <h3 id="arcade-selected-title" style="margin-bottom:12px;font-weight:900;">Starter</h3>
+        <h3 id="arcade-selected-title" style="margin-bottom:12px;font-weight:900;">Khởi đầu</h3>
         <button type="button" id="arcade-play-btn" class="mb-btn mb-btn-arcade">Chơi ngay</button>
         <p style="margin-top:12px;font-size:0.8rem;color:var(--mb-muted);">
-          <a href="/game/math-blast" style="color:var(--mb-muted)">Hoặc mở gameplay v1 đầy đủ →</a>
+          <a href="/game/math-blast" style="color:var(--mb-muted)">Hoặc mở game V1 đầy đủ →</a>
         </p>
       </div>
     </main>
@@ -60,7 +60,8 @@
     {% include "games/math_blast_v2_partials/sku_nav.html" %}
   </div>
 
-  <script src="/static/js/math_blast_v2/common.js"></script>
-  <script src="/static/js/math_blast_v2/arcade.js"></script>
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/math_blast_v2/common.js?v=20260519"></script>
+  <script src="/static/js/math_blast_v2/arcade.js?v=20260518"></script>
 </body>
 </html>

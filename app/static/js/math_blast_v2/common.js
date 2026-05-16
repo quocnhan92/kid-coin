@@ -1,19 +1,29 @@
 /**
- * Math Blast v2 — shared UI helpers (prototype, mock data)
+ * Math Blast v2 — Play API client (/api/v1/play)
  */
 (function () {
-  const MOCK_PROFILE = {
-    name: 'Bé Minh',
-    coins: 128,
-    streak: 3,
-    currentSku: null,
+  const PLAY_API = '/api/v1/play';
+  const USER_API = '/api/v1/users/me';
+
+  const GAME_ID = 'math_blast';
+  const MODES = {
+    candy: 'math_blast:candy',
+    flappy: 'math_blast:flappy',
+    arcade: 'math_blast:arcade_free',
+    arcadeClass: 'math_blast:arcade_class',
   };
 
-  const CANDY_WORLDS = [
-    { id: 'w1', name: 'Thế giới 1', chapter: 'Cộng trừ cơ bản', levels: 18 },
-    { id: 'w2', name: 'Thế giới 2', chapter: 'Nhân chia', levels: 18 },
-    { id: 'w3', name: 'Thế giới 3', chapter: 'Hỗn hợp', levels: 18 },
-  ];
+  let _bootstrapCache = {};
+  let _userMe = null;
+
+  function uuid() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
 
   function toast(msg, duration = 2200) {
     let el = document.getElementById('mb-toast');
@@ -35,34 +45,236 @@
     });
   }
 
-  function buildCandyLevels(worldIndex, count = 12) {
-    const nodes = [];
-    const base = worldIndex * 18;
-    for (let i = 0; i < count; i++) {
-      const n = base + i + 1;
-      const id = `L${String(n).padStart(3, '0')}`;
-      const locked = n > base + 4;
-      const stars = locked ? 0 : Math.floor(Math.random() * 4);
-      const isBoss = (i + 1) % 6 === 0;
-      nodes.push({
-        id,
-        title: isBoss ? `Boss ${id}` : `Màn ${n}`,
-        sub: isBoss ? 'Thử thách cuối chương' : '3 sao để mở màn tiếp',
-        locked,
-        current: n === base + 3,
-        stars,
-        boss: isBoss,
-        icon: isBoss ? '👑' : locked ? '🔒' : '⭐',
-      });
+  function formatApiDetail(detail) {
+    if (!detail) return '';
+    if (typeof detail === 'string') {
+      if (detail.includes('dictionary or object to extract fields')) {
+        return 'Lỗi gửi dữ liệu lên server — hãy tải lại trang (Ctrl+Shift+R)';
+      }
+      return detail;
     }
-    return nodes;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          if (item && item.msg) {
+            if (item.msg.includes('dictionary or object to extract fields')) {
+              return 'Dữ liệu phiên không đúng định dạng';
+            }
+            return item.msg;
+          }
+          return JSON.stringify(item);
+        })
+        .join('; ');
+    }
+    return JSON.stringify(detail);
+  }
+
+  const AUTH_ERROR = 'SESSION_AUTH_REQUIRED';
+
+  function isAuthError(err) {
+    if (!err) return false;
+    return err.message === AUTH_ERROR || err.message === 'Unauthorized';
+  }
+
+  function handleApiAuthError(status, detail) {
+    if (status === 401) {
+      clearBootstrapCache();
+      if (window.GameAuth && window.GameAuth.openSessionExpired) {
+        window.GameAuth.openSessionExpired();
+      } else if (window.GameAuth) {
+        window.GameAuth.open();
+      }
+      throw new Error(AUTH_ERROR);
+    }
+    if (status === 403) {
+      clearBootstrapCache();
+      const msg =
+        formatApiDetail(detail) ||
+        'Hãy chọn tài khoản bé trên màn hình đăng nhập để bắt đầu chơi';
+      if (window.GameAuth) window.GameAuth.open();
+      throw new Error(AUTH_ERROR);
+    }
+    if (status === 404) {
+      toast('Không kết nối được máy chủ — hãy khởi động lại ứng dụng');
+      throw new Error('Not Found');
+    }
+  }
+
+  function clearBootstrapCache() {
+    _bootstrapCache = {};
+    _userMe = null;
+  }
+
+  async function fetchJson(url, options = {}) {
+    const { headers: optHeaders, ...rest } = options;
+    const res = await fetch(url, {
+      credentials: 'include',
+      ...rest,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(optHeaders || {}),
+      },
+    });
+    if (res.status === 401 || res.status === 403 || res.status === 404) {
+      const err = await res.json().catch(() => ({}));
+      handleApiAuthError(res.status, err.detail);
+    }
+    if (res.status === 304) return { _notModified: true };
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = formatApiDetail(err.detail) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  async function loadUserMe() {
+    if (_userMe) return _userMe;
+    _userMe = await fetchJson(USER_API);
+    return _userMe;
+  }
+
+  async function updateProfileBar(extra) {
+    const label = document.getElementById('mb-profile-label');
+    if (!label) return;
+    try {
+      const me = await loadUserMe();
+      let text = me.display_name || 'Bé';
+      if (extra) text += ` · ${extra}`;
+      else if (me.current_coin != null) text += ` · ${me.current_coin}🪙`;
+      label.textContent = text;
+    } catch (e) {
+      label.textContent = extra || 'Đăng nhập để chơi';
+    }
+  }
+
+  async function getGames() {
+    return fetchJson(`${PLAY_API}/games`);
+  }
+
+  async function getLevels(gameModeId) {
+    return fetchJson(`${PLAY_API}/levels?game_mode_id=${encodeURIComponent(gameModeId)}`);
+  }
+
+  async function getBootstrap(gameModeId, gameId = GAME_ID) {
+    const key = `${gameId}:${gameModeId || ''}`;
+    const headers = {};
+    const cached = _bootstrapCache[key];
+    if (cached && cached.etag) headers['If-None-Match'] = cached.etag;
+
+    const res = await fetch(
+      `${PLAY_API}/bootstrap?game_id=${encodeURIComponent(gameId)}&game_mode_id=${encodeURIComponent(gameModeId || '')}`,
+      { credentials: 'include', headers }
+    );
+    if (res.status === 401 || res.status === 403 || res.status === 404) {
+      const err = await res.json().catch(() => ({}));
+      handleApiAuthError(res.status, err.detail);
+    }
+    if (res.status === 304 && cached) return cached.data;
+    if (!res.ok) throw new Error(`bootstrap ${res.status}`);
+    const data = await res.json();
+    const etag = res.headers.get('ETag');
+    _bootstrapCache[key] = { data, etag };
+    return data;
+  }
+
+  function cleanSessionOp(op) {
+    if (!op || typeof op !== 'object' || Array.isArray(op)) {
+      throw new Error('Dữ liệu phiên không hợp lệ');
+    }
+    const out = {};
+    Object.keys(op).forEach((key) => {
+      const val = op[key];
+      if (val !== undefined && val !== null) out[key] = val;
+    });
+    if (!out.op) throw new Error('Thiếu loại phiên (start/end)');
+    return out;
+  }
+
+  function flattenSessionOps(sessions) {
+    let list = Array.isArray(sessions) ? sessions : [sessions];
+    if (list.length === 1 && Array.isArray(list[0])) {
+      list = list[0];
+    }
+    return list;
+  }
+
+  async function sessionsBatch(sessions, idempotencyKey) {
+    const list = flattenSessionOps(sessions);
+    const payload = list.filter(Boolean).map(cleanSessionOp);
+    if (!payload.length) {
+      throw new Error('Thiếu dữ liệu phiên chơi (sessions)');
+    }
+    const headers = {};
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+    return fetchJson(`${PLAY_API}/sessions/batch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ sessions: payload }),
+    });
+  }
+
+  async function eventsBatch(sessionId, events) {
+    return fetchJson(`${PLAY_API}/events/batch`, {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, events }),
+    });
+  }
+
+  function progressMap(bootstrap) {
+    const map = {};
+    (bootstrap.level_progress || []).forEach((p) => {
+      map[p.level_id] = p;
+    });
+    return map;
+  }
+
+  function mergeCandyLevels(catalogLevels, bootstrap) {
+    const prog = progressMap(bootstrap);
+    let currentSet = false;
+    return catalogLevels.map((lv) => {
+      const p = prog[lv.id];
+      const stars = p ? p.stars : 0;
+      const unlocked = p ? p.is_unlocked : lv.id === 'L001';
+      const locked = !unlocked;
+      const current = !locked && !currentSet && stars < 3;
+      if (current) currentSet = true;
+      return {
+        id: lv.id,
+        title: lv.title,
+        sub: lv.is_boss ? 'Thử thách cuối chương' : '3 sao để mở màn tiếp',
+        locked,
+        current,
+        stars,
+        boss: lv.is_boss,
+        icon: lv.is_boss ? '👑' : locked ? '🔒' : '⭐',
+      };
+    });
   }
 
   window.MathBlastV2 = {
-    MOCK_PROFILE,
-    CANDY_WORLDS,
+    PLAY_API,
+    GAME_ID,
+    MODES,
+    AUTH_ERROR,
+    uuid,
     toast,
     setActiveSkuNav,
-    buildCandyLevels,
+    fetchJson,
+    formatApiDetail,
+    isAuthError,
+    clearBootstrapCache,
+    loadUserMe,
+    updateProfileBar,
+    getGames,
+    getLevels,
+    getBootstrap,
+    sessionsBatch,
+    eventsBatch,
+    progressMap,
+    mergeCandyLevels,
   };
 })();

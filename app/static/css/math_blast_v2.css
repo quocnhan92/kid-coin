@@ -356,6 +356,10 @@ body.mb-v2::before {
   overflow: hidden;
   border: 3px solid rgba(56,189,248,0.4);
 }
+.mb-flappy-stage.mb-sprint-live {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+}
 .mb-flappy-hud {
   position: absolute;
   top: 12px;

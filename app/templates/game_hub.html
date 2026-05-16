@@ -548,14 +548,14 @@
     <div class="nav-links">
       <a href="/game" class="hide-mobile">Tất cả Game</a>
       <a href="/" class="hide-mobile">KidCoin App</a>
-      <!-- <a href="/login" class="btn-app">Đăng nhập →</a> -->
+      <button type="button" id="ga-nav-btn" class="ga-nav-auth-btn">Đăng nhập / Đăng ký</button>
     </div>
   </nav>
 
   <!-- Hero -->
   <section class="hero">
     <div class="hero-badge">🕹️ Chơi miễn phí ngay trên trình duyệt, không cần cài đặt! Các mini game vui nhộn giúp bé
-      học tư duy và giải trí lành mạnh · Không cần đăng ký</div>
+      học tư duy và giải trí lành mạnh · Đăng ký một lần cho Kid Coin + Math Blast</div>
     <h1>🚀 Dành cho các bé chơi mà học, học mà chơi</h1>
     <!-- <p>Chơi ngay trên trình duyệt, không cần cài đặt! Các mini game vui nhộn giúp bé học tư duy và giải trí lành mạnh.
     </p> -->
@@ -619,23 +619,23 @@
         </div>
       </a>
 
-      <!-- Math Blast v2 -->
+      <!-- Math Blast V2 -->
       <a href="/game/math-blast-v2" id="game-math-blast-v2" class="game-card" data-color="purple">
         <div class="card-glow"></div>
         <div class="card-banner" style="background: linear-gradient(135deg, #4c1d95, #0c4a6e);">
           <span class="card-emoji" style="animation-delay:0.15s">🍬</span>
-          <span class="card-badge" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">v2 BETA</span>
+          <span class="card-badge" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">V2 THỬ NGHIỆM</span>
         </div>
         <div class="card-body">
-          <div class="card-title">Math Blast v2</div>
-          <div class="card-desc">Một engine — ba chế độ: Candy Map, Flappy Sprint, Arcade. Chuyển SKU dễ dàng, prototype UI để xem trải nghiệm.</div>
+          <div class="card-title">Math Blast V2</div>
+          <div class="card-desc">Ba chế độ: Bản đồ Kẹo, Cuộc đua 60 giây, Giải trí. Chuyển chế độ dễ dàng trên cùng một tài khoản.</div>
           <div class="card-footer">
             <div class="card-meta">
-              <span class="meta-item">🍬 Candy</span>
-              <span class="meta-item">🐦 Flappy</span>
-              <span class="meta-item">🕹️ Arcade</span>
+              <span class="meta-item">🍬 Kẹo</span>
+              <span class="meta-item">🐦 Bay</span>
+              <span class="meta-item">🕹️ Giải trí</span>
             </div>
-            <button class="play-btn" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">▶ Thử v2</button>
+            <button class="play-btn" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">▶ Thử V2</button>
           </div>
         </div>
       </a>
@@ -770,6 +770,10 @@
       <a href="mailto:admin@choimahoc.io.vn">Liên hệ</a>
     </p>
   </footer>
+
+  <link rel="stylesheet" href="/static/css/game_auth.css">
+  {% include "games/game_auth_modal.html" %}
+  <script src="/static/js/game_auth.js?v=20260518"></script>
 </body>
 
 </html>

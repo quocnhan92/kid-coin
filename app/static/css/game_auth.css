@@ -1,0 +1,305 @@
+/* Game hub auth overlay — Kid Coin + Math Blast Play */
+.ga-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(8, 10, 20, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.ga-overlay.hidden {
+  display: none;
+}
+
+.ga-overlay.ga-auth-required .ga-modal {
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.45), 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.ga-overlay.ga-auth-required #ga-close-btn {
+  display: none !important;
+}
+
+.ga-session-expired {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #fde68a;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.ga-session-expired.hidden {
+  display: none;
+}
+
+.ga-session-expired strong {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #fcd34d;
+}
+
+.ga-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: linear-gradient(160deg, #1a2340 0%, #12182b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 24px;
+  color: #f4f3ff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.ga-modal h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.ga-modal .ga-sub {
+  font-size: 0.85rem;
+  color: #8b92b0;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.ga-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.ga-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 50px;
+  background: rgba(168, 85, 247, 0.2);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.ga-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  border-radius: 14px;
+}
+
+.ga-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+  background: transparent;
+  color: #8b92b0;
+}
+
+.ga-tab.active {
+  background: rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+}
+
+.ga-panel {
+  display: none;
+}
+
+.ga-panel.active {
+  display: block;
+}
+
+.ga-field {
+  margin-bottom: 12px;
+}
+
+.ga-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #8b92b0;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ga-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.ga-field input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.ga-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.ga-btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: #fff;
+}
+
+.ga-btn-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+}
+
+.ga-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #8b92b0;
+  margin-top: 12px;
+}
+
+.ga-user-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.ga-user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.ga-user-card:hover {
+  border-color: #38bdf8;
+  transform: scale(1.03);
+}
+
+.ga-user-card img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.ga-user-card span {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ga-user-card .ga-role {
+  font-size: 0.65rem;
+  color: #8b92b0;
+  font-weight: 700;
+}
+
+.ga-error {
+  color: #f87171;
+  font-size: 0.82rem;
+  margin-top: 8px;
+  min-height: 1.2em;
+}
+
+.ga-loading {
+  text-align: center;
+  padding: 32px;
+  color: #8b92b0;
+}
+
+.ga-pin-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.ga-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #8b92b0;
+}
+
+.ga-pin-dot.filled {
+  background: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.ga-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ga-numpad button {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ga-nav-auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid rgba(124, 58, 237, 0.5);
+  background: rgba(124, 58, 237, 0.2);
+  color: #e9d5ff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.ga-nav-auth-btn.logged-in {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(52, 211, 153, 0.15);
+  color: #a7f3d0;
+}

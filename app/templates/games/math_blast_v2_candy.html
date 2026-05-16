@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Blast v2 — Candy Map</title>
+  <title>Math Blast V2 — Bản đồ Kẹo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/math_blast_v2.css">
@@ -11,9 +11,9 @@
 <body class="mb-v2">
   <div class="mb-shell">
     <header class="mb-topbar">
-      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ v2</a>
-      <div class="mb-brand">🍬 Candy Map</div>
-      <div class="mb-profile"><span class="mb-avatar">🧒</span><span>3★ streak</span></div>
+      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ V2</a>
+      <div class="mb-brand">🍬 Bản đồ Kẹo</div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
     </header>
 
     <main class="mb-main">
@@ -31,15 +31,16 @@
 
       <div id="candy-map-path" class="mb-map-path" aria-label="Lộ trình màn chơi"></div>
 
-      <p style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--mb-muted);">
-        Màn khoá — cần 3★ màn trước (mock)
+      <p id="candy-api-status" style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--mb-muted);">
+        Tiến độ từ máy chủ · màn khoá cần 3★ màn trước
       </p>
     </main>
 
     {% include "games/math_blast_v2_partials/sku_nav.html" %}
   </div>
 
-  <script src="/static/js/math_blast_v2/common.js"></script>
-  <script src="/static/js/math_blast_v2/candy.js"></script>
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/math_blast_v2/common.js?v=20260519"></script>
+  <script src="/static/js/math_blast_v2/candy.js?v=20260518"></script>
 </body>
 </html>
