@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Blast v2 — Candy Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ v2</a>
+      <div class="mb-brand">🍬 Candy Map</div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span>3★ streak</span></div>
+    </header>
+
+    <main class="mb-main">
+      <section class="mb-hero" style="padding-top:8px;padding-bottom:16px;">
+        <h1 style="font-size:1.4rem;-webkit-text-fill-color:#e9d5ff;">Thế giới &amp; chương</h1>
+        <p id="candy-chapter-sub">Cộng trừ cơ bản · 18 màn</p>
+      </section>
+
+      <div class="mb-world-tabs" role="tablist">
+        <button type="button" class="mb-world-tab active" role="tab">TG 1</button>
+        <button type="button" class="mb-world-tab" role="tab">TG 2</button>
+        <button type="button" class="mb-world-tab" role="tab">TG 3</button>
+        <button type="button" class="mb-world-tab" role="tab" disabled style="opacity:0.4">TG 4+</button>
+      </div>
+
+      <div id="candy-map-path" class="mb-map-path" aria-label="Lộ trình màn chơi"></div>
+
+      <p style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--mb-muted);">
+        Màn khoá — cần 3★ màn trước (mock)
+      </p>
+    </main>
+
+    {% include "games/math_blast_v2_partials/sku_nav.html" %}
+  </div>
+
+  <script src="/static/js/math_blast_v2/common.js"></script>
+  <script src="/static/js/math_blast_v2/candy.js"></script>
+</body>
+</html>

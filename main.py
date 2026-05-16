@@ -297,6 +297,26 @@ async def game_math_blast(request: Request):
     """Game Math Blast"""
     return templates.TemplateResponse(request, "games/math_blast.html")
 
+@app.get("/game/math-blast-v2", response_class=HTMLResponse)
+async def game_math_blast_v2_hub(request: Request):
+    """Math Blast v2 — hub chọn SKU (Candy / Flappy / Arcade)"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_hub.html")
+
+@app.get("/game/math-blast-v2/candy", response_class=HTMLResponse)
+async def game_math_blast_v2_candy(request: Request):
+    """Math Blast v2 — Candy Map prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_candy.html")
+
+@app.get("/game/math-blast-v2/flappy", response_class=HTMLResponse)
+async def game_math_blast_v2_flappy(request: Request):
+    """Math Blast v2 — Flappy Sprint prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_flappy.html")
+
+@app.get("/game/math-blast-v2/arcade", response_class=HTMLResponse)
+async def game_math_blast_v2_arcade(request: Request):
+    """Math Blast v2 — Arcade prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_arcade.html")
+
 @app.get("/game/block-breaker", response_class=HTMLResponse)
 async def game_block_breaker(request: Request):
     """Game Block Breaker"""

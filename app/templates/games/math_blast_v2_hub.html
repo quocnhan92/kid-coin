@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Blast v2 — Chọn chế độ chơi</title>
+  <meta name="description" content="Math Blast v2: Candy Map, Flappy Sprint, Arcade — một engine, ba trải nghiệm.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game" class="mb-back">← Kho game</a>
+      <div class="mb-brand">Math Blast <span class="badge-v2">v2 Beta</span></div>
+      <div class="mb-profile">
+        <span class="mb-avatar">🧒</span>
+        <span>Bé Minh · 128🪙</span>
+      </div>
+    </header>
+
+    <main class="mb-main">
+      <section class="mb-hero">
+        <h1>Chọn cách chơi</h1>
+        <p>Một engine — ba SKU. Chuyển qua lại bất cứ lúc nào bằng thanh dưới màn hình.</p>
+      </section>
+
+      <div class="mb-v1-banner">
+        <span>Đang chơi bản cũ? Math Blast v1 vẫn hoạt động bình thường.</span>
+        <a href="/game/math-blast">Mở Math Blast v1 →</a>
+      </div>
+
+      <div class="mb-sku-grid">
+        <a href="/game/math-blast-v2/candy" class="mb-sku-card candy">
+          <div class="banner">🍬</div>
+          <div class="body">
+            <h3>Candy Map</h3>
+            <p>Bản đồ 300 màn, sao vàng, thế giới/chương. Subscription — lộ trình dài hạn.</p>
+            <div class="tags">
+              <span class="mb-tag">L001–L300</span>
+              <span class="mb-tag">3★</span>
+              <span class="mb-tag">Pro</span>
+            </div>
+          </div>
+        </a>
+        <a href="/game/math-blast-v2/flappy" class="mb-sku-card flappy">
+          <div class="banner">🐦</div>
+          <div class="body">
+            <h3>Flappy Sprint</h3>
+            <p>Sprint 60 giây, combo, bay 3 nấc. Free — viral, chia sẻ điểm cao.</p>
+            <div class="tags">
+              <span class="mb-tag">60s</span>
+              <span class="mb-tag">Combo</span>
+              <span class="mb-tag">Free</span>
+            </div>
+          </div>
+        </a>
+        <a href="/game/math-blast-v2/arcade" class="mb-sku-card arcade">
+          <div class="banner">🕹️</div>
+          <div class="body">
+            <h3>Arcade</h3>
+            <p>Chọn level preset như v1, hoặc lớp học cho giáo viên. B2B / luyện nhanh.</p>
+            <div class="tags">
+              <span class="mb-tag">LEVELS</span>
+              <span class="mb-tag">Class</span>
+              <span class="mb-tag">GV</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <p style="text-align:center;color:var(--mb-muted);font-size:0.8rem;">
+        Prototype UI — dữ liệu mock, chưa kết nối API play.
+      </p>
+    </main>
+
+    {% include "games/math_blast_v2_partials/sku_nav.html" %}
+  </div>
+
+  <script src="/static/js/math_blast_v2/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      MathBlastV2.setActiveSkuNav('hub');
+    });
+  </script>
+</body>
+</html>

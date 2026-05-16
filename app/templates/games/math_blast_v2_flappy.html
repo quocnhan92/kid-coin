@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Blast v2 — Flappy Sprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ v2</a>
+      <div class="mb-brand">🐦 Flappy Sprint</div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span>Free</span></div>
+    </header>
+
+    <main class="mb-main">
+      <section class="mb-hero" style="padding:8px 0 16px;">
+        <h1 style="font-size:1.35rem;-webkit-text-fill-color:#bae6fd;">Sprint 60 giây</h1>
+        <p>Trả lời đúng để bay lên 3 nấc · Combo nhân điểm</p>
+        <button type="button" id="flappy-start" class="mb-btn mb-btn-flappy" style="margin-top:12px;">▶ Bắt đầu sprint</button>
+      </section>
+
+      <div class="mb-flappy-stage" id="flappy-stage">
+        <div class="mb-flappy-hud">
+          <span class="mb-hud-pill" id="flappy-timer">60s</span>
+          <span class="mb-hud-pill" id="flappy-score">Điểm 0</span>
+          <span class="mb-hud-pill" id="flappy-combo">Combo x0</span>
+        </div>
+        <div class="mb-ladder-rungs" aria-hidden="true">
+          <span class="mb-rung" style="bottom:25%"></span>
+          <span class="mb-rung" style="bottom:47%"></span>
+          <span class="mb-rung" style="bottom:69%"></span>
+        </div>
+        <div class="mb-bird" id="flappy-bird" style="bottom:15%">🐤</div>
+        <div class="mb-question-bar">
+          <div class="mb-question" id="flappy-question">3 + 5 = ?</div>
+          <div class="mb-choices" id="flappy-choices"></div>
+        </div>
+      </div>
+    </main>
+
+    {% include "games/math_blast_v2_partials/sku_nav.html" %}
+  </div>
+
+  <script src="/static/js/math_blast_v2/common.js"></script>
+  <script src="/static/js/math_blast_v2/flappy.js"></script>
+</body>
+</html>
