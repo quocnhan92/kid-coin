@@ -1,0 +1,17 @@
+{
+  "id": "vn_gdpt2018_candy_v1",
+  "version": "1.0.0",
+  "locale": "vi-VN",
+  "grade_range": [1, 5],
+  "skill_units": [
+    {
+      "id": "l1_add_within_10",
+      "grade": 1,
+      "title": "Cộng trong phạm vi 10",
+      "tags": ["add", "grade1"]
+    }
+  ],
+  "levels": [
+    { "id": "L001", "chapter_id": "W1_CH1", "skill_unit_id": "l1_add_within_10", "sort_index": 1 }
+  ]
+}

@@ -12,3 +12,24 @@ from .social import WallOfFame, WallLike, FamilyChallenge, ChallengeProgress, Ch
 from .teen import TeenContract, ContractCheckin, PersonalProject, ProjectMilestoneLog, PeriodType, ContractStatus, CheckinStatus, ProjectStatus, MilestoneStatus
 from .admin import AdminUser, AdminRole
 from .notifications import Notification, NotificationType
+from .play import (
+    PlayGame,
+    PlayGameMode,
+    PlayContentPack,
+    PlaySkillUnit,
+    PlaySkillEdge,
+    PlayLevel,
+    PlayGameRelease,
+    PlayProfile,
+    PlayLevelProgress,
+    PlaySkillMasteryAgg,
+    PlayUserGameStats,
+    PlayModeProgress,
+    PlaySession,
+    PlayEvent,
+    PlaySessionSummary,
+    PlayIdempotencyKey,
+    PlayDailyRecommendation,
+    PlayParentWeeklySnapshot,
+    PlayMetricsDaily,
+)

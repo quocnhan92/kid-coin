@@ -22,6 +22,7 @@ from app.api.v1 import thinking as thinking_router
 from app.api.v1 import social as social_router
 from app.api.v1 import teen as teen_router
 from app.api.v1 import admin as admin_router
+from app.api.v1.play import router as play_router
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services import admin_service
 from app.core.middleware import RequestContextMiddleware
@@ -83,6 +84,7 @@ app.include_router(social_router.router, prefix="/api/v1/social", tags=["Social"
 app.include_router(teen_router.router, prefix="/api/v1/teen", tags=["Teen"])
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin UI"])
+app.include_router(play_router, prefix="/api/v1/play", tags=["Play"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
@@ -96,6 +98,9 @@ def seed_initial_data():
 
     db = SessionLocal()
     try:
+        from app.services.play_catalog_seed import seed_play_catalog
+        seed_play_catalog(db)
+
         # Check if any user exists
         if db.query(User).first():
             logger.info("Data already exists. Skipping seed.")
@@ -296,6 +301,26 @@ async def game_flappy(request: Request):
 async def game_math_blast(request: Request):
     """Game Math Blast"""
     return templates.TemplateResponse(request, "games/math_blast.html")
+
+@app.get("/game/math-blast-v2", response_class=HTMLResponse)
+async def game_math_blast_v2_hub(request: Request):
+    """Math Blast v2 — hub chọn SKU (Candy / Flappy / Arcade)"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_hub.html")
+
+@app.get("/game/math-blast-v2/candy", response_class=HTMLResponse)
+async def game_math_blast_v2_candy(request: Request):
+    """Math Blast v2 — Candy Map prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_candy.html")
+
+@app.get("/game/math-blast-v2/flappy", response_class=HTMLResponse)
+async def game_math_blast_v2_flappy(request: Request):
+    """Math Blast v2 — Flappy Sprint prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_flappy.html")
+
+@app.get("/game/math-blast-v2/arcade", response_class=HTMLResponse)
+async def game_math_blast_v2_arcade(request: Request):
+    """Math Blast v2 — Arcade prototype"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_arcade.html")
 
 @app.get("/game/block-breaker", response_class=HTMLResponse)
 async def game_block_breaker(request: Request):
