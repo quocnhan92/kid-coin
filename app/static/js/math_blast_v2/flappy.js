@@ -11,6 +11,7 @@
   } = window.MathBlastV2;
 
   const { createSession, resolveActiveTier } = window.MathBlastQuestionGen;
+  const AudioFx = window.FlappyAudio;
 
   let bootstrap = null;
   let sessionId = null;
@@ -46,15 +47,34 @@
     if (el) el.textContent = `Chuỗi x${n}`;
   }
 
-  function setBestLabel(n) {
-    const el = document.getElementById('flappy-best');
-    if (el) el.textContent = `Kỷ lục ${n}`;
+  /** Một số kỷ lục duy nhất: max(high_score chế độ, mọi tier personal_best). */
+  function getFlappyBestScore(boot) {
+    if (!boot) return 0;
+    let best = boot.game_stats?.high_score || 0;
+    const pb = boot.flappy?.personal_best;
+    if (pb && typeof pb === 'object') {
+      Object.values(pb).forEach((v) => {
+        if (Number.isFinite(v) && v > best) best = v;
+      });
+    }
+    return best;
+  }
+
+  function flappyProfileExtra(boot) {
+    if (sprintActive) return null;
+    const best = getFlappyBestScore(boot);
+    return best > 0 ? `Kỷ lục ${best}` : null;
+  }
+
+  async function refreshProfileExtra() {
+    await updateProfileBar(flappyProfileExtra(bootstrap));
   }
 
   function renderQuestion() {
     if (!questionSession) return;
     const item = questionSession.next();
     currentQuestion = item;
+    window.__flappyCurrentQuestion = item;
     const qEl = document.getElementById('flappy-question');
     const choicesEl = document.getElementById('flappy-choices');
     if (!qEl || !choicesEl) return;
@@ -65,6 +85,9 @@
     choicesEl.querySelectorAll('.mb-choice').forEach((btn) => {
       btn.addEventListener('click', () => onAnswer(btn, item));
     });
+    if (sprintActive && AudioFx) {
+      AudioFx.speakQuestion(item);
+    }
   }
 
   async function flushEvents() {
@@ -114,6 +137,10 @@
       setCombo(combo);
       setRunScore(score);
       updateBird();
+      if (AudioFx) {
+        AudioFx.playCorrect();
+        if (combo === 3 || combo === 5 || combo === 10) AudioFx.playCombo(combo);
+      }
       queueEvent(true, Date.now() - t0, item, delta);
       setTimeout(renderQuestion, 400);
     } else {
@@ -122,6 +149,7 @@
       rung = Math.max(rung - 1, 0);
       setCombo(0);
       updateBird();
+      if (AudioFx) AudioFx.playWrong();
       queueEvent(false, Date.now() - t0, item, 0);
       toast('Sai rồi — thử lại nhé!');
     }
@@ -131,6 +159,10 @@
     sprintActive = false;
     setSprintUi(false);
     clearInterval(timerId);
+    if (AudioFx) {
+      AudioFx.stopSpeech();
+      AudioFx.stopBgm(2000);
+    }
     await flushEvents();
     const now = new Date().toISOString();
     try {
@@ -172,24 +204,9 @@
   }
 
   function applyBootstrapHud() {
-    if (!bootstrap) return;
-    const fl = bootstrap.flappy;
-    if (fl && fl.personal_best) {
-      const vals = Object.values(fl.personal_best).filter((n) => Number.isFinite(n));
-      if (vals.length) setBestLabel(Math.max(...vals, 0));
-    }
-    if (bootstrap.game_stats && !sprintActive) {
-      const hs = bootstrap.game_stats.high_score || 0;
-      if (hs > 0) setBestLabel(hs);
-    }
-    if (!sprintActive) setRunScore(0);
-  }
-
-  function flappyPersonalBestLabel(flappy) {
-    if (!flappy || !flappy.personal_best) return 'Kỷ lục 0';
-    const vals = Object.values(flappy.personal_best).filter((n) => Number.isFinite(n));
-    if (!vals.length) return 'Kỷ lục 0';
-    return `Kỷ lục ${Math.max(...vals, 0)}`;
+    if (!bootstrap || sprintActive) return;
+    setRunScore(0);
+    refreshProfileExtra();
   }
 
   function setStartBusy(busy) {
@@ -233,6 +250,14 @@
     correctCount = 0;
     questionCount = 0;
     activeTier = resolveActiveTier(bootstrap?.flappy);
+    if (AudioFx) {
+      AudioFx.setTier(activeTier);
+      AudioFx.unlock();
+      AudioFx.updateToggleUi(
+        document.getElementById('flappy-toggle-tts'),
+        document.getElementById('flappy-toggle-bgm')
+      );
+    }
     questionSession = createSession(activeTier);
     const now = new Date().toISOString();
     setStartBusy(true);
@@ -262,24 +287,46 @@
     sprintActive = true;
     setSprintUi(true);
     updateBird();
+    if (AudioFx) AudioFx.startBgm();
     renderQuestion();
     setRunScore(0);
     setCombo(0);
+    refreshProfileExtra();
     document.getElementById('flappy-timer').textContent = '60s';
     clearInterval(timerId);
     timerId = setInterval(tickTimer, 1000);
     toast('Cuộc đua 60 giây — bắt đầu!');
   }
 
+  function bindBirdReplay() {
+    const bird = document.getElementById('flappy-bird');
+    if (!bird || bird.dataset.audioBound) return;
+    bird.dataset.audioBound = '1';
+    bird.addEventListener('click', () => {
+      if (!AudioFx || !currentQuestion) return;
+      AudioFx.unlock();
+      AudioFx.speakQuestion(currentQuestion, { force: true });
+    });
+  }
+
   async function init() {
     setActiveSkuNav('flappy');
+    if (AudioFx) await AudioFx.init();
+    const ttsBtn = document.getElementById('flappy-toggle-tts');
+    const bgmBtn = document.getElementById('flappy-toggle-bgm');
+    if (AudioFx) AudioFx.bindToggles(ttsBtn, bgmBtn);
+    bindBirdReplay();
     try {
       bootstrap = await getBootstrap(MODES.flappy);
-      await updateProfileBar(bootstrap.flappy ? flappyPersonalBestLabel(bootstrap.flappy) : null);
+      activeTier = resolveActiveTier(bootstrap?.flappy);
+      if (AudioFx) {
+        AudioFx.setTier(activeTier);
+        AudioFx.updateToggleUi(ttsBtn, bgmBtn);
+      }
       applyBootstrapHud();
       updateBird();
       if (!sprintActive) {
-        questionSession = createSession(resolveActiveTier(bootstrap?.flappy));
+        questionSession = createSession(activeTier);
         renderQuestion();
       }
     } catch (e) {

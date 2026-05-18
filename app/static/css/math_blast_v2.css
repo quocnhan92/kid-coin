@@ -269,6 +269,35 @@ body.mb-v2::before {
 .mb-btn:active { transform: scale(0.97); }
 .mb-btn-primary { background: linear-gradient(135deg, var(--mb-candy), var(--mb-candy2)); color: #fff; }
 .mb-btn-flappy { background: linear-gradient(135deg, var(--mb-flappy), var(--mb-flappy2)); color: #0f172a; }
+
+.mb-audio-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.mb-audio-btn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(56, 189, 248, 0.45);
+  background: rgba(15, 23, 42, 0.5);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.mb-audio-btn:hover {
+  border-color: var(--mb-flappy);
+  color: #e2e8f0;
+}
+.mb-audio-btn.active {
+  border-color: var(--mb-flappy);
+  background: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+}
 .mb-btn-arcade { background: linear-gradient(135deg, var(--mb-arcade), var(--mb-arcade2)); color: #052e16; }
 .mb-btn-ghost {
   background: transparent;
@@ -387,6 +416,14 @@ body.mb-v2::before {
   transition: bottom 0.25s ease-out;
   z-index: 3;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  pointer-events: none;
+}
+.mb-bird.mb-bird-speak {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.mb-bird.mb-bird-speak:active {
+  transform: translateX(-50%) scale(1.08);
 }
 .mb-ladder-rungs {
   position: absolute;
