@@ -74,7 +74,22 @@ def compute_bootstrap_etag(db: Session, user_id: UUID, game_id: str, mode_id: Op
     lp_count = db.query(func.count(PlayLevelProgress.level_id)).filter(
         PlayLevelProgress.user_id == user_id
     ).scalar()
-    payload = f"{user_id}:{game_id}:{mode_id}:{updated}:{lp_count}"
+    mode_key = mode_id or ""
+    stats = (
+        db.query(PlayUserGameStats)
+        .filter(
+            PlayUserGameStats.user_id == user_id,
+            PlayUserGameStats.game_id == game_id,
+            PlayUserGameStats.game_mode_id == mode_key,
+        )
+        .first()
+    )
+    stats_sig = ""
+    if stats:
+        extra_raw = json.dumps(stats.extra_json or {}, sort_keys=True, default=str)
+        extra_hash = hashlib.md5(extra_raw.encode()).hexdigest()[:12]
+        stats_sig = f":hs{int(stats.high_score or 0)}:x{extra_hash}"
+    payload = f"{user_id}:{game_id}:{mode_id}:{updated}:{lp_count}{stats_sig}"
     digest = hashlib.md5(payload.encode()).hexdigest()[:16]
     return f'W/"{digest}"'
 

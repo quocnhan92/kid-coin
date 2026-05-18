@@ -6,6 +6,13 @@
   const USER_API = '/api/v1/users/me';
 
   const GAME_ID = 'math_blast';
+  /** Tên hiển thị chế độ (API id giữ nguyên math_blast:flappy) */
+  const MODE_LABELS = {
+    candy: 'Bản đồ Kẹo',
+    flappy: 'Chim Toán',
+    arcade: 'Giải trí',
+  };
+
   const MODES = {
     candy: 'math_blast:candy',
     flappy: 'math_blast:flappy',
@@ -259,6 +266,7 @@
     PLAY_API,
     GAME_ID,
     MODES,
+    MODE_LABELS,
     AUTH_ERROR,
     uuid,
     toast,

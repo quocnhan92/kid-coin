@@ -69,7 +69,7 @@ def seed_play_catalog(db: Session) -> None:
             id="math_blast:flappy",
             game_id="math_blast",
             mode_key="flappy",
-            display_name="Cuộc đua 60 giây",
+            display_name="Chim Toán",
             tracks_learning=True,
             content_pack_id=CONTENT_PACK_ID,
             config_json={"sprint_seconds": 60, "tiers": ["T1", "T2", "T3", "T4", "T5"]},

@@ -249,3 +249,68 @@ def test_flappy_session_score_persisted(kid_token):
   )
   assert boot.status_code == 200
   assert boot.json()["game_stats"]["high_score"] >= 48
+
+
+def test_flappy_personal_best_per_tier(kid_token):
+    """Mỗi lớp (T1…T3) lưu kỷ lục riêng trong personal_best_by_tier."""
+    now = datetime.now(timezone.utc).isoformat()
+    scores = [("T1", 30), ("T2", 55), ("T3", 40)]
+
+    for tier, score in scores:
+        sid = str(uuid4())
+        headers = {
+            "Authorization": f"Bearer {kid_token}",
+            "Idempotency-Key": f"flappy-tier-{tier}-{sid}",
+        }
+        start = client.post(
+            "/api/v1/play/sessions/batch",
+            json={
+                "sessions": [
+                    {
+                        "op": "start",
+                        "session_id": sid,
+                        "game_id": "math_blast",
+                        "game_mode_id": "math_blast:flappy",
+                        "started_at": now,
+                    }
+                ]
+            },
+            headers=headers,
+        )
+        assert start.status_code == 200
+        end = client.post(
+            "/api/v1/play/sessions/batch",
+            json={
+                "sessions": [
+                    {
+                        "op": "end",
+                        "session_id": sid,
+                        "ended_at": now,
+                        "summary": {
+                            "duration_s": 50,
+                            "score": score,
+                            "questions_count": 8,
+                            "correct_count": 6,
+                            "accuracy": 0.75,
+                            "summary_json": {"tier": tier, "grade": int(tier[1])},
+                        },
+                    }
+                ]
+            },
+            headers={
+                "Authorization": f"Bearer {kid_token}",
+                "Idempotency-Key": f"flappy-tier-end-{tier}-{sid}",
+            },
+        )
+        assert end.status_code == 200
+
+    boot = client.get(
+        "/api/v1/play/bootstrap",
+        params={"game_id": "math_blast", "game_mode_id": "math_blast:flappy"},
+        headers={"Authorization": f"Bearer {kid_token}"},
+    )
+    assert boot.status_code == 200
+    pb = boot.json()["flappy"]["personal_best"]
+    assert pb.get("T2") == 55
+    assert pb.get("T3") == 40
+    assert int(pb.get("T1", 0)) >= 30

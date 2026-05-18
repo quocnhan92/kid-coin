@@ -177,12 +177,18 @@ def rollup_after_session_end(
             result["mastery_updated"].append(skill_id)
 
     if game_mode_id == "math_blast:flappy" and summary.score is not None:
-        extra = stats.extra_json or {}
-        tier = (summary.summary_json or {}).get("tier", "T1")
-        pb = extra.get("personal_best_by_tier", {})
-        if summary.score > pb.get(tier, 0):
-            pb[tier] = summary.score
+        summary_json = summary.summary_json or {}
+        tier = summary_json.get("tier")
+        if not tier:
+            grade = summary_json.get("grade")
+            tier = f"T{int(grade)}" if grade is not None else "T1"
+        extra = dict(stats.extra_json or {})
+        pb = dict(extra.get("personal_best_by_tier") or {})
+        score_val = int(summary.score)
+        if score_val > int(pb.get(tier, 0) or 0):
+            pb[tier] = score_val
             extra["personal_best_by_tier"] = pb
+            # JSONB: gán dict mới để SQLAlchemy ghi đúng mọi lớp (T1…T5)
             stats.extra_json = extra
         tier_prog = db.query(PlayModeProgress).filter(
             PlayModeProgress.user_id == user_id,

@@ -26,6 +26,7 @@
   let audioCtx = null;
   let unlocked = false;
   let activeTier = 'T1';
+  let activeGrade = 1;
   let bgmEl = null;
   let bgmFadeTimer = null;
   const sfx = {};
@@ -157,6 +158,8 @@
       .replace(/−|-/g, ' trừ ')
       .replace(/×/g, ' nhân ')
       .replace(/÷/g, ' chia ');
+    if (q.includes('lớn hơn')) return q.replace('—', ',').replace('?', '');
+    if (q.includes('Chia') && q.includes('tỉ')) return q;
     return `${q.trim()} bằng mấy?`;
   }
 
@@ -164,7 +167,7 @@
     const stored = global.localStorage.getItem(LS_TTS);
     if (stored === '1') return true;
     if (stored === '0') return false;
-    return activeTier === 'T1' || activeTier === 'T2';
+    return activeGrade <= 2;
   }
 
   function setTtsEnabled(on) {
@@ -300,6 +303,12 @@
     activeTier = tier || 'T1';
   }
 
+  function setGrade(grade) {
+    const g = parseInt(grade, 10);
+    activeGrade = g >= 1 && g <= 5 ? g : 1;
+    activeTier = `T${activeGrade}`;
+  }
+
   function playCorrect() {
     playSfx('correct', 0.75, synthCorrect);
   }
@@ -318,6 +327,7 @@
     init,
     unlock,
     setTier,
+    setGrade,
     getTtsEnabled,
     setTtsEnabled,
     getBgmEnabled,

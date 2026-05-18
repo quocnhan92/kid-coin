@@ -7,15 +7,24 @@
     getBootstrap,
     sessionsBatch,
     eventsBatch,
+    clearBootstrapCache,
     uuid,
   } = window.MathBlastV2;
 
-  const { createSession, resolveActiveTier } = window.MathBlastQuestionGen;
+  const {
+    createSession,
+    resolveGrade,
+    getGradeMeta,
+    setStoredGrade,
+    gradeToTier,
+    GRADES,
+  } = window.MathBlastQuestionGen;
   const AudioFx = window.FlappyAudio;
 
   let bootstrap = null;
   let sessionId = null;
   let questionSession = null;
+  let activeGrade = 1;
   let activeTier = 'T1';
   let currentQuestion = null;
   let clientSeq = 0;
@@ -47,23 +56,89 @@
     if (el) el.textContent = `Chuỗi x${n}`;
   }
 
-  /** Một số kỷ lục duy nhất: max(high_score chế độ, mọi tier personal_best). */
-  function getFlappyBestScore(boot) {
+  function setTimerLabel(text) {
+    const el = document.getElementById('flappy-timer');
+    if (el) el.textContent = text;
+  }
+
+  async function reloadBootstrapFresh() {
+    clearBootstrapCache();
+    bootstrap = await getBootstrap(MODES.flappy);
+  }
+
+  function flashGradePersonalBest(grade) {
+    const btn = document.querySelector(`.mb-grade-btn[data-grade="${grade}"]`);
+    if (!btn) return;
+    btn.classList.add('mb-grade-btn--celebrate');
+    setTimeout(() => btn.classList.remove('mb-grade-btn--celebrate'), 2400);
+  }
+
+  function getFlappyBestForGrade(boot, grade) {
     if (!boot) return 0;
-    let best = boot.game_stats?.high_score || 0;
-    const pb = boot.flappy?.personal_best;
-    if (pb && typeof pb === 'object') {
-      Object.values(pb).forEach((v) => {
-        if (Number.isFinite(v) && v > best) best = v;
-      });
-    }
-    return best;
+    const tier = gradeToTier(grade);
+    const pb = boot.flappy?.personal_best?.[tier];
+    if (Number.isFinite(pb)) return pb;
+    return 0;
   }
 
   function flappyProfileExtra(boot) {
     if (sprintActive) return null;
-    const best = getFlappyBestScore(boot);
-    return best > 0 ? `Kỷ lục ${best}` : null;
+    const meta = getGradeMeta(activeGrade);
+    const best = getFlappyBestForGrade(boot, activeGrade);
+    if (best > 0) return `${meta.label} · Kỷ lục ${best}`;
+    return meta.label;
+  }
+
+  function updateGradeDesc() {
+    const el = document.getElementById('flappy-grade-desc');
+    if (!el) return;
+    const meta = getGradeMeta(activeGrade);
+    const best = getFlappyBestForGrade(bootstrap, activeGrade);
+    const pbLine = best > 0 ? `Kỷ lục ${meta.label}: ${best} điểm.` : `Chưa có kỷ lục ${meta.label} — chơi Chim Toán một lần để ghi nhận.`;
+    el.textContent = `${meta.subtitle} ${pbLine}`;
+  }
+
+  function renderGradePicker() {
+    const wrap = document.getElementById('flappy-grade-picker');
+    if (!wrap) return;
+    wrap.innerHTML = Object.keys(GRADES)
+      .map((g) => {
+        const gn = Number(g);
+        const best = getFlappyBestForGrade(bootstrap, gn);
+        const pbBadge =
+          best > 0
+            ? `<span class="mb-grade-pb" title="Kỷ lục">🏆${best}</span>`
+            : '<span class="mb-grade-pb mb-grade-pb--empty" title="Chưa có kỷ lục">—</span>';
+        return `
+      <button type="button" class="mb-grade-btn ${gn === activeGrade ? 'active' : ''}"
+        data-grade="${g}">${GRADES[g].label}${pbBadge}</button>`;
+      })
+      .join('');
+    wrap.querySelectorAll('.mb-grade-btn').forEach((btn) => {
+      btn.addEventListener('click', () => selectGrade(Number(btn.dataset.grade)));
+    });
+    updateGradeDesc();
+  }
+
+  function selectGrade(grade) {
+    if (sprintActive) {
+      toast('Không đổi lớp khi đang chơi');
+      return;
+    }
+    activeGrade = grade;
+    activeTier = gradeToTier(grade);
+    setStoredGrade(grade);
+    if (AudioFx) {
+      AudioFx.setGrade(grade);
+      AudioFx.updateToggleUi(
+        document.getElementById('flappy-toggle-tts'),
+        document.getElementById('flappy-toggle-bgm')
+      );
+    }
+    renderGradePicker();
+    questionSession = createSession(activeGrade);
+    renderQuestion();
+    refreshProfileExtra();
   }
 
   async function refreshProfileExtra() {
@@ -116,6 +191,7 @@
       context: {
         input_method: 'tap_choice_4',
         tier: activeTier,
+        grade: activeGrade,
         problem: item.q,
       },
     });
@@ -126,7 +202,7 @@
     if (!sprintActive) return;
     const val = Number(btn.dataset.val);
     const t0 = Date.now();
-    const correct = val === item.a;
+    const correct = val === item.a || Math.abs(val - item.a) < 0.001;
     if (correct) {
       btn.classList.add('correct');
       combo += 1;
@@ -159,12 +235,19 @@
     sprintActive = false;
     setSprintUi(false);
     clearInterval(timerId);
+    setTimerLabel('Hết giờ');
+    setRunScore(score);
+    const stage = document.getElementById('flappy-stage');
+    if (stage) stage.classList.add('mb-sprint-ended');
     if (AudioFx) {
       AudioFx.stopSpeech();
       AudioFx.stopBgm(2000);
     }
     await flushEvents();
     const now = new Date().toISOString();
+    const finishedScore = score;
+    const finishedGrade = activeGrade;
+    const prevBest = getFlappyBestForGrade(bootstrap, finishedGrade);
     try {
       await sessionsBatch(
         [
@@ -174,12 +257,13 @@
             ended_at: now,
             summary: {
               duration_s: 60 - timeLeft,
-              score,
+              score: finishedScore,
               questions_count: questionCount,
               correct_count: correctCount,
               accuracy: questionCount ? correctCount / questionCount : 0,
               summary_json: {
                 tier: activeTier,
+                grade: finishedGrade,
                 rung_max: rung,
                 combo_max: comboMax,
               },
@@ -188,11 +272,20 @@
         ],
         `flappy-end-${sessionId}`
       );
-      bootstrap = await getBootstrap(MODES.flappy);
-      applyBootstrapHud();
-      toast(`Hết giờ! Điểm ${score} — đã lưu`);
+      await reloadBootstrapFresh();
+      renderGradePicker();
+      updateGradeDesc();
+      await refreshProfileExtra();
+      const newBest = getFlappyBestForGrade(bootstrap, finishedGrade);
+      const isNewPb = finishedScore > prevBest && finishedScore > 0 && newBest === finishedScore;
+      if (isNewPb) {
+        flashGradePersonalBest(finishedGrade);
+        toast(`🎉 Kỷ lục ${getGradeMeta(finishedGrade).label}: ${newBest} điểm!`);
+      } else {
+        toast(`Hết giờ! Điểm ${finishedScore} — đã lưu`);
+      }
     } catch (e) {
-      toast(`Điểm ${score} (chưa lưu máy chủ: ${e.message})`);
+      toast(`Điểm ${finishedScore} (chưa lưu máy chủ: ${e.message})`);
     }
   }
 
@@ -205,7 +298,6 @@
 
   function applyBootstrapHud() {
     if (!bootstrap || sprintActive) return;
-    setRunScore(0);
     refreshProfileExtra();
   }
 
@@ -213,7 +305,7 @@
     const startBtn = document.getElementById('flappy-start');
     if (!startBtn) return;
     startBtn.disabled = busy;
-    startBtn.textContent = busy ? 'Đang bắt đầu…' : '▶ Bắt đầu cuộc đua';
+    startBtn.textContent = busy ? 'Đang bắt đầu…' : '▶ Chơi Chim Toán';
   }
 
   function setSprintUi(active) {
@@ -228,7 +320,7 @@
     try {
       const me = await window.MathBlastV2.loadUserMe();
       if (me.role !== 'KID') {
-        toast('Chọn tài khoản bé để bắt đầu cuộc đua');
+        toast('Chọn tài khoản bé để chơi Chim Toán');
         if (window.GameAuth) window.GameAuth.open();
         return;
       }
@@ -249,16 +341,17 @@
     rung = 0;
     correctCount = 0;
     questionCount = 0;
-    activeTier = resolveActiveTier(bootstrap?.flappy);
+    activeGrade = resolveGrade(bootstrap?.flappy, bootstrap?.profile);
+    activeTier = gradeToTier(activeGrade);
     if (AudioFx) {
-      AudioFx.setTier(activeTier);
+      AudioFx.setGrade(activeGrade);
       AudioFx.unlock();
       AudioFx.updateToggleUi(
         document.getElementById('flappy-toggle-tts'),
         document.getElementById('flappy-toggle-bgm')
       );
     }
-    questionSession = createSession(activeTier);
+    questionSession = createSession(activeGrade);
     const now = new Date().toISOString();
     setStartBusy(true);
 
@@ -285,6 +378,8 @@
     }
 
     sprintActive = true;
+    const stage = document.getElementById('flappy-stage');
+    if (stage) stage.classList.remove('mb-sprint-ended');
     setSprintUi(true);
     updateBird();
     if (AudioFx) AudioFx.startBgm();
@@ -295,7 +390,7 @@
     document.getElementById('flappy-timer').textContent = '60s';
     clearInterval(timerId);
     timerId = setInterval(tickTimer, 1000);
-    toast('Cuộc đua 60 giây — bắt đầu!');
+    toast('Chim Toán — bắt đầu cuộc đua 60 giây!');
   }
 
   function bindBirdReplay() {
@@ -318,15 +413,20 @@
     bindBirdReplay();
     try {
       bootstrap = await getBootstrap(MODES.flappy);
-      activeTier = resolveActiveTier(bootstrap?.flappy);
+      activeGrade = resolveGrade(bootstrap?.flappy, bootstrap?.profile);
+      activeTier = gradeToTier(activeGrade);
       if (AudioFx) {
-        AudioFx.setTier(activeTier);
+        AudioFx.setGrade(activeGrade);
         AudioFx.updateToggleUi(ttsBtn, bgmBtn);
       }
+      renderGradePicker();
       applyBootstrapHud();
       updateBird();
       if (!sprintActive) {
-        questionSession = createSession(activeTier);
+        setRunScore(0);
+        setCombo(0);
+        setTimerLabel('60s');
+        questionSession = createSession(activeGrade);
         renderQuestion();
       }
     } catch (e) {
