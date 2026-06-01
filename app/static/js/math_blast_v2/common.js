@@ -9,13 +9,15 @@
   /** Tên hiển thị chế độ (API id giữ nguyên math_blast:flappy) */
   const MODE_LABELS = {
     candy: 'Bản đồ Kẹo',
-    flappy: 'Chim Toán',
+    flappy: 'Gà Toán',
+    chim: 'Chim Toán Vui',
     arcade: 'Giải trí',
   };
 
   const MODES = {
     candy: 'math_blast:candy',
     flappy: 'math_blast:flappy',
+    chim: 'math_blast:chim',
     arcade: 'math_blast:arcade_free',
     arcadeClass: 'math_blast:arcade_class',
   };

@@ -173,6 +173,7 @@ def process_sessions_batch(
                     level_progress=rollup.get("level_progress"),
                     mastery_updated=rollup.get("mastery_updated", []),
                     new_high_score=rollup.get("new_high_score", False),
+                    stickers_unlocked=rollup.get("stickers_unlocked", []),
                 )
             )
 
@@ -193,8 +194,12 @@ def process_events_batch(
     if session.user_id != user.id:
         raise HTTPException(status_code=403, detail="Session belongs to another user")
 
+    from app.models.play.progress import PlayUserGameStats
+    from app.services.chim_toan_progress_service import apply_chim_live_sync
+
     accepted = duplicates = rejected = 0
     max_seq = 0
+    chim_correct_accepted = 0
 
     for ev in events:
         max_seq = max(max_seq, ev.client_seq)
@@ -226,6 +231,36 @@ def process_events_batch(
             )
         )
         accepted += 1
+        if session.game_mode_id == "math_blast:chim" and ev.correct:
+            chim_correct_accepted += 1
+
+    if session.game_mode_id == "math_blast:chim" and chim_correct_accepted > 0:
+        mode_key = session.game_mode_id or ""
+        stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == user.id,
+                PlayUserGameStats.game_id == session.game_id,
+                PlayUserGameStats.game_mode_id == mode_key,
+            )
+            .first()
+        )
+        if not stats:
+            stats = PlayUserGameStats(
+                user_id=user.id,
+                game_id=session.game_id,
+                game_mode_id=mode_key,
+                high_score=0,
+                total_sessions=0,
+                total_play_time_s=0,
+                total_questions=0,
+                total_correct=0,
+                extra_json={},
+            )
+            db.add(stats)
+        stats.extra_json = apply_chim_live_sync(stats.extra_json, chim_correct_accepted)
+        stats.total_correct = int(stats.total_correct or 0) + chim_correct_accepted
+        stats.total_questions = int(stats.total_questions or 0) + accepted
 
     db.commit()
     return EventsBatchResponse(

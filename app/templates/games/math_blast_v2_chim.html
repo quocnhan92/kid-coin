@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Blast V2 — Chim Toán Vui</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2 mb-chim">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game/math-blast-v2" class="mb-back">← Trang chủ V2</a>
+      <div class="mb-brand chim-brand">
+        <svg class="chim-logo" width="28" height="28" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#7dd3fc"/>
+          <ellipse cx="24" cy="28" rx="14" ry="12" fill="#fde68a"/>
+          <circle cx="18" cy="20" r="3" fill="#0f172a"/>
+          <circle cx="30" cy="20" r="3" fill="#0f172a"/>
+          <path d="M20 32 Q24 36 28 32" stroke="#f97316" stroke-width="2" fill="none"/>
+          <path d="M8 18 L2 14 L8 22 Z" fill="#fbbf24"/>
+          <text x="34" y="16" font-size="10" font-weight="bold" fill="#0369a1">+</text>
+        </svg>
+        Chim Toán Vui
+      </div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
+    </header>
+
+    <main class="mb-main">
+      <section class="mb-hero chim-hero">
+        <h1>Chim Toán Vui</h1>
+        <p class="mb-hero-welcome">Thảo nguyên thanh bình — chọn đúng đáp án, súng cao su bắn trúng chim/gà. <strong>Không thua</strong>, sai thì chim bay đi thôi.</p>
+        <p class="mb-hero-hint">Lớp 1–2 chơi ngay · Lớp 3–5 mở dần khi luyện đủ.</p>
+      </section>
+
+      <div id="chim-blocks" class="chim-blocks" aria-label="Các khu vực theo lớp"></div>
+
+      <p class="mb-grade-label">Chọn lớp (Thảo nguyên)</p>
+      <div class="mb-grade-picker" id="chim-grade-picker" role="group"></div>
+      <p class="mb-grade-desc" id="chim-grade-desc">…</p>
+
+      <div id="chim-game-panel" class="chim-game-panel" tabindex="-1" aria-label="Khung chơi Chim Toán Vui">
+        <div class="chim-panel-toolbar">
+          <div class="mb-audio-toggles chim-audio-toggles" id="chim-audio-toggles">
+            <button type="button" id="chim-toggle-tts" class="mb-audio-btn" data-chim-audio="tts" aria-pressed="true">🔊 Đọc đề</button>
+            <button type="button" id="chim-toggle-bgm" class="mb-audio-btn" data-chim-audio="bgm" aria-pressed="false">🎵 Nhạc tắt</button>
+          </div>
+        </div>
+
+        <div class="chim-stage" id="chim-stage">
+          <div class="chim-stage-hud">
+            <span class="mb-hud-pill" id="chim-score">Điểm 0</span>
+            <span class="mb-hud-pill" id="chim-stars">⭐ 0</span>
+            <span class="mb-hud-pill" id="chim-gold">🪙 0</span>
+          </div>
+          <div class="chim-sky">
+            <div class="chim-clouds" aria-hidden="true">
+              <div class="chim-cloud chim-cloud-a">
+                <span class="chim-puff chim-puff-1"></span>
+                <span class="chim-puff chim-puff-2"></span>
+                <span class="chim-puff chim-puff-3"></span>
+                <span class="chim-puff chim-puff-4"></span>
+              </div>
+              <div class="chim-cloud chim-cloud-b">
+                <span class="chim-puff chim-puff-1"></span>
+                <span class="chim-puff chim-puff-2"></span>
+                <span class="chim-puff chim-puff-3"></span>
+              </div>
+              <div class="chim-cloud chim-cloud-c">
+                <span class="chim-puff chim-puff-1"></span>
+                <span class="chim-puff chim-puff-2"></span>
+                <span class="chim-puff chim-puff-3"></span>
+                <span class="chim-puff chim-puff-4"></span>
+                <span class="chim-puff chim-puff-5"></span>
+              </div>
+            </div>
+            <div id="chim-fx" class="chim-fx" aria-live="polite"></div>
+            <div id="chim-target" class="chim-target">🐥</div>
+            <div id="chim-shot" class="chim-shot" aria-hidden="true">🪨</div>
+            <div id="chim-sling" class="chim-sling" title="Chạm để nghe lại câu hỏi">🎯</div>
+          </div>
+          <div class="chim-question-bar">
+            <div class="mb-question" id="chim-question">…</div>
+            <div class="mb-choices" id="chim-choices"></div>
+          </div>
+          <div id="chim-start-wrap" class="chim-stage-start">
+            <button type="button" id="chim-start" class="mb-btn chim-btn-start">▶ Bắt đầu chơi</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    {% include "games/math_blast_v2_partials/sku_nav.html" %}
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/math_blast_v2/common.js?v=20260601"></script>
+  <script src="/static/js/math_blast_v2/question_generator.js?v=20260523"></script>
+  <script src="/static/js/math_blast_v2/chim_audio.js?v=20260608"></script>
+  <script src="/static/js/math_blast_v2/chim.js?v=20260608"></script>
+</body>
+</html>

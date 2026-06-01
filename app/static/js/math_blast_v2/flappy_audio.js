@@ -248,7 +248,7 @@
     const bird = document.getElementById('flappy-bird');
     if (bird) {
       bird.classList.toggle('mb-bird-speak', getTtsEnabled());
-      bird.title = getTtsEnabled() ? 'Chạm chim để nghe lại câu hỏi' : '';
+      bird.title = getTtsEnabled() ? 'Chạm gà để nghe lại câu hỏi' : '';
     }
   }
 

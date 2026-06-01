@@ -35,6 +35,8 @@ from app.schemas.play import (
     PlayRecommendationOut,
     PlayGameStatsOut,
     PlayFlappyBootstrapOut,
+    PlayFlappyStickerMetaOut,
+    PlayChimBootstrapOut,
     PlayStreakOut,
     PlayGamesResponse,
     PlayGameCatalogItem,
@@ -45,6 +47,8 @@ from app.schemas.play import (
     LeaderboardEntry,
 )
 from app.services.play_rollup_service import ensure_initial_level_unlock
+from app.services.flappy_sticker_service import FLAPPY_STICKER_CATALOG
+from app.services.chim_toan_progress_service import merge_extra
 
 
 def get_or_create_profile(db: Session, user: User) -> PlayProfile:
@@ -233,6 +237,14 @@ def get_bootstrap(
         total_sessions=stats.total_sessions if stats else 0,
     )
 
+    chim_out = None
+    if game_mode_id == "math_blast:chim":
+        extra = merge_extra((stats.extra_json if stats else {}) or {})
+        chim_out = PlayChimBootstrapOut(
+            extra=extra,
+            personal_best=extra.get("prairie_best_by_tier") or {},
+        )
+
     flappy_out = None
     if game_mode_id == "math_blast:flappy":
         tiers = db.query(PlayModeProgress).filter(
@@ -241,6 +253,10 @@ def get_bootstrap(
         ).all()
         extra = (stats.extra_json if stats else {}) or {}
         pb = extra.get("personal_best_by_tier", {})
+        stickers = extra.get("stickers_unlocked") or []
+        sticker_meta = [
+            PlayFlappyStickerMetaOut(**row) for row in FLAPPY_STICKER_CATALOG
+        ]
         flappy_out = PlayFlappyBootstrapOut(
             tier_unlocked=[t.tier_key for t in tiers if t.mastery_status != "locked"] or ["T1"],
             tier_mastery_progress={
@@ -250,6 +266,9 @@ def get_bootstrap(
             personal_best=pb,
             daily_session_count=_daily_session_count(db, user.id, "math_blast:flappy"),
             daily_session_soft_cap=profile.parental_soft_cap_sessions_day,
+            stickers_unlocked=stickers,
+            sticker_total=len(FLAPPY_STICKER_CATALOG),
+            sticker_meta=sticker_meta,
         )
 
     streak_row = db.query(UserStreak).filter(UserStreak.user_id == user.id).first()
@@ -271,6 +290,7 @@ def get_bootstrap(
         recommendations_today=recommendations,
         game_stats=game_stats,
         flappy=flappy_out,
+        chim=chim_out,
         streak=streak,
     )
     etag = compute_bootstrap_etag(db, user.id, game_id, game_mode_id)

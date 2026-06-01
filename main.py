@@ -98,8 +98,9 @@ def seed_initial_data():
 
     db = SessionLocal()
     try:
-        from app.services.play_catalog_seed import seed_play_catalog
+        from app.services.play_catalog_seed import seed_play_catalog, ensure_chim_toan_mode
         seed_play_catalog(db)
+        ensure_chim_toan_mode(db)
 
         # Check if any user exists
         if db.query(User).first():
@@ -321,6 +322,11 @@ async def game_math_blast_v2_flappy(request: Request):
 async def game_math_blast_v2_arcade(request: Request):
     """Math Blast v2 — Arcade prototype"""
     return templates.TemplateResponse(request, "games/math_blast_v2_arcade.html")
+
+@app.get("/game/math-blast-v2/chim", response_class=HTMLResponse)
+async def game_math_blast_v2_chim(request: Request):
+    """Math Blast v2 — Chim Toán Vui (Thảo nguyên L1–2)"""
+    return templates.TemplateResponse(request, "games/math_blast_v2_chim.html")
 
 @app.get("/game/block-breaker", response_class=HTMLResponse)
 async def game_block_breaker(request: Request):

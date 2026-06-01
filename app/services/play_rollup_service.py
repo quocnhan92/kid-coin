@@ -176,7 +176,38 @@ def rollup_after_session_end(
                 mastery.rolling_avg_latency_ms = int(sum(latencies) / len(latencies))
             result["mastery_updated"].append(skill_id)
 
+    if game_mode_id == "math_blast:chim" and summary.score is not None:
+        from app.services.chim_toan_progress_service import apply_chim_progress
+
+        summary_json = summary.summary_json or {}
+        tier = summary_json.get("tier")
+        if not tier:
+            grade = summary_json.get("grade")
+            tier = f"T{int(grade)}" if grade is not None else "T1"
+        extra = dict(stats.extra_json or {})
+        extra, unlock_events = apply_chim_progress(extra, summary, summary_json)
+        stats.extra_json = extra
+        if unlock_events:
+            result["chim_unlocks"] = unlock_events
+        tier_prog = db.query(PlayModeProgress).filter(
+            PlayModeProgress.user_id == user_id,
+            PlayModeProgress.game_mode_id == "math_blast:chim",
+            PlayModeProgress.tier_key == tier,
+        ).first()
+        if not tier_prog:
+            db.add(
+                PlayModeProgress(
+                    user_id=user_id,
+                    game_mode_id="math_blast:chim",
+                    tier_key=tier,
+                    mastery_status="in_progress",
+                    unlocked_at=now,
+                )
+            )
+
     if game_mode_id == "math_blast:flappy" and summary.score is not None:
+        from app.services.flappy_sticker_service import apply_flappy_stickers
+
         summary_json = summary.summary_json or {}
         tier = summary_json.get("tier")
         if not tier:
@@ -185,11 +216,19 @@ def rollup_after_session_end(
         extra = dict(stats.extra_json or {})
         pb = dict(extra.get("personal_best_by_tier") or {})
         score_val = int(summary.score)
-        if score_val > int(pb.get(tier, 0) or 0):
+        new_pb_for_tier = score_val > int(pb.get(tier, 0) or 0)
+        if new_pb_for_tier:
             pb[tier] = score_val
             extra["personal_best_by_tier"] = pb
-            # JSONB: gán dict mới để SQLAlchemy ghi đúng mọi lớp (T1…T5)
-            stats.extra_json = extra
+        extra, new_stickers = apply_flappy_stickers(
+            extra,
+            summary,
+            summary_json,
+            new_pb_for_tier=new_pb_for_tier and summary_json.get("play_mode") == "sprint",
+        )
+        stats.extra_json = extra
+        if new_stickers:
+            result["stickers_unlocked"] = new_stickers
         tier_prog = db.query(PlayModeProgress).filter(
             PlayModeProgress.user_id == user_id,
             PlayModeProgress.game_mode_id == "math_blast:flappy",

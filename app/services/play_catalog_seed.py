@@ -69,10 +69,19 @@ def seed_play_catalog(db: Session) -> None:
             id="math_blast:flappy",
             game_id="math_blast",
             mode_key="flappy",
-            display_name="Chim Toán",
+            display_name="Gà Toán",
             tracks_learning=True,
             content_pack_id=CONTENT_PACK_ID,
             config_json={"sprint_seconds": 60, "tiers": ["T1", "T2", "T3", "T4", "T5"]},
+        ),
+        PlayGameMode(
+            id="math_blast:chim",
+            game_id="math_blast",
+            mode_key="chim",
+            display_name="Chim Toán Vui",
+            tracks_learning=True,
+            content_pack_id=CONTENT_PACK_ID,
+            config_json={"prairie_grades": [1, 2], "blocks": ["T3", "T4", "T5"]},
         ),
         PlayGameMode(
             id="math_blast:arcade_class",
@@ -134,3 +143,22 @@ def seed_play_catalog(db: Session) -> None:
     )
     db.commit()
     logger.info("Play catalog seeded.")
+
+
+def ensure_chim_toan_mode(db: Session) -> None:
+    """Thêm mode Chim Toán Vui nếu DB đã seed trước đó."""
+    if db.query(PlayGameMode).filter(PlayGameMode.id == "math_blast:chim").first():
+        return
+    db.add(
+        PlayGameMode(
+            id="math_blast:chim",
+            game_id="math_blast",
+            mode_key="chim",
+            display_name="Chim Toán Vui",
+            tracks_learning=True,
+            content_pack_id=CONTENT_PACK_ID,
+            config_json={"prairie_grades": [1, 2], "blocks": ["T3", "T4", "T5"]},
+        )
+    )
+    db.commit()
+    logger.info("Added play mode math_blast:chim (Chim Toán Vui).")

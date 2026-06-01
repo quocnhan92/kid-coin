@@ -81,12 +81,28 @@ class PlayGameStatsOut(BaseModel):
     total_sessions: int = 0
 
 
+class PlayFlappyStickerMetaOut(BaseModel):
+    id: str
+    emoji: str
+    name: str
+    hint: str
+    group: str
+
+
+class PlayChimBootstrapOut(BaseModel):
+    extra: Dict[str, Any] = {}
+    personal_best: Dict[str, int] = {}
+
+
 class PlayFlappyBootstrapOut(BaseModel):
     tier_unlocked: List[str] = []
     tier_mastery_progress: Dict[str, str] = {}
     personal_best: Dict[str, int] = {}
     daily_session_count: int = 0
     daily_session_soft_cap: int = 6
+    stickers_unlocked: List[str] = []
+    sticker_total: int = 0
+    sticker_meta: List[PlayFlappyStickerMetaOut] = []
 
 
 class PlayStreakOut(BaseModel):
@@ -102,6 +118,7 @@ class PlayBootstrapResponse(BaseModel):
     recommendations_today: List[PlayRecommendationOut] = []
     game_stats: PlayGameStatsOut = PlayGameStatsOut()
     flappy: Optional[PlayFlappyBootstrapOut] = None
+    chim: Optional[PlayChimBootstrapOut] = None
     streak: Optional[PlayStreakOut] = None
 
 
@@ -163,6 +180,7 @@ class SessionBatchResult(BaseModel):
     level_progress: Optional[Dict[str, Any]] = None
     mastery_updated: List[str] = []
     new_high_score: bool = False
+    stickers_unlocked: List[str] = []
 
 
 class SessionsBatchResponse(BaseModel):

@@ -20,6 +20,8 @@
     GRADES,
   } = window.MathBlastQuestionGen;
   const AudioFx = window.FlappyAudio;
+  const Stickers = window.FlappyStickers;
+  const Sky = window.FlappySky;
 
   let bootstrap = null;
   let sessionId = null;
@@ -38,22 +40,74 @@
   let timerId = null;
   let sprintActive = false;
   let pendingEvents = [];
+  let playMode = 'sprint';
+  let sessionStartedAt = null;
+  let wrongStreak = 0;
+  let persistentCorrectThisSession = false;
+  let endedByTimer = false;
 
-  function updateBird() {
-    const bird = document.getElementById('flappy-bird');
-    if (!bird) return;
-    const pct = 15 + rung * 22;
-    bird.style.bottom = `${Math.min(pct, 75)}%`;
+  const WRONG_MSGS = [
+    'Không sao, thử lại nhé',
+    'Chưa đúng — bình tĩnh chọn lại',
+    'Gà con vẫn cổ vũ bé',
+    'Mình làm lại câu này nhé',
+  ];
+  const RIGHT_MSGS = [
+    'Giỏi lắm!',
+    'Hay quá!',
+    'Tuyệt vời!',
+    'Đúng rồi!',
+  ];
+
+  function isPractice() {
+    return playMode === 'practice';
+  }
+
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function updateFlightVisual() {
+    if (Sky) {
+      Sky.setAltitude(correctCount);
+    }
+    const stage = document.getElementById('flappy-stage');
+    if (stage) {
+      rung = Math.min(3, Math.floor(correctCount / 4));
+      stage.dataset.rung = String(rung);
+    }
   }
 
   function setRunScore(n) {
     const el = document.getElementById('flappy-score');
-    if (el) el.textContent = `Điểm ${n}`;
+    if (!el) return;
+    if (isPractice() && sprintActive) {
+      el.textContent = `⭐ ${n}`;
+    } else {
+      el.textContent = `Điểm ${n}`;
+    }
   }
 
   function setCombo(n) {
     const el = document.getElementById('flappy-combo');
-    if (el) el.textContent = `Chuỗi x${n}`;
+    if (!el) return;
+    if (isPractice()) {
+      el.textContent = `Đúng ${correctCount}`;
+      el.hidden = false;
+    } else {
+      el.textContent = `Chuỗi x${n}`;
+      el.hidden = false;
+    }
+  }
+
+  function setHudForMode() {
+    const comboEl = document.getElementById('flappy-combo');
+    if (isPractice()) {
+      setTimerLabel('Luyện tập');
+      if (comboEl) comboEl.hidden = false;
+    } else {
+      setTimerLabel(sprintActive ? `${timeLeft}s` : '60s');
+    }
   }
 
   function setTimerLabel(text) {
@@ -94,7 +148,7 @@
     if (!el) return;
     const meta = getGradeMeta(activeGrade);
     const best = getFlappyBestForGrade(bootstrap, activeGrade);
-    const pbLine = best > 0 ? `Kỷ lục ${meta.label}: ${best} điểm.` : `Chưa có kỷ lục ${meta.label} — chơi Chim Toán một lần để ghi nhận.`;
+    const pbLine = best > 0 ? `Kỷ lục ${meta.label}: ${best} điểm.` : `Chưa có kỷ lục ${meta.label} — chơi Gà Toán một lần để ghi nhận.`;
     el.textContent = `${meta.subtitle} ${pbLine}`;
   }
 
@@ -141,8 +195,14 @@
     refreshProfileExtra();
   }
 
+  function todayIsoDate() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
   async function refreshProfileExtra() {
-    await updateProfileBar(flappyProfileExtra(bootstrap));
+    const stickerLine = Stickers ? ` · 📒 ${Stickers.countLabel(bootstrap)}` : '';
+    await updateProfileBar((flappyProfileExtra(bootstrap) || '') + stickerLine);
+    if (Stickers) Stickers.updateAlbumBadge(bootstrap);
   }
 
   function renderQuestion() {
@@ -192,6 +252,7 @@
         input_method: 'tap_choice_4',
         tier: activeTier,
         grade: activeGrade,
+        play_mode: playMode,
         problem: item.q,
       },
     });
@@ -205,40 +266,59 @@
     const correct = val === item.a || Math.abs(val - item.a) < 0.001;
     if (correct) {
       btn.classList.add('correct');
+      if (wrongStreak >= 2) persistentCorrectThisSession = true;
+      wrongStreak = 0;
       combo += 1;
       comboMax = Math.max(comboMax, combo);
-      const delta = 10 + combo * 2;
+      const delta = isPractice() ? 5 : 10 + combo * 2;
       score += delta;
       rung = Math.min(rung + 1, 3);
-      setCombo(combo);
-      setRunScore(score);
-      updateBird();
+      updateFlightVisual();
+      if (Sky) Sky.bump();
       if (AudioFx) {
         AudioFx.playCorrect();
-        if (combo === 3 || combo === 5 || combo === 10) AudioFx.playCombo(combo);
+        if (!isPractice() && (combo === 3 || combo === 5 || combo === 10)) {
+          AudioFx.playCombo(combo);
+        }
       }
       queueEvent(true, Date.now() - t0, item, delta);
-      setTimeout(renderQuestion, 400);
+      setCombo(combo);
+      setRunScore(score);
+      if (isPractice() && correctCount % 3 === 0) {
+        toast(pickRandom(RIGHT_MSGS));
+      }
+      setTimeout(renderQuestion, isPractice() ? 550 : 400);
     } else {
       btn.classList.add('wrong');
-      combo = 0;
-      rung = Math.max(rung - 1, 0);
-      setCombo(0);
-      updateBird();
-      if (AudioFx) AudioFx.playWrong();
+      wrongStreak += 1;
+      if (!isPractice()) {
+        combo = 0;
+        rung = Math.max(rung - 1, 0);
+        setCombo(0);
+      } else {
+        setCombo(combo);
+      }
+      updateFlightVisual();
+      if (AudioFx && !isPractice()) AudioFx.playWrong();
       queueEvent(false, Date.now() - t0, item, 0);
-      toast('Sai rồi — thử lại nhé!');
+      toast(isPractice() ? pickRandom(WRONG_MSGS) : 'Chưa đúng — thử lại nhé');
     }
   }
 
-  async function endSprint() {
+  async function endSprint(manualEnd) {
+    const wasPractice = isPractice();
+    const manual = Boolean(manualEnd);
+    if (!wasPractice && !manual) endedByTimer = true;
     sprintActive = false;
     setSprintUi(false);
     clearInterval(timerId);
-    setTimerLabel('Hết giờ');
+    setTimerLabel(wasPractice ? 'Xong' : 'Hết giờ');
     setRunScore(score);
     const stage = document.getElementById('flappy-stage');
-    if (stage) stage.classList.add('mb-sprint-ended');
+    if (stage) {
+      stage.classList.add('mb-sprint-ended');
+      stage.classList.remove('mb-practice-live');
+    }
     if (AudioFx) {
       AudioFx.stopSpeech();
       AudioFx.stopBgm(2000);
@@ -248,15 +328,21 @@
     const finishedScore = score;
     const finishedGrade = activeGrade;
     const prevBest = getFlappyBestForGrade(bootstrap, finishedGrade);
+    const durationS = sessionStartedAt
+      ? Math.max(1, Math.round((Date.now() - sessionStartedAt) / 1000))
+      : wasPractice
+        ? 60
+        : 60 - timeLeft;
+    let newStickers = [];
     try {
-      await sessionsBatch(
+      const endResp = await sessionsBatch(
         [
           {
             op: 'end',
             session_id: sessionId,
             ended_at: now,
             summary: {
-              duration_s: 60 - timeLeft,
+              duration_s: durationS,
               score: finishedScore,
               questions_count: questionCount,
               correct_count: correctCount,
@@ -264,36 +350,61 @@
               summary_json: {
                 tier: activeTier,
                 grade: finishedGrade,
+                play_mode: playMode,
                 rung_max: rung,
+                altitude: correctCount,
                 combo_max: comboMax,
+                play_date: todayIsoDate(),
+                manual_end: manual,
+                persistent_correct: persistentCorrectThisSession,
+                ended_by_timer: endedByTimer,
               },
             },
           },
         ],
         `flappy-end-${sessionId}`
       );
+      const row = endResp?.results?.find((r) => r.session_id === sessionId) || endResp?.results?.[0];
+      newStickers = row?.stickers_unlocked || [];
       await reloadBootstrapFresh();
       renderGradePicker();
       updateGradeDesc();
       await refreshProfileExtra();
-      const newBest = getFlappyBestForGrade(bootstrap, finishedGrade);
-      const isNewPb = finishedScore > prevBest && finishedScore > 0 && newBest === finishedScore;
-      if (isNewPb) {
-        flashGradePersonalBest(finishedGrade);
-        toast(`🎉 Kỷ lục ${getGradeMeta(finishedGrade).label}: ${newBest} điểm!`);
+      if (Stickers && newStickers.length) {
+        Stickers.celebrateUnlocks(bootstrap, newStickers, toast);
+      }
+      if (wasPractice) {
+        toast(
+          `Hay lắm! ${correctCount} câu đúng — bé muốn thử cuộc đua 60 giây thì bấm nút bên dưới nhé.`
+        );
       } else {
-        toast(`Hết giờ! Điểm ${finishedScore} — đã lưu`);
+        const newBest = getFlappyBestForGrade(bootstrap, finishedGrade);
+        const isNewPb = finishedScore > prevBest && finishedScore > 0 && newBest === finishedScore;
+        if (isNewPb) {
+          flashGradePersonalBest(finishedGrade);
+          toast(`🎉 Kỷ lục ${getGradeMeta(finishedGrade).label}: ${newBest} điểm!`);
+        } else {
+          toast(`Hết giờ! Điểm ${finishedScore} — đã lưu`);
+        }
       }
     } catch (e) {
-      toast(`Điểm ${finishedScore} (chưa lưu máy chủ: ${e.message})`);
+      toast(
+        wasPractice
+          ? `Đã làm ${correctCount} câu đúng (chưa lưu máy chủ: ${e.message})`
+          : `Điểm ${finishedScore} (chưa lưu máy chủ: ${e.message})`
+      );
     }
+    setHudForMode();
+    wrongStreak = 0;
+    persistentCorrectThisSession = false;
+    endedByTimer = false;
   }
 
   function tickTimer() {
     timeLeft -= 1;
     const el = document.getElementById('flappy-timer');
     if (el) el.textContent = `${timeLeft}s`;
-    if (timeLeft <= 0) endSprint();
+    if (timeLeft <= 0) endSprint(false);
   }
 
   function applyBootstrapHud() {
@@ -301,26 +412,36 @@
     refreshProfileExtra();
   }
 
-  function setStartBusy(busy) {
-    const startBtn = document.getElementById('flappy-start');
-    if (!startBtn) return;
-    startBtn.disabled = busy;
-    startBtn.textContent = busy ? 'Đang bắt đầu…' : '▶ Chơi Chim Toán';
+  function setPlayButtonsBusy(busy) {
+    const practiceBtn = document.getElementById('flappy-practice');
+    const sprintBtn = document.getElementById('flappy-sprint');
+    if (practiceBtn) practiceBtn.disabled = busy;
+    if (sprintBtn) sprintBtn.disabled = busy;
   }
 
   function setSprintUi(active) {
-    const startBtn = document.getElementById('flappy-start');
-    if (startBtn) startBtn.hidden = active;
+    const practiceBtn = document.getElementById('flappy-practice');
+    const sprintBtn = document.getElementById('flappy-sprint');
+    const stopBtn = document.getElementById('flappy-stop');
+    const modes = document.querySelector('.mb-play-modes');
+    if (modes) modes.hidden = active;
+    if (practiceBtn) practiceBtn.hidden = active;
+    if (sprintBtn) sprintBtn.hidden = active;
+    if (stopBtn) stopBtn.hidden = !active;
     const stage = document.getElementById('flappy-stage');
-    if (stage) stage.classList.toggle('mb-sprint-live', active);
+    if (stage) {
+      stage.classList.toggle('mb-sprint-live', active && !isPractice());
+      stage.classList.toggle('mb-practice-live', active && isPractice());
+    }
   }
 
-  async function startSprint() {
+  async function beginPlay(mode) {
     if (sprintActive) return;
+    playMode = mode;
     try {
       const me = await window.MathBlastV2.loadUserMe();
       if (me.role !== 'KID') {
-        toast('Chọn tài khoản bé để chơi Chim Toán');
+        toast('Chọn tài khoản bé để chơi Gà Toán');
         if (window.GameAuth) window.GameAuth.open();
         return;
       }
@@ -341,6 +462,10 @@
     rung = 0;
     correctCount = 0;
     questionCount = 0;
+    wrongStreak = 0;
+    persistentCorrectThisSession = false;
+    endedByTimer = false;
+    sessionStartedAt = Date.now();
     activeGrade = resolveGrade(bootstrap?.flappy, bootstrap?.profile);
     activeTier = gradeToTier(activeGrade);
     if (AudioFx) {
@@ -353,7 +478,7 @@
     }
     questionSession = createSession(activeGrade);
     const now = new Date().toISOString();
-    setStartBusy(true);
+    setPlayButtonsBusy(true);
 
     const startOp = {
       op: 'start',
@@ -371,26 +496,39 @@
       if (!window.MathBlastV2.isAuthError(e)) {
         toast('Không bắt đầu được phiên: ' + e.message);
       }
-      setStartBusy(false);
+      setPlayButtonsBusy(false);
       return;
     } finally {
-      setStartBusy(false);
+      setPlayButtonsBusy(false);
     }
 
     sprintActive = true;
     const stage = document.getElementById('flappy-stage');
     if (stage) stage.classList.remove('mb-sprint-ended');
     setSprintUi(true);
-    updateBird();
-    if (AudioFx) AudioFx.startBgm();
+    updateFlightVisual();
+    if (Sky) Sky.reset();
+    if (AudioFx && !isPractice()) AudioFx.startBgm();
     renderQuestion();
     setRunScore(0);
     setCombo(0);
     refreshProfileExtra();
-    document.getElementById('flappy-timer').textContent = '60s';
+    setHudForMode();
     clearInterval(timerId);
-    timerId = setInterval(tickTimer, 1000);
-    toast('Chim Toán — bắt đầu cuộc đua 60 giây!');
+    if (!isPractice()) {
+      timerId = setInterval(tickTimer, 1000);
+      toast('Gà Toán — cuộc đua 60 giây!');
+    } else {
+      toast('Luyện tập nhẹ — không vội, sai cũng không sao nhé');
+    }
+  }
+
+  function startPractice() {
+    beginPlay('practice');
+  }
+
+  function startSprint() {
+    beginPlay('sprint');
   }
 
   function bindBirdReplay() {
@@ -411,6 +549,7 @@
     const bgmBtn = document.getElementById('flappy-toggle-bgm');
     if (AudioFx) AudioFx.bindToggles(ttsBtn, bgmBtn);
     bindBirdReplay();
+    if (Stickers) Stickers.bindAlbumUi(() => bootstrap);
     try {
       bootstrap = await getBootstrap(MODES.flappy);
       activeGrade = resolveGrade(bootstrap?.flappy, bootstrap?.profile);
@@ -421,7 +560,8 @@
       }
       renderGradePicker();
       applyBootstrapHud();
-      updateBird();
+      if (Sky) Sky.init();
+      updateFlightVisual();
       if (!sprintActive) {
         setRunScore(0);
         setCombo(0);
@@ -432,10 +572,20 @@
     } catch (e) {
       console.error(e);
     }
-    const startBtn = document.getElementById('flappy-start');
-    if (startBtn && !startBtn.dataset.bound) {
-      startBtn.dataset.bound = '1';
-      startBtn.addEventListener('click', startSprint);
+    const practiceBtn = document.getElementById('flappy-practice');
+    const sprintBtn = document.getElementById('flappy-sprint');
+    const stopBtn = document.getElementById('flappy-stop');
+    if (practiceBtn && !practiceBtn.dataset.bound) {
+      practiceBtn.dataset.bound = '1';
+      practiceBtn.addEventListener('click', startPractice);
+    }
+    if (sprintBtn && !sprintBtn.dataset.bound) {
+      sprintBtn.dataset.bound = '1';
+      sprintBtn.addEventListener('click', startSprint);
+    }
+    if (stopBtn && !stopBtn.dataset.bound) {
+      stopBtn.dataset.bound = '1';
+      stopBtn.addEventListener('click', () => endSprint(true));
     }
   }
 

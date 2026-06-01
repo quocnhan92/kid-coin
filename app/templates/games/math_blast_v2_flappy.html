@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Blast V2 — Chim Toán</title>
+  <title>Math Blast V2 — Gà Toán</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/math_blast_v2.css">
@@ -12,19 +12,26 @@
   <div class="mb-shell">
     <header class="mb-topbar">
       <a href="/game/math-blast-v2" class="mb-back">← Trang chủ V2</a>
-      <div class="mb-brand">🐦 Chim Toán</div>
+      <div class="mb-brand">🐥 Gà Toán</div>
       <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
     </header>
 
     <main class="mb-main">
       <section class="mb-hero" style="padding:8px 0 16px;">
-        <!-- <h1 style="font-size:1.35rem;-webkit-text-fill-color:#bae6fd;">Chim Toán</h1> -->
-        <p class="mb-hero-tagline">Trong <strong>60 giây</strong>, chọn đáp án đúng để chim bay lên.</p>
-        <p class="mb-hero-hint">Trả lời đúng nhiều lần liên tiếp sẽ được <strong>cộng thêm điểm</strong>.</p>
+        <h1 style="font-size:1.35rem;-webkit-text-fill-color:#bae6fd;">Gà Toán</h1>
+        <p class="mb-hero-welcome">Không cần vội — làm đúng thì gà con nhảy lên một chút. Sai cũng không sao nhé.</p>
+        <p class="mb-hero-hint">Bé hướng nội nên thử <strong>Luyện tập nhẹ</strong> trước (không đếm giờ).</p>
         <p class="mb-grade-label">Chọn lớp</p>
         <div class="mb-grade-picker" id="flappy-grade-picker" role="group" aria-label="Chọn lớp"></div>
         <p class="mb-grade-desc" id="flappy-grade-desc">…</p>
-        <button type="button" id="flappy-start" class="mb-btn mb-btn-flappy" style="margin-top:12px;">▶ Chơi Chim Toán</button>
+        <button type="button" id="flappy-sticker-album" class="mb-btn mb-btn-sticker-album">
+          📒 Album sticker <span id="flappy-sticker-badge" class="mb-sticker-badge">0/16</span>
+        </button>
+        <div class="mb-play-modes">
+          <button type="button" id="flappy-practice" class="mb-btn mb-btn-practice">🐥 Luyện tập nhẹ</button>
+          <button type="button" id="flappy-sprint" class="mb-btn mb-btn-flappy">⏱ Cuộc đua 60 giây</button>
+        </div>
+        <button type="button" id="flappy-stop" class="mb-btn mb-btn-stop" hidden>Xong rồi ✓</button>
         <div class="mb-audio-toggles" id="flappy-audio-toggles">
           <button type="button" id="flappy-toggle-tts" class="mb-audio-btn" aria-pressed="true">🔊 Đọc đề</button>
           <button type="button" id="flappy-toggle-bgm" class="mb-audio-btn" aria-pressed="false">🎵 Nhạc tắt</button>
@@ -32,20 +39,19 @@
       </section>
 
       <div class="mb-flappy-stage" id="flappy-stage">
+        <canvas id="flappy-sky-back" class="mb-flappy-sky mb-flappy-sky-back" aria-hidden="true"></canvas>
+        <canvas id="flappy-sky-front" class="mb-flappy-sky mb-flappy-sky-front" aria-hidden="true"></canvas>
         <div class="mb-flappy-hud">
           <span class="mb-hud-pill" id="flappy-timer">60s</span>
           <span class="mb-hud-pill" id="flappy-score">Điểm 0</span>
           <span class="mb-hud-pill" id="flappy-combo">Chuỗi x0</span>
         </div>
-        <div class="mb-ladder-rungs" aria-hidden="true">
-          <span class="mb-rung" style="bottom:25%"></span>
-          <span class="mb-rung" style="bottom:47%"></span>
-          <span class="mb-rung" style="bottom:69%"></span>
-        </div>
-        <div class="mb-bird" id="flappy-bird" style="bottom:15%">🐤</div>
-        <div class="mb-question-bar">
-          <div class="mb-question" id="flappy-question">3 + 5 = ?</div>
-          <div class="mb-choices" id="flappy-choices"></div>
+        <div class="mb-bird mb-bird-speak" id="flappy-bird" title="Chạm gà để nghe lại câu hỏi">🐥</div>
+        <div class="mb-flappy-play" id="flappy-play">
+          <div class="mb-question-bar">
+            <div class="mb-question" id="flappy-question">3 + 5 = ?</div>
+            <div class="mb-choices" id="flappy-choices"></div>
+          </div>
         </div>
       </div>
     </main>
@@ -53,11 +59,26 @@
     {% include "games/math_blast_v2_partials/sku_nav.html" %}
   </div>
 
+  <div id="flappy-sticker-modal" class="mb-sticker-modal" hidden>
+    <div class="mb-sticker-backdrop" data-close-sticker aria-hidden="true"></div>
+    <div class="mb-sticker-panel" role="dialog" aria-labelledby="flappy-sticker-title">
+      <header class="mb-sticker-header">
+        <h2 id="flappy-sticker-title">📒 Album Gà Toán</h2>
+        <p class="mb-sticker-sub">Xem trước cả bộ 16 sticker — hình mờ là chưa có, chơi để mở khóa nhé!</p>
+        <p class="mb-sticker-count-line">Đã có: <strong id="flappy-sticker-count">0/16</strong></p>
+        <button type="button" class="mb-sticker-close" data-close-sticker aria-label="Đóng">✕</button>
+      </header>
+      <div id="flappy-sticker-grid" class="mb-sticker-scroll"></div>
+    </div>
+  </div>
+
   {% include "games/math_blast_v2_auth_include.html" %}
   <script src="/static/js/game_utils.js"></script>
-  <script src="/static/js/math_blast_v2/common.js?v=20260519"></script>
+  <script src="/static/js/math_blast_v2/common.js?v=20260527"></script>
   <script src="/static/js/math_blast_v2/question_generator.js?v=20260523"></script>
-  <script src="/static/js/math_blast_v2/flappy_audio.js?v=20260523"></script>
-  <script src="/static/js/math_blast_v2/flappy.js?v=20260526"></script>
+  <script src="/static/js/math_blast_v2/flappy_audio.js?v=20260527"></script>
+  <script src="/static/js/math_blast_v2/flappy_sky.js?v=20260601"></script>
+  <script src="/static/js/math_blast_v2/flappy_stickers.js?v=20260529"></script>
+  <script src="/static/js/math_blast_v2/flappy.js?v=20260601"></script>
 </body>
 </html>
