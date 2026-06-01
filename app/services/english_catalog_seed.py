@@ -69,11 +69,7 @@ def ensure_english_shooter_catalog(db: Session) -> None:
                 )
             )
 
-    if db.query(PlayEnglishTheme).first():
-        db.commit()
-        return
-
-    logger.info("Seeding English Shooter catalog...")
+    logger.info("Ensuring English Shooter catalog...")
     weapons = [
         ("slingshot", 1, "Súng cao su gỗ", "weapon_slingshot"),
         ("bow", 2, "Cung tên gỗ", "weapon_bow"),
@@ -104,12 +100,18 @@ def ensure_english_shooter_catalog(db: Session) -> None:
 
     db.flush()
     _seed_theme_grade1_family(db)
+    _seed_theme_grade2_pets(db)
+    _seed_theme_grade3_school_year(db)
+    _seed_theme_grade4_vacation(db)
+    _seed_theme_grade5_future(db)
     db.commit()
-    logger.info("English Shooter catalog seeded.")
+    logger.info("English Shooter catalog ready.")
 
 
 def _seed_theme_grade1_family(db: Session) -> None:
     theme_id = "en_g1_family"
+    if db.query(PlayEnglishTheme.id).filter(PlayEnglishTheme.id == theme_id).first():
+        return
     db.add(
         PlayEnglishTheme(
             id=theme_id,
@@ -185,5 +187,265 @@ def _seed_theme_grade1_family(db: Session) -> None:
             },
             order_index=0,
             skill_unit_id="en_g1_sent_family",
+        )
+    )
+
+
+def _seed_theme_grade2_pets(db: Session) -> None:
+    theme_id = "en_g2_pets"
+    if db.query(PlayEnglishTheme.id).filter(PlayEnglishTheme.id == theme_id).first():
+        return
+    db.add(
+        PlayEnglishTheme(
+            id=theme_id,
+            grade=2,
+            title="My Pets",
+            order_index=1,
+            background_scene="medieval_village",
+            boss_id="boss_g2_phoenix",
+            content_pack_id=CONTENT_PACK_EN,
+            is_active=True,
+            meta_json={"vi_title": "Thú cưng của em"},
+        )
+    )
+    _seed_theme_stages(db, theme_id)
+    _seed_vocab_items(
+        db,
+        f"{theme_id}_vocab",
+        "en_g2_vocab",
+        [
+            ("cat", "Mèo", "🐱"),
+            ("dog", "Chó", "🐶"),
+            ("rabbit", "Thỏ", "🐰"),
+            ("fish", "Cá", "🐟"),
+            ("bird", "Chim", "🐦"),
+            ("turtle", "Rùa", "🐢"),
+        ],
+        ["book", "shoe", "chair", "apple"],
+    )
+    _seed_sentence_and_paragraph(
+        db,
+        theme_id,
+        "I have a dog.",
+        "I have a [____].",
+        ["dog", "cat", "bag"],
+        "dog",
+        "My pets are friendly and lovely.",
+    )
+
+
+def _seed_theme_grade3_school_year(db: Session) -> None:
+    theme_id = "en_g3_school_year"
+    if db.query(PlayEnglishTheme.id).filter(PlayEnglishTheme.id == theme_id).first():
+        return
+    db.add(
+        PlayEnglishTheme(
+            id=theme_id,
+            grade=3,
+            title="Our School Year",
+            order_index=1,
+            background_scene="industrial_city",
+            boss_id="boss_g3_zeppelin",
+            content_pack_id=CONTENT_PACK_EN,
+            is_active=True,
+            meta_json={"vi_title": "Năm học của chúng em"},
+        )
+    )
+    _seed_theme_stages(db, theme_id)
+    _seed_vocab_items(
+        db,
+        f"{theme_id}_vocab",
+        "en_g3_vocab",
+        [
+            ("teacher", "Giáo viên", "👩‍🏫"),
+            ("classroom", "Lớp học", "🏫"),
+            ("subject", "Môn học", "📘"),
+            ("homework", "Bài tập về nhà", "📝"),
+            ("holiday", "Kỳ nghỉ", "🏖️"),
+            ("project", "Dự án", "🧪"),
+        ],
+        ["window", "banana", "table", "mountain"],
+    )
+    _seed_sentence_and_paragraph(
+        db,
+        theme_id,
+        "We are studying English now.",
+        "We are [____] English now.",
+        ["studying", "study", "studied"],
+        "studying",
+        "In our school year, we study hard and join fun projects.",
+    )
+
+
+def _seed_theme_grade4_vacation(db: Session) -> None:
+    theme_id = "en_g4_vacation"
+    if db.query(PlayEnglishTheme.id).filter(PlayEnglishTheme.id == theme_id).first():
+        return
+    db.add(
+        PlayEnglishTheme(
+            id=theme_id,
+            grade=4,
+            title="A Wonderful Vacation",
+            order_index=1,
+            background_scene="future_base",
+            boss_id="boss_g4_spider",
+            content_pack_id=CONTENT_PACK_EN,
+            is_active=True,
+            meta_json={"vi_title": "Một kỳ nghỉ tuyệt vời"},
+        )
+    )
+    _seed_theme_stages(db, theme_id)
+    _seed_vocab_items(
+        db,
+        f"{theme_id}_vocab",
+        "en_g4_vocab",
+        [
+            ("beach", "Bãi biển", "🏝️"),
+            ("mountain", "Núi", "⛰️"),
+            ("camp", "Trại", "⛺"),
+            ("museum", "Bảo tàng", "🏛️"),
+            ("souvenir", "Quà lưu niệm", "🎁"),
+            ("journey", "Hành trình", "🧭"),
+        ],
+        ["cat", "pen", "basket", "flower"],
+    )
+    _seed_sentence_and_paragraph(
+        db,
+        theme_id,
+        "We visited Da Nang last summer.",
+        "We [____] Da Nang last summer.",
+        ["visited", "visit", "visiting"],
+        "visited",
+        "Last summer we traveled by train and explored many places.",
+    )
+
+
+def _seed_theme_grade5_future(db: Session) -> None:
+    theme_id = "en_g5_future"
+    if db.query(PlayEnglishTheme.id).filter(PlayEnglishTheme.id == theme_id).first():
+        return
+    db.add(
+        PlayEnglishTheme(
+            id=theme_id,
+            grade=5,
+            title="Life in the Future",
+            order_index=1,
+            background_scene="cyberpunk_city",
+            boss_id="boss_g5_mothership",
+            content_pack_id=CONTENT_PACK_EN,
+            is_active=True,
+            meta_json={"vi_title": "Cuộc sống tương lai"},
+        )
+    )
+    _seed_theme_stages(db, theme_id)
+    _seed_vocab_items(
+        db,
+        f"{theme_id}_vocab",
+        "en_g5_vocab",
+        [
+            ("robot", "Rô-bốt", "🤖"),
+            ("drone", "Máy bay không người lái", "🛸"),
+            ("planet", "Hành tinh", "🪐"),
+            ("energy", "Năng lượng", "⚡"),
+            ("scientist", "Nhà khoa học", "🧑‍🔬"),
+            ("invention", "Phát minh", "💡"),
+        ],
+        ["tree", "bike", "chair", "cookie"],
+    )
+    _seed_sentence_and_paragraph(
+        db,
+        theme_id,
+        "People will live in smart cities.",
+        "People [____] live in smart cities.",
+        ["will", "are", "did"],
+        "will",
+        "In the future, people may travel to other planets with clean energy.",
+    )
+
+
+def _seed_theme_stages(db: Session, theme_id: str) -> None:
+    for sid, stype, limit, speak, conf in [
+        (f"{theme_id}_vocab", "vocab", None, False, None),
+        (f"{theme_id}_sentence", "sentence", 30, True, 0.60),
+        (f"{theme_id}_paragraph", "paragraph", None, True, 0.60),
+    ]:
+        db.add(
+            PlayEnglishStage(
+                id=sid,
+                theme_id=theme_id,
+                stage_type=stype,
+                time_limit_seconds=limit,
+                speaking_required=speak,
+                min_confidence=conf,
+                config_json={"boss_fight": stype == "paragraph"},
+            )
+        )
+
+
+def _seed_vocab_items(
+    db: Session,
+    stage_id: str,
+    skill_prefix: str,
+    words: list[tuple[str, str, str]],
+    distractors: list[str],
+) -> None:
+    for idx, (word, vi, emoji) in enumerate(words):
+        db.add(
+            PlayEnglishStageItem(
+                id=f"{stage_id}_{word}",
+                stage_id=stage_id,
+                item_type="target",
+                target_text=word,
+                visual_asset=f"en_vocab_{word}",
+                translation_vi=vi,
+                options_json={
+                    "emoji": emoji,
+                    "prompt_en": f"Shoot the {word}!",
+                    "distractors": [d for d in distractors if d != word][:3],
+                },
+                order_index=idx,
+                skill_unit_id=f"{skill_prefix}_{word}",
+            )
+        )
+
+
+def _seed_sentence_and_paragraph(
+    db: Session,
+    theme_id: str,
+    sentence_target: str,
+    sentence_prompt: str,
+    choices: list[str],
+    answer: str,
+    paragraph_target: str,
+) -> None:
+    sentence_stage = f"{theme_id}_sentence"
+    paragraph_stage = f"{theme_id}_paragraph"
+    db.add(
+        PlayEnglishStageItem(
+            id=f"{sentence_stage}_q1",
+            stage_id=sentence_stage,
+            item_type="target",
+            target_text=sentence_target,
+            options_json={
+                "prompt": sentence_prompt,
+                "choices": choices,
+                "answer": answer,
+            },
+            order_index=0,
+            skill_unit_id=f"{theme_id}_sentence_q1",
+        )
+    )
+    db.add(
+        PlayEnglishStageItem(
+            id=f"{paragraph_stage}_q1",
+            stage_id=paragraph_stage,
+            item_type="target",
+            target_text=paragraph_target,
+            options_json={
+                "prompt": "Read aloud to defeat boss",
+                "answer_hint": paragraph_target,
+            },
+            order_index=0,
+            skill_unit_id=f"{theme_id}_paragraph_q1",
         )
     )

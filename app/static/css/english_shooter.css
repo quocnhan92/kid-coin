@@ -239,3 +239,48 @@ body.es-app {
   font-size: 0.8rem;
   font-weight: 700;
 }
+
+.es-card {
+  background: var(--es-surface);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.es-input,
+.es-textarea,
+.es-select {
+  width: 100%;
+  background: #0b1220;
+  color: var(--es-text);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.es-row {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.es-row.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.es-muted {
+  color: var(--es-muted);
+  font-size: 0.82rem;
+}
+
+.es-result-ok {
+  color: #34d399;
+  font-weight: 800;
+}
+
+.es-result-bad {
+  color: #f87171;
+  font-weight: 800;
+}

@@ -41,7 +41,9 @@ Seed: `app/services/english_catalog_seed.py` (startup sau `seed_play_catalog`).
 ## UI routes
 
 - Hub: `/game/english-shooter`
-- Thảo nguyên MVP: `/game/english-shooter/prairie`
+- Thảo nguyên: `/game/english-shooter/prairie`
+- Thành phố: `/game/english-shooter/city` (sentence + speaking)
+- Boss: `/game/english-shooter/boss` (paragraph + speaking)
 - Kho game: thẻ **Xạ thủ Tiếng Anh** trên `game_hub.html`
 
 ## Chạy migration
@@ -54,6 +56,5 @@ Khởi động lại app để `ensure_english_shooter_catalog()` chạy trên D
 
 ## Việc tiếp theo (ngoài MVP)
 
-- UI Thành phố / Boss + speech confidence
-- Thêm themes lớp 2–5 theo ma trận GDD §7
+- Tinh chỉnh speech confidence theo từng lớp (L1–2: dễ hơn, L4–5: chặt hơn)
 - Parent dashboard filter `english_shooter:*`

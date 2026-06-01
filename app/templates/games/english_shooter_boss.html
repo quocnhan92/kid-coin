@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đại Boss — Xạ thủ Tiếng Anh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← Chế độ</a>
+      <div class="es-brand">👾 Đại Boss</div>
+      <span class="es-gold-pill" id="es-boss-gold">🪙 0</span>
+    </header>
+
+    <div class="es-card">
+      <div class="es-hud">
+        <span id="es-boss-hp">Boss HP 100</span>
+        <span id="es-boss-progress">0/0</span>
+      </div>
+      <p id="es-boss-paragraph" style="font-weight:800;line-height:1.5;">...</p>
+      <p class="es-muted">Đọc to đoạn văn. Khớp càng tốt, sát thương Boss càng cao.</p>
+    </div>
+
+    <div class="es-card">
+      <div class="es-row cols-2">
+        <button id="es-boss-speak-btn" type="button" class="es-btn-primary">🎙️ Bắt đầu nói</button>
+        <button id="es-boss-attack-btn" type="button" class="es-btn-primary" style="background:#fb7185;color:#4c0519;">⚔️ Tấn công</button>
+      </div>
+      <div class="es-row">
+        <textarea id="es-boss-transcript" class="es-textarea" rows="3" placeholder="Fallback: nhập đoạn bạn đã đọc"></textarea>
+        <div id="es-boss-voice-result" class="es-muted">Chưa ghi âm</div>
+      </div>
+    </div>
+
+    <button type="button" id="es-boss-start-btn" class="es-btn-primary">▶ Bắt đầu Boss</button>
+    <p id="es-profile-label" class="es-muted" style="margin-top:10px;">...</p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/english_shooter/common.js?v=20260601"></script>
+  <script src="/static/js/english_shooter/boss.js?v=20260601"></script>
+</body>
+</html>

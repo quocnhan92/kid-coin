@@ -56,7 +56,15 @@ def get_parent_dashboard(db: Session, parent: User, period: str) -> ParentDashbo
         )
         total_sessions = sessions_q.count()
         learning_sessions = sessions_q.filter(
-            PlaySession.game_mode_id.in_(["math_blast:candy", "math_blast:flappy"])
+            PlaySession.game_mode_id.in_(
+                [
+                    "math_blast:candy",
+                    "math_blast:flappy",
+                    "english_shooter:prairie",
+                    "english_shooter:city",
+                    "english_shooter:boss",
+                ]
+            )
         ).count()
 
         play_time = (
@@ -146,6 +154,71 @@ def get_parent_dashboard(db: Session, parent: User, period: str) -> ParentDashbo
                 personal_best=pb,
                 daily_session_count=flappy_sessions,
                 soft_cap=profile.parental_soft_cap_sessions_day if profile else 6,
+            )
+        )
+
+        english_prairie_stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == kid.id,
+                PlayUserGameStats.game_id == "english_shooter",
+                PlayUserGameStats.game_mode_id == "english_shooter:prairie",
+            )
+            .first()
+        )
+        english_city_stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == kid.id,
+                PlayUserGameStats.game_id == "english_shooter",
+                PlayUserGameStats.game_mode_id == "english_shooter:city",
+            )
+            .first()
+        )
+        english_boss_stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == kid.id,
+                PlayUserGameStats.game_id == "english_shooter",
+                PlayUserGameStats.game_mode_id == "english_shooter:boss",
+            )
+            .first()
+        )
+        english_common_extra = (english_prairie_stats.extra_json if english_prairie_stats else {}) or {}
+        by_game.append(
+            ParentChildGameSummary(
+                game_id="english_shooter",
+                game_mode_id="english_shooter:prairie",
+                sessions=sessions_q.filter(PlaySession.game_mode_id == "english_shooter:prairie").count(),
+                personal_best=max((english_common_extra.get("prairie_best_by_theme") or {}).values() or [0]),
+                weak_skills=[
+                    {
+                        "rank": english_common_extra.get("rank", "recruit"),
+                        "lifetime_correct": int(english_common_extra.get("lifetime_correct", 0) or 0),
+                    }
+                ],
+                recent_levels=[
+                    {
+                        "themes_completed": len(english_common_extra.get("themes_completed") or []),
+                        "gold": int(english_common_extra.get("gold", 0) or 0),
+                    }
+                ],
+            )
+        )
+        by_game.append(
+            ParentChildGameSummary(
+                game_id="english_shooter",
+                game_mode_id="english_shooter:city",
+                sessions=sessions_q.filter(PlaySession.game_mode_id == "english_shooter:city").count(),
+                personal_best=int(english_city_stats.high_score) if english_city_stats else 0,
+            )
+        )
+        by_game.append(
+            ParentChildGameSummary(
+                game_id="english_shooter",
+                game_mode_id="english_shooter:boss",
+                sessions=sessions_q.filter(PlaySession.game_mode_id == "english_shooter:boss").count(),
+                personal_best=int(english_boss_stats.high_score) if english_boss_stats else 0,
             )
         )
 

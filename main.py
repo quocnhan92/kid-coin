@@ -335,6 +335,16 @@ async def game_english_shooter_prairie(request: Request):
     """English Shooter — Thảo nguyên (từ vựng)"""
     return templates.TemplateResponse(request, "games/english_shooter_prairie.html")
 
+@app.get("/game/english-shooter/city", response_class=HTMLResponse)
+async def game_english_shooter_city(request: Request):
+    """English Shooter — Bảo vệ thành phố (ngữ pháp + nói)"""
+    return templates.TemplateResponse(request, "games/english_shooter_city.html")
+
+@app.get("/game/english-shooter/boss", response_class=HTMLResponse)
+async def game_english_shooter_boss(request: Request):
+    """English Shooter — Đại Boss (đoạn văn + speaking)"""
+    return templates.TemplateResponse(request, "games/english_shooter_boss.html")
+
 @app.get("/game/block-breaker", response_class=HTMLResponse)
 async def game_block_breaker(request: Request):
     """Game Block Breaker"""
