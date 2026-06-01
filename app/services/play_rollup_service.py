@@ -15,6 +15,10 @@ from app.models.play import (
     PlayEvent,
 )
 from app.schemas.play import SessionSummaryIn
+from app.services.english_shooter_progress_service import (
+    apply_english_session_end,
+    GAME_ID as ENGLISH_GAME_ID,
+)
 
 
 def _unlock_next_levels(db: Session, user_id: UUID, level_id: str) -> List[str]:
@@ -175,6 +179,19 @@ def rollup_after_session_end(
             if latencies:
                 mastery.rolling_avg_latency_ms = int(sum(latencies) / len(latencies))
             result["mastery_updated"].append(skill_id)
+
+    if game_id == ENGLISH_GAME_ID or (
+        game_mode_id and str(game_mode_id).startswith(f"{ENGLISH_GAME_ID}:")
+    ):
+        summary_json = summary.summary_json or {}
+        extra, unlocks = apply_english_session_end(
+            stats.extra_json or {},
+            summary,
+            summary_json,
+        )
+        stats.extra_json = extra
+        if unlocks:
+            result["unlock_events"] = unlocks
 
     if game_mode_id == "math_blast:flappy" and summary.score is not None:
         summary_json = summary.summary_json or {}

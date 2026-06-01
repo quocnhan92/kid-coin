@@ -11,6 +11,13 @@ from .profile import PlayProfile
 from .progress import PlayLevelProgress, PlaySkillMasteryAgg, PlayUserGameStats, PlayModeProgress
 from .sessions import PlaySession, PlayEvent, PlaySessionSummary, PlayIdempotencyKey
 from .reports import PlayDailyRecommendation, PlayParentWeeklySnapshot, PlayMetricsDaily
+from .english_catalog import (
+    PlayEnglishWeapon,
+    PlayEnglishBoss,
+    PlayEnglishTheme,
+    PlayEnglishStage,
+    PlayEnglishStageItem,
+)
 
 __all__ = [
     "PlayGame",
@@ -32,4 +39,9 @@ __all__ = [
     "PlayDailyRecommendation",
     "PlayParentWeeklySnapshot",
     "PlayMetricsDaily",
+    "PlayEnglishWeapon",
+    "PlayEnglishBoss",
+    "PlayEnglishTheme",
+    "PlayEnglishStage",
+    "PlayEnglishStageItem",
 ]

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xạ thủ Tiếng Anh — Chọn chế độ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game" class="es-back">← Kho game</a>
+      <div class="es-brand">🎯 Xạ thủ Tiếng Anh</div>
+      <span class="es-gold-pill" id="es-hub-gold">🪙 …</span>
+      <span id="es-profile-label" style="font-size:0.8rem;color:var(--es-muted)">…</span>
+    </header>
+
+    <section class="es-hero">
+      <h1>Chọn chế độ chơi</h1>
+      <p>Thảo nguyên luyện từ vựng · Thành phố luyện câu &amp; nói · Boss theo chủ đề (GDD v1).</p>
+      <p id="es-hub-status" style="margin-top:8px;font-size:0.8rem;">Đang tải…</p>
+    </section>
+
+    <div class="es-mode-grid">
+      <a href="/game/english-shooter/prairie" class="es-mode-card">
+        <h3>🌾 Thảo nguyên</h3>
+        <p>Bắn đúng từ — không game over, tích vàng mỗi câu.</p>
+        <span class="es-tag">Đang mở · MVP</span>
+      </a>
+      <a href="#" id="es-mode-city" class="es-mode-card locked">
+        <h3>🏙️ Bảo vệ thành phố</h3>
+        <p>Hoàn thành câu &amp; luyện nói (sắp ra mắt).</p>
+        <span class="es-tag es-lock-hint">Khóa</span>
+      </a>
+      <a href="#" id="es-mode-boss" class="es-mode-card locked">
+        <h3>👾 Đại Boss</h3>
+        <p>Đọc đoạn văn và đánh Boss chủ đề (sắp ra mắt).</p>
+        <span class="es-tag es-lock-hint">Khóa</span>
+      </a>
+    </div>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/english_shooter/common.js?v=20260521"></script>
+  <script src="/static/js/english_shooter/hub.js?v=20260521"></script>
+</body>
+</html>

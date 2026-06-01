@@ -99,7 +99,10 @@ def seed_initial_data():
     db = SessionLocal()
     try:
         from app.services.play_catalog_seed import seed_play_catalog
+        from app.services.english_catalog_seed import ensure_english_shooter_catalog
+
         seed_play_catalog(db)
+        ensure_english_shooter_catalog(db)
 
         # Check if any user exists
         if db.query(User).first():
@@ -321,6 +324,16 @@ async def game_math_blast_v2_flappy(request: Request):
 async def game_math_blast_v2_arcade(request: Request):
     """Math Blast v2 — Arcade prototype"""
     return templates.TemplateResponse(request, "games/math_blast_v2_arcade.html")
+
+@app.get("/game/english-shooter", response_class=HTMLResponse)
+async def game_english_shooter_hub(request: Request):
+    """English Shooter — hub chọn chế độ"""
+    return templates.TemplateResponse(request, "games/english_shooter_hub.html")
+
+@app.get("/game/english-shooter/prairie", response_class=HTMLResponse)
+async def game_english_shooter_prairie(request: Request):
+    """English Shooter — Thảo nguyên (từ vựng)"""
+    return templates.TemplateResponse(request, "games/english_shooter_prairie.html")
 
 @app.get("/game/block-breaker", response_class=HTMLResponse)
 async def game_block_breaker(request: Request):

@@ -14,6 +14,12 @@ from app.models.play import (
     PlayEvent,
     PlaySessionSummary,
     PlayIdempotencyKey,
+    PlayUserGameStats,
+)
+from app.services.english_shooter_progress_service import (
+    apply_english_live_sync,
+    GOLD_PER_VOCAB_HIT,
+    GAME_ID as ENGLISH_GAME_ID,
 )
 from app.models.user_family import User
 from app.schemas.play import (
@@ -195,6 +201,7 @@ def process_events_batch(
 
     accepted = duplicates = rejected = 0
     max_seq = 0
+    correct_accepted = 0
 
     for ev in events:
         max_seq = max(max_seq, ev.client_seq)
@@ -226,6 +233,36 @@ def process_events_batch(
             )
         )
         accepted += 1
+        if ev.correct is True:
+            correct_accepted += 1
+
+    if correct_accepted > 0 and session.game_id == ENGLISH_GAME_ID:
+        mode_key = session.game_mode_id or ""
+        stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == user.id,
+                PlayUserGameStats.game_id == ENGLISH_GAME_ID,
+                PlayUserGameStats.game_mode_id == mode_key,
+            )
+            .first()
+        )
+        if not stats:
+            stats = PlayUserGameStats(
+                user_id=user.id,
+                game_id=ENGLISH_GAME_ID,
+                game_mode_id=mode_key,
+                high_score=0,
+                total_sessions=0,
+                extra_json={},
+            )
+            db.add(stats)
+        gold_delta = 0
+        if session.game_mode_id and "prairie" in session.game_mode_id:
+            gold_delta = correct_accepted * GOLD_PER_VOCAB_HIT
+        stats.extra_json = apply_english_live_sync(
+            stats.extra_json, correct_accepted, gold_delta
+        )
 
     db.commit()
     return EventsBatchResponse(

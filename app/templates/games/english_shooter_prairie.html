@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thảo nguyên — Xạ thủ Tiếng Anh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← Chế độ</a>
+      <div class="es-brand">🌾 Thảo nguyên</div>
+      <span class="es-gold-pill" id="es-gold">🪙 0</span>
+    </header>
+
+    <p style="font-size:0.85rem;color:var(--es-muted);">Chọn chủ đề rồi bấm bắt đầu — trả lời sai có thể thử lại.</p>
+    <div class="es-theme-list" id="es-theme-list"></div>
+
+    <div id="es-start-overlay" style="display:flex;flex-direction:column;align-items:flex-start;">
+      <button type="button" id="es-start-btn" class="es-btn-primary">▶ Bắt đầu chơi</button>
+    </div>
+
+    <div id="es-prairie-play" style="display:none;">
+      <div class="es-hud">
+        <span id="es-score">Điểm 0</span>
+        <span id="es-progress">0/0</span>
+      </div>
+      <div class="es-prairie-stage" id="es-prairie-stage">
+        <div class="es-target-word">…</div>
+        <p class="es-prompt" id="es-prompt">…</p>
+        <div class="es-choices" id="es-choices"></div>
+      </div>
+    </div>
+
+    <p id="es-profile-label" style="margin-top:12px;font-size:0.75rem;color:var(--es-muted);">…</p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/english_shooter/common.js?v=20260521"></script>
+  <script src="/static/js/english_shooter/prairie.js?v=20260521"></script>
+</body>
+</html>

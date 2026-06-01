@@ -35,6 +35,7 @@ from app.schemas.play import (
     PlayRecommendationOut,
     PlayGameStatsOut,
     PlayFlappyBootstrapOut,
+    PlayEnglishBootstrapOut,
     PlayStreakOut,
     PlayGamesResponse,
     PlayGameCatalogItem,
@@ -45,6 +46,7 @@ from app.schemas.play import (
     LeaderboardEntry,
 )
 from app.services.play_rollup_service import ensure_initial_level_unlock
+from app.services.english_shooter_service import build_english_bootstrap
 
 
 def get_or_create_profile(db: Session, user: User) -> PlayProfile:
@@ -233,6 +235,14 @@ def get_bootstrap(
         total_sessions=stats.total_sessions if stats else 0,
     )
 
+    english_out = None
+    if game_id == "english_shooter":
+        grade = profile.target_grade or 1
+        english_payload = build_english_bootstrap(
+            db, stats.extra_json if stats else None, grade=grade
+        )
+        english_out = PlayEnglishBootstrapOut(**english_payload)
+
     flappy_out = None
     if game_mode_id == "math_blast:flappy":
         tiers = db.query(PlayModeProgress).filter(
@@ -271,6 +281,7 @@ def get_bootstrap(
         recommendations_today=recommendations,
         game_stats=game_stats,
         flappy=flappy_out,
+        english=english_out,
         streak=streak,
     )
     etag = compute_bootstrap_etag(db, user.id, game_id, game_mode_id)

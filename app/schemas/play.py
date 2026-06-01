@@ -89,6 +89,21 @@ class PlayFlappyBootstrapOut(BaseModel):
     daily_session_soft_cap: int = 6
 
 
+class PlayEnglishBootstrapOut(BaseModel):
+    game_id: str = "english_shooter"
+    gold: int = 0
+    last_grade: int = 1
+    rank: str = "recruit"
+    lifetime_correct: int = 0
+    voice_skins: Dict[str, bool] = {}
+    blocks: Dict[str, Any] = {}
+    themes_completed: List[str] = []
+    prairie_best_by_theme: Dict[str, int] = {}
+    weapon: Optional[Dict[str, Any]] = None
+    themes: List[Dict[str, Any]] = []
+    default_mode_id: str = "english_shooter:prairie"
+
+
 class PlayStreakOut(BaseModel):
     current: int = 0
     last_active_date: Optional[date] = None
@@ -102,6 +117,7 @@ class PlayBootstrapResponse(BaseModel):
     recommendations_today: List[PlayRecommendationOut] = []
     game_stats: PlayGameStatsOut = PlayGameStatsOut()
     flappy: Optional[PlayFlappyBootstrapOut] = None
+    english: Optional[PlayEnglishBootstrapOut] = None
     streak: Optional[PlayStreakOut] = None
 
 

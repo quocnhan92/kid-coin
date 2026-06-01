@@ -22,8 +22,10 @@ from app.schemas.play import (
     ParentChildLevelsResponse,
 )
 from app.services import play_service, play_session_service, play_parent_service
+from app.api.v1.play.english import router as english_router
 
 router = APIRouter()
+router.include_router(english_router)
 
 
 @router.get("/games", response_model=PlayGamesResponse)
