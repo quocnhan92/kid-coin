@@ -7,3 +7,4 @@
 [2026-06-05] main.py _register_reward_stub_routes + reward_stub.html fix 404 new reward games
 [2026-06-05] P1 reward games: shell+css+5 canvas games beta catalog routes LICENSE vendor
 [2026-06-05] P2 ohh1 ohn0 reversi tower_defense_lite beta routes guides EN/VI
+[2026-06-05] alembic 012a_play_registry idempotent 017/018 fix deploy 013 ssr_template; play.py PlayWalletOut order

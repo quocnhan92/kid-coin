@@ -117,6 +117,13 @@ class PlayStreakOut(BaseModel):
     last_active_date: Optional[date] = None
 
 
+class PlayWalletOut(BaseModel):
+    available_balance: int = 0
+    accounts: Dict[str, int] = {}
+    total_earned_learning: int = 0
+    total_spent_reward: int = 0
+
+
 class PlayBootstrapResponse(BaseModel):
     profile: PlayProfileOut
     content_pack: Optional[PlayContentPackOut] = None
@@ -299,13 +306,6 @@ class ParentDashboardResponse(BaseModel):
 class ParentChildLevelsResponse(BaseModel):
     user_id: UUID
     levels: List[PlayLevelProgressOut]
-
-
-class PlayWalletOut(BaseModel):
-    available_balance: int = 0
-    accounts: Dict[str, int] = {}
-    total_earned_learning: int = 0
-    total_spent_reward: int = 0
 
 
 class PlayWalletLedgerItem(BaseModel):

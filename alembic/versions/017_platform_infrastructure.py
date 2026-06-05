@@ -13,6 +13,12 @@ branch_labels = None
 depends_on = None
 
 
+def _has_column(table: str, column: str) -> bool:
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    return column in {c["name"] for c in insp.get_columns(table)}
+
+
 def upgrade() -> None:
     op.create_table(
         "feature_flags",
@@ -57,34 +63,32 @@ def upgrade() -> None:
     op.create_index("ix_outbox_status_created", "domain_events_outbox", ["status", "created_at"])
     op.create_index("ix_outbox_event_type", "domain_events_outbox", ["event_type"])
 
-    op.add_column(
-        "play_games",
-        sa.Column("ssr_template", sa.String(255), nullable=True),
-    )
-    op.add_column(
-        "play_games",
-        sa.Column("launch_url", sa.String(255), nullable=True),
-    )
-    op.add_column(
-        "play_games",
-        sa.Column("is_public", sa.Boolean(), server_default="true", nullable=False),
-    )
-    op.add_column(
-        "play_games",
-        sa.Column(
-            "min_client_version",
-            sa.String(16),
-            server_default="1.0.0",
-            nullable=False,
+    registry_cols = [
+        ("ssr_template", sa.Column("ssr_template", sa.String(255), nullable=True)),
+        ("launch_url", sa.Column("launch_url", sa.String(255), nullable=True)),
+        (
+            "is_public",
+            sa.Column("is_public", sa.Boolean(), server_default="true", nullable=False),
         ),
-    )
+        (
+            "min_client_version",
+            sa.Column(
+                "min_client_version",
+                sa.String(16),
+                server_default="1.0.0",
+                nullable=False,
+            ),
+        ),
+    ]
+    for name, col in registry_cols:
+        if not _has_column("play_games", name):
+            op.add_column("play_games", col)
 
 
 def downgrade() -> None:
-    op.drop_column("play_games", "min_client_version")
-    op.drop_column("play_games", "is_public")
-    op.drop_column("play_games", "launch_url")
-    op.drop_column("play_games", "ssr_template")
+    for name in ("min_client_version", "is_public", "launch_url", "ssr_template"):
+        if _has_column("play_games", name):
+            op.drop_column("play_games", name)
     op.drop_table("domain_events_outbox")
     op.drop_index("ix_feature_flags_scope", "feature_flags")
     op.drop_index("ix_feature_flags_key", "feature_flags")
