@@ -1,0 +1,31 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Pong 2 người{% endblock %}
+{% block game_id %}pong_2p{% endblock %}
+{% block game_title %}🏓 Pong 2 người{% endblock %}
+{% block game_subtitle %}Pong 2P · Chơi cùng bố mẹ{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="pong-canvas" width="640" height="400"></canvas>
+</div>
+<div class="rg-coop-keys">
+  <span><strong>Xanh lá / Green:</strong> W / S</span>
+  <span><strong>Xanh dương / Blue:</strong> ↑ / ↓</span>
+</div>
+{{ dual_guide([
+  "Two players share one keyboard — play with a parent or friend.",
+  "<strong>Green (left)</strong> moves with <strong>W</strong> (up) and <strong>S</strong> (down).",
+  "<strong>Blue (right)</strong> moves with <strong>↑</strong> and <strong>↓</strong>.",
+  "Hit the ball with your paddle. Score when the ball passes the other side.",
+  "First to enjoy the rally wins bragging rights — no fixed end score.",
+], [
+  "Hai người dùng chung bàn phím — chơi cùng bố mẹ hoặc bạn.",
+  "<strong>Xanh lá (trái)</strong>: <strong>W</strong> lên, <strong>S</strong> xuống.",
+  "<strong>Xanh dương (phải)</strong>: phím <strong>↑</strong> và <strong>↓</strong>.",
+  "Đỡ bóng bằng vợt. Ghi điểm khi bóng lọt qua vợt đối phương.",
+  "Không giới hạn điểm — chơi vui, rèn phản xạ.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/pong_2p.js?v=20260605p2"></script>
+{% endblock %}

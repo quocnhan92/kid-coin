@@ -1,0 +1,19 @@
+{
+  "common.back": "Quay lại",
+  "common.sign_in": "Đăng nhập để chơi",
+  "common.loading": "Đang tải…",
+  "common.player": "Bé",
+  "games.math.brand_flappy": "Gà Toán",
+  "games.math.start_flappy": "▶ Chơi Gà Toán",
+  "games.math.starting": "Đang bắt đầu…",
+  "games.math.read_aloud_on": "🔊 Đọc đề",
+  "games.math.read_aloud_off": "🔇 Đọc đề",
+  "games.math.music_on": "🎵 Nhạc bật",
+  "games.math.music_off": "🎵 Nhạc tắt",
+  "games.math.score": "Điểm {n}",
+  "games.math.combo": "Chuỗi x{n}",
+  "games.math.time_up": "Hết giờ",
+  "games.math.best": "Kỷ lục",
+  "games.math.grade": "Lớp {n}",
+  "games.math.choose_grade": "Chọn lớp"
+}

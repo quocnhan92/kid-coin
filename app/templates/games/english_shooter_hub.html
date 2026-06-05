@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Shooter — Choose Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game" class="es-back">← Game Hub <span class="es-vi">(Kho game)</span></a>
+      <div class="es-brand">🎯 English Shooter</div>
+      <span class="es-gold-pill" id="es-hub-gold">🪙 …</span>
+      <span id="es-profile-label" style="font-size:0.8rem;color:var(--es-muted)">…</span>
+    </header>
+
+    <section class="es-hero">
+      <h1>Choose a mode <span class="es-vi">(Chọn chế độ)</span></h1>
+      <p>Prairie = words · City = sentences · Boss = read &amp; fight · English Math = Math Blast in English (Grades 1–5).</p>
+      <p id="es-hub-status" style="margin-top:8px;font-size:0.8rem;">Loading…</p>
+    </section>
+
+    <div class="es-mode-grid">
+      <a href="/game/english-shooter/prairie" class="es-mode-card">
+        <h3>🌾 Prairie <span class="es-vi">(Thảo nguyên)</span></h3>
+        <p>Pick the right word. No game over — earn gold each round.</p>
+        <span class="es-tag">Open · MVP</span>
+      </a>
+      <a href="/game/english-shooter/city" id="es-mode-city" class="es-mode-card locked">
+        <h3>🏙️ City Defense <span class="es-vi">(Bảo vệ thành phố)</span></h3>
+        <p>Finish sentences &amp; practice speaking.</p>
+        <span class="es-tag es-lock-hint">Locked</span>
+      </a>
+      <a href="/game/english-shooter/boss" id="es-mode-boss" class="es-mode-card locked">
+        <h3>👾 Big Boss <span class="es-vi">(Đại Boss)</span></h3>
+        <p>Read a paragraph and beat the theme boss.</p>
+        <span class="es-tag es-lock-hint">Locked</span>
+      </a>
+      <a href="/game/english-shooter/math" class="es-mode-card es-mode-warn">
+        <h3>➕ English Math <span class="es-vi">(Toán tiếng Anh)</span></h3>
+        <p>Math Blast V1 + V2 in English. Grades 1–5 — read &amp; speak math problems.</p>
+        <span class="es-tag es-tag-warn">⚠️ Maintenance — known issues</span>
+      </a>
+    </div>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/english_shooter/common.js?v=20260603"></script>
+  <script src="/static/js/english_shooter/hub.js?v=20260603"></script>
+</body>
+</html>

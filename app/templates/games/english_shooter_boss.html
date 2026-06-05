@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Big Boss — English Shooter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← Modes <span class="es-vi">(Chế độ)</span></a>
+      <div class="es-brand">👾 Big Boss</div>
+      <span class="es-gold-pill" id="es-boss-gold">🪙 0</span>
+    </header>
+
+    <div class="es-card">
+      <div class="es-hud">
+        <span id="es-boss-hp">Boss HP 100</span>
+        <span id="es-boss-progress">0/0</span>
+      </div>
+      <p id="es-boss-subtopic" class="es-muted" style="font-size:0.8rem;margin-bottom:6px;">…</p>
+      <p id="es-boss-paragraph" style="font-weight:800;line-height:1.5;">...</p>
+      <p class="es-muted">Read aloud. Better match = more damage. <span class="es-vi">(Đọc to — khớp càng tốt, sát thương càng cao)</span></p>
+    </div>
+
+    <div class="es-card">
+      <div class="es-row cols-2">
+        <button id="es-boss-speak-btn" type="button" class="es-btn-primary">🎙️ Start Speaking <span class="es-vi">(Bắt đầu nói)</span></button>
+        <button id="es-boss-attack-btn" type="button" class="es-btn-primary" style="background:#fb7185;color:#4c0519;">⚔️ Attack <span class="es-vi">(Tấn công)</span></button>
+      </div>
+      <div class="es-row">
+        <textarea id="es-boss-transcript" class="es-textarea" rows="3" placeholder="Type what you read (Nhập đoạn bạn đọc)"></textarea>
+        <div id="es-boss-voice-result" class="es-muted">Not recorded yet (Chưa ghi âm)</div>
+      </div>
+    </div>
+
+    <button type="button" id="es-boss-start-btn" class="es-btn-primary">▶ Start Boss</button>
+    <p id="es-profile-label" class="es-muted" style="margin-top:10px;">...</p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/english_shooter/common.js?v=20260603"></script>
+  <script src="/static/js/english_shooter/boss.js?v=20260604"></script>
+</body>
+</html>

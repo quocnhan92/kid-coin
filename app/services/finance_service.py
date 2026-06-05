@@ -7,6 +7,7 @@ import logging
 from app.models.user_family import User, Family
 from app.models.finance import CharityFund, CharityDonation, SavingGoal, SavingsAccount, LoanAccount, LoanStatus
 from app.models.logs_transactions import Transaction, TransactionType
+from app.services import coin_ledger_service as ledger
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +29,15 @@ def process_income(db: Session, user: User, amount: int, description: str, refer
     
     charity_amount = int((Decimal(amount) * charity_rate / Decimal(100)).to_integral_value())
     net_income = amount - charity_amount
-    
-    # 2. Update User Balance
-    user.current_coin += net_income
+
+    ledger.credit(
+        db,
+        user,
+        net_income,
+        TransactionType.TASK_COMPLETION,
+        description,
+        reference_id=ref_uuid,
+    )
     
     # 3. Handle Charity Fund
     if charity_amount > 0:
@@ -61,16 +68,7 @@ def process_income(db: Session, user: User, amount: int, description: str, refer
         )
         db.add(donation)
     
-    # 4. Log Income Transaction
-    income_tx = Transaction(
-        kid_id=user.id,
-        amount=net_income,
-        transaction_type=TransactionType.TASK_COMPLETION,
-        description=description,
-        reference_id=ref_uuid
-    )
-    db.add(income_tx)
-    
+    # 4. Log Income Transaction — net already recorded by ledger.credit
     logger.info(f"Processed income for user {user.id}: Total {amount}, Charity {charity_amount}, Net {net_income}")
     return {"net_income": net_income, "charity_amount": charity_amount}
 
@@ -84,23 +82,21 @@ def repay_loan(db: Session, user: User, loan_id: str, amount: int):
     
     if user.current_coin < amount:
         raise ValueError("Insufficient coins for repayment")
-        
+
     actual_repay = min(amount, loan.total_owed - loan.repaid_amount)
-    
-    user.current_coin -= actual_repay
+
+    ledger.debit(
+        db,
+        user,
+        actual_repay,
+        TransactionType.LOAN_REPAY,
+        f"Repayment for loan: {loan_id}",
+        reference_id=loan.id,
+    )
     loan.repaid_amount += actual_repay
-    
+
     if loan.repaid_amount >= loan.total_owed:
         loan.status = LoanStatus.REPAID
-        
-    transaction = Transaction(
-        kid_id=user.id,
-        amount=-actual_repay,
-        transaction_type=TransactionType.LOAN_REPAY,
-        description=f"Repayment for loan: {loan_id}",
-        reference_id=str(loan.id)
-    )
-    db.add(transaction)
-    
+
     db.commit()
     return loan

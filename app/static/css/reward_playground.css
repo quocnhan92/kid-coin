@@ -1,0 +1,129 @@
+:root {
+  --bg: #0d0d1a;
+  --surface: #141428;
+  --text: #f1f0ff;
+  --muted: #8b8aa8;
+  --accent: #f59e0b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.rp-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(13, 13, 26, 0.9);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rp-back { color: #fbbf24; text-decoration: none; font-weight: 700; font-size: 0.85rem; }
+.rp-title { flex: 1; font-weight: 900; }
+.rp-hero { text-align: center; padding: 28px 16px 12px; max-width: 720px; margin: 0 auto; }
+.rp-hero h1 { font-size: 1.6rem; margin-bottom: 8px; }
+.rp-hero p { color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+.rp-vi { font-size: 0.78em; color: var(--muted); font-weight: 600; }
+.rp-metrics { margin-top: 12px; font-weight: 800; color: #fbbf24; font-size: 0.85rem; }
+.rp-status { margin-top: 6px; font-size: 0.75rem; color: var(--muted); }
+.rp-main { max-width: 960px; margin: 0 auto; padding: 8px 16px 64px; }
+.rp-section { margin-bottom: 28px; }
+.rp-section-title {
+  font-size: 1.05rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  color: #fbbf24;
+}
+.rp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.rp-footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem; }
+.rp-footer a { color: #fbbf24; }
+
+.game-card {
+  display: block;
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid transparent;
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.game-card:not(.is-locked):hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.game-card.is-locked { opacity: 0.72; cursor: not-allowed; }
+
+.card-banner {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.card-emoji { font-size: 2.5rem; }
+.card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.rp-badge-open { background: #34d399; color: #052e16; }
+.rp-badge-locked { background: #64748b; color: #fff; }
+.rp-badge-draft { top: auto; bottom: 10px; right: 10px; background: #475569; color: #e2e8f0; }
+.rp-badge-beta { top: auto; bottom: 10px; left: 10px; background: #7c3aed; color: #fff; }
+.rp-badge-coop { top: 10px; left: 10px; background: #0ea5e9; color: #fff; }
+
+.card-body { padding: 14px; }
+.card-title { font-weight: 900; margin-bottom: 6px; }
+.card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.rp-hint {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: #fbbf24;
+  line-height: 1.35;
+}
+
+.card-footer { margin-top: 12px; }
+.play-btn {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #f59e0b, #ec4899);
+  color: #1a0a00;
+  cursor: pointer;
+}
+
+.play-btn:disabled {
+  background: #334155;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.ga-nav-auth-btn {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: transparent;
+  color: #fbbf24;
+  cursor: pointer;
+}

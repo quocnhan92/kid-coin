@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reward Playground — Fun Zone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/reward_playground.css">
+</head>
+<body>
+  <nav class="rp-nav">
+    <a href="/game" class="rp-back">← Learning Hub (Học tập)</a>
+    <span class="rp-title">🎁 Reward Playground</span>
+    <button type="button" id="ga-nav-btn" class="ga-nav-auth-btn">Sign in</button>
+  </nav>
+
+  <header class="rp-hero">
+    <h1>Fun Zone <span class="rp-vi">(Khu giải trí thưởng)</span></h1>
+    <p>Play after you learn! Unlock games with Math &amp; English progress.</p>
+    <p class="rp-vi">Chơi sau khi học — mở khóa bằng thành tích Toán &amp; Tiếng Anh</p>
+    <p id="rp-metrics" class="rp-metrics">Loading…</p>
+    <p id="rp-status" class="rp-status"></p>
+  </header>
+
+  <main class="rp-main" id="rp-main"></main>
+
+  <footer class="rp-footer">
+    <a href="/game/math-blast">Math Blast</a> ·
+    <a href="/game/english-shooter">English Shooter</a> ·
+    <a href="/game">All learning games</a>
+  </footer>
+
+  <link rel="stylesheet" href="/static/css/game_auth.css">
+  {% include "games/game_auth_modal.html" %}
+  <script src="/static/js/game_auth.js?v=20260518"></script>
+  <script src="/static/js/reward_playground.js?v=20260605b"></script>
+</body>
+</html>

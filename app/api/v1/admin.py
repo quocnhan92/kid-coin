@@ -17,6 +17,7 @@ from app.schemas import admin as admin_schemas
 from app.schemas import master_data as master_schemas
 from app.schemas import analytics as analytics_schemas
 from app.schemas import gamification as gamification_schemas
+from app.schemas.platform import FeatureFlagAdminItem, FeatureFlagUpdateRequest
 from app.services import admin_service, analytics_service
 from datetime import datetime, timedelta
 from sqlalchemy import func
@@ -387,6 +388,50 @@ async def get_error_logs(
             "at": log.created_at
         } for log in logs
     ]
+
+# --- FEATURE FLAGS (H1) ---
+
+@router.get("/feature-flags", response_model=List[FeatureFlagAdminItem])
+async def list_feature_flags(
+    admin_subject: str = Depends(deps.get_current_admin),
+    db: Session = Depends(deps.get_db),
+):
+    from app.models.platform import FeatureFlag
+
+    rows = db.query(FeatureFlag).order_by(FeatureFlag.key).all()
+    return [
+        FeatureFlagAdminItem(
+            key=r.key,
+            enabled=r.enabled,
+            scope=r.scope,
+            scope_value=r.scope_value,
+            description=r.description,
+            metadata=r.metadata_json or {},
+        )
+        for r in rows
+    ]
+
+
+@router.put("/feature-flags/{flag_key}")
+async def update_feature_flag(
+    flag_key: str,
+    body: FeatureFlagUpdateRequest,
+    admin_subject: str = Depends(deps.get_current_admin),
+    db: Session = Depends(deps.get_db),
+):
+    from app.services.feature_flag_service import upsert_flag
+
+    row = upsert_flag(
+        db,
+        flag_key,
+        body.enabled,
+        scope=body.scope,
+        scope_value=body.scope_value,
+        description=body.description,
+    )
+    db.commit()
+    return {"status": "success", "key": row.key, "enabled": row.enabled}
+
 
 # --- SYSTEM HEALTH ---
 

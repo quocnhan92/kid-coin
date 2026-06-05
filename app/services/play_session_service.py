@@ -14,6 +14,12 @@ from app.models.play import (
     PlayEvent,
     PlaySessionSummary,
     PlayIdempotencyKey,
+    PlayUserGameStats,
+)
+from app.services.english_shooter_progress_service import (
+    apply_english_live_sync,
+    GOLD_PER_VOCAB_HIT,
+    GAME_ID as ENGLISH_GAME_ID,
 )
 from app.models.user_family import User
 from app.schemas.play import (
@@ -26,6 +32,8 @@ from app.schemas.play import (
     PlayEventIn,
 )
 from app.services.play_rollup_service import rollup_after_session_end
+from app.services import streak_service
+from app.services import domain_event_service as events
 from app.services.play_service import compute_bootstrap_etag
 from app.services import streak_service
 
@@ -111,6 +119,9 @@ def process_sessions_batch(
                     SessionBatchResult(session_id=data.session_id, status=existing.status)
                 )
                 continue
+            from app.services import play_screen_time_service
+
+            play_screen_time_service.assert_can_play(db, user.id)
             session = PlaySession(
                 id=data.session_id,
                 user_id=user.id,
@@ -157,14 +168,35 @@ def process_sessions_batch(
                 )
 
             rollup = rollup_after_session_end(
-                db, user.id, session.game_id, session.game_mode_id, summary
+                db, user.id, session.game_id, session.game_mode_id, summary, session.id
             )
+
+            from app.services import play_screen_time_service
+
+            play_screen_time_service.add_minutes(db, user.id, summary.duration_s or 0)
 
             if summary.duration_s >= 40 or summary.questions_count >= 8:
                 try:
                     streak_service.update_streak(db, str(user.id))
                 except Exception:
                     pass
+
+            events.emit(
+                db,
+                events.EVENT_PLAY_SESSION_COMPLETED,
+                {
+                    "kid_id": str(user.id),
+                    "family_id": str(user.family_id),
+                    "game_id": session.game_id,
+                    "mode_id": session.game_mode_id,
+                    "score": summary.score,
+                    "duration": summary.duration_s,
+                    "session_id": str(session.id),
+                },
+                family_id=user.family_id,
+                aggregate_type="play_session",
+                aggregate_id=str(session.id),
+            )
 
             results.append(
                 SessionBatchResult(
@@ -195,6 +227,7 @@ def process_events_batch(
 
     accepted = duplicates = rejected = 0
     max_seq = 0
+    correct_accepted = 0
 
     for ev in events:
         max_seq = max(max_seq, ev.client_seq)
@@ -226,6 +259,36 @@ def process_events_batch(
             )
         )
         accepted += 1
+        if ev.correct is True:
+            correct_accepted += 1
+
+    if correct_accepted > 0 and session.game_id == ENGLISH_GAME_ID:
+        mode_key = session.game_mode_id or ""
+        stats = (
+            db.query(PlayUserGameStats)
+            .filter(
+                PlayUserGameStats.user_id == user.id,
+                PlayUserGameStats.game_id == ENGLISH_GAME_ID,
+                PlayUserGameStats.game_mode_id == mode_key,
+            )
+            .first()
+        )
+        if not stats:
+            stats = PlayUserGameStats(
+                user_id=user.id,
+                game_id=ENGLISH_GAME_ID,
+                game_mode_id=mode_key,
+                high_score=0,
+                total_sessions=0,
+                extra_json={},
+            )
+            db.add(stats)
+        gold_delta = 0
+        if session.game_mode_id and "prairie" in session.game_mode_id:
+            gold_delta = correct_accepted * GOLD_PER_VOCAB_HIT
+        stats.extra_json = apply_english_live_sync(
+            stats.extra_json, correct_accepted, gold_delta
+        )
 
     db.commit()
     return EventsBatchResponse(

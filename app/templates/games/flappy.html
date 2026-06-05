@@ -104,6 +104,23 @@
 
     <div class="instructions">Chạm màn hình hoặc phím Cách để nhảy</div>
 
+    <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605guides">
+    {% from "games/_reward_guide.html" import dual_guide %}
+    <div class="rg-legacy-guide-wrap">
+    {{ dual_guide([
+      "Tap the screen or press <strong>Space</strong> to flap / jump.",
+      "Fly through gaps between pipes without hitting them or the ground.",
+      "Each pipe passed adds <strong>1 point</strong>.",
+      "Optional: upload a photo to use as your bird avatar.",
+    ], [
+      "Chạm màn hình hoặc nhấn <strong>Space</strong> để bay lên.",
+      "Bay qua khe giữa các ống, không chạm ống hoặc đất.",
+      "Mỗi ống vượt qua được <strong>1 điểm</strong>.",
+      "Có thể tải ảnh làm avatar chim (tùy chọn).",
+    ]) }}
+    </div>
+
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -114,6 +131,7 @@
         let pipes = [];
         let score = 0;
         let gameOver = false;
+        let gameOverPopup = false;
         let frame = 0;
 
         function handleAvatar(input) {
@@ -143,13 +161,18 @@
 
         function reset() {
             bird.y = 150; bird.velocity = 0;
-            pipes = []; score = 0; gameOver = false; frame = 0;
+            pipes = []; score = 0; gameOver = false; gameOverPopup = false; frame = 0;
+            window.RewardShell?.hideGameOver();
             scoreEl.innerText = score;
             requestAnimationFrame(update);
         }
 
         function update() {
-            if (gameOver) return;
+            if (gameOver) {
+                draw();
+                requestAnimationFrame(update);
+                return;
+            }
             frame++;
 
             bird.velocity += bird.gravity;
@@ -216,6 +239,10 @@
             });
 
             if (gameOver) {
+                if (!gameOverPopup) {
+                    gameOverPopup = true;
+                    window.RewardShell?.showGameOver('Game over! / Hết game!', reset);
+                }
                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#fff';
@@ -231,7 +258,9 @@
 
         createPipe();
         update();
+        window.RewardGame = { restart: reset };
     </script>
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
 </body>
 
 </html>

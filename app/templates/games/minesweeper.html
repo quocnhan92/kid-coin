@@ -1,0 +1,30 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Minesweeper · Dò mìn{% endblock %}
+{% block game_id %}minesweeper{% endblock %}
+{% block game_title %}💣 Minesweeper · Dò mìn{% endblock %}
+{% block game_subtitle %}Clear the field safely · Dò mìn an toàn{% endblock %}
+{% block hud_primary %}Tap a cell to start{% endblock %}
+{% block game_body %}
+<div id="ms-board" class="rg-board"></div>
+<div class="rg-controls">
+  <button type="button" id="ms-flag-mode" class="rg-btn">Flag / Cờ: OFF</button>
+  <button type="button" id="ms-reset" class="rg-btn rg-btn-primary">New game / Ván mới</button>
+</div>
+{{ dual_guide([
+  "Tap any cell to <strong>start</strong> — mines are placed after your first tap (safe zone).",
+  "A number shows how many mines touch that cell (8 directions).",
+  "Tap hidden cells to <strong>reveal</strong>; empty areas open automatically.",
+  "Turn on <strong>Flag mode</strong> to mark cells you think have a mine.",
+  "Reveal every safe cell without hitting a mine to <strong>win</strong>. Use <strong>New game</strong> to restart.",
+], [
+  "Chạm một ô để <strong>bắt đầu</strong> — mìn được đặt sau lượt đầu (vùng an toàn quanh ô đó).",
+  "Số trên ô cho biết có bao nhiêu mìn ở 8 ô xung quanh.",
+  "Chạm ô chưa mở để <strong>mở</strong>; vùng trống sẽ tự mở lan.",
+  "Bật <strong>Chế độ cờ</strong> để đánh dấu ô bạn nghĩ có mìn.",
+  "Mở hết ô an toàn, không chạm mìn là <strong>thắng</strong>. Nút <strong>Ván mới</strong> để chơi lại.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/minesweeper.js?v=20260605fix"></script>
+{% endblock %}

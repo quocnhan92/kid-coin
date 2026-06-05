@@ -1,0 +1,29 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Tower Defense{% endblock %}
+{% block game_id %}tower_defense_lite{% endblock %}
+{% block game_title %}🏰 Tower Defense · Phòng thủ tháp{% endblock %}
+{% block game_subtitle %}Stop the waves · Chặn đợt quái{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="td-canvas" width="640" height="360"></canvas>
+</div>
+<div class="rg-controls">
+  <button type="button" id="td-wave" class="rg-btn rg-btn-primary">Start wave / Bắt đầu đợt</button>
+  <button type="button" id="td-reset" class="rg-btn">Reset / Chơi lại</button>
+</div>
+{{ dual_guide([
+  "Tap near the <strong>brown path</strong> to build a tower (costs <strong>25 gold</strong>).",
+  "Press <strong>Start wave</strong> to send enemies.",
+  "Towers shoot automatically; kills earn <strong>gold</strong>.",
+  "You lose a life when an enemy reaches the end — <strong>5 lives</strong> total.",
+], [
+  "Chạm gần <strong>đường nâu</strong> để đặt tháp (tốn <strong>25 vàng</strong>).",
+  "Nhấn <strong>Bắt đầu đợt</strong> để quái xuất hiện.",
+  "Tháp tự bắn; tiêu diệt quái được <strong>vàng</strong>.",
+  "Quái tới đích mất <strong>1 mạng</strong> — còn <strong>5 mạng</strong>.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/tower_defense_lite.js?v=20260605p2"></script>
+{% endblock %}

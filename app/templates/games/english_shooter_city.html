@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Defense — English Shooter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← Modes <span class="es-vi">(Chế độ)</span></a>
+      <div class="es-brand">🏙️ City Defense</div>
+      <span class="es-gold-pill" id="es-city-gold">🪙 0</span>
+    </header>
+
+    <div class="es-card">
+      <div class="es-hud">
+        <span id="es-city-score">Score 0</span>
+        <span id="es-city-hp">HP 3</span>
+        <span id="es-city-progress">0/0</span>
+      </div>
+      <p class="es-muted">Pick the right answer, then read the sentence aloud for a bonus. <span class="es-vi">(Chọn đáp án, rồi đọc câu)</span></p>
+      <div class="es-row">
+        <div id="es-city-prompt" style="font-weight:800;">...</div>
+        <div id="es-city-choices" class="es-choices"></div>
+      </div>
+    </div>
+
+    <div class="es-card">
+      <label class="es-muted">Say the sentence: <span class="es-vi">(Nói lại câu)</span></label>
+      <div class="es-row cols-2">
+        <button id="es-city-speak-btn" type="button" class="es-btn-primary">🎙️ Start Speaking <span class="es-vi">(Bắt đầu nói)</span></button>
+        <button id="es-city-check-btn" type="button" class="es-btn-primary" style="background:#38bdf8;color:#082f49;">✅ Check <span class="es-vi">(Kiểm tra)</span></button>
+      </div>
+      <div class="es-row">
+        <input id="es-city-transcript" class="es-input" placeholder="Type what you said (Nhập câu bạn nói)">
+        <div id="es-city-voice-result" class="es-muted">Not recorded yet (Chưa ghi âm)</div>
+      </div>
+    </div>
+
+    <button type="button" id="es-city-start-btn" class="es-btn-primary">▶ Start City</button>
+    <p id="es-profile-label" class="es-muted" style="margin-top:10px;">...</p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/english_shooter/common.js?v=20260603"></script>
+  <script src="/static/js/english_shooter/city.js?v=20260603"></script>
+</body>
+</html>

@@ -16,6 +16,15 @@ class PlayGame(Base):
     current_release_id = Column(String(64), nullable=True)
     sort_order = Column(SmallInteger, server_default="0", nullable=False)
     meta_json = Column(JSONB, server_default="{}", nullable=False)
+    ssr_template = Column(String(255), nullable=True)
+    launch_url = Column(String(255), nullable=True)
+    is_public = Column(Boolean, server_default="true", nullable=False)
+    min_client_version = Column(String(16), server_default="1.0.0", nullable=False)
+    hub_zone = Column(String(16), server_default="learning", nullable=False)
+    requires_wallet = Column(Boolean, server_default="false", nullable=False)
+    subject = Column(String(16), nullable=True)
+    grade_min = Column(SmallInteger, server_default="1", nullable=False)
+    grade_max = Column(SmallInteger, server_default="5", nullable=False)
 
 
 class PlayGameMode(Base):

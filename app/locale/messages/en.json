@@ -1,0 +1,19 @@
+{
+  "common.back": "Back",
+  "common.sign_in": "Sign in to play",
+  "common.loading": "Loading…",
+  "common.player": "Player",
+  "games.math.brand_flappy": "Math Bird",
+  "games.math.start_flappy": "▶ Start Math Bird",
+  "games.math.starting": "Starting…",
+  "games.math.read_aloud_on": "🔊 Read aloud",
+  "games.math.read_aloud_off": "🔇 Read aloud off",
+  "games.math.music_on": "🎵 Music on",
+  "games.math.music_off": "🎵 Music off",
+  "games.math.score": "Score {n}",
+  "games.math.combo": "Combo x{n}",
+  "games.math.time_up": "Time up",
+  "games.math.best": "Best",
+  "games.math.grade": "Grade {n}",
+  "games.math.choose_grade": "Choose grade"
+}

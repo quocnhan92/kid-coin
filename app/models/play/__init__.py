@@ -9,8 +9,17 @@ from .catalog import (
 )
 from .profile import PlayProfile
 from .progress import PlayLevelProgress, PlaySkillMasteryAgg, PlayUserGameStats, PlayModeProgress
+from .wallet import PlayKidWallet, PlayWalletLedgerEntry
 from .sessions import PlaySession, PlayEvent, PlaySessionSummary, PlayIdempotencyKey
 from .reports import PlayDailyRecommendation, PlayParentWeeklySnapshot, PlayMetricsDaily
+from .policy import PlayKidConsent, PlayDailyScreenTime
+from .english_catalog import (
+    PlayEnglishWeapon,
+    PlayEnglishBoss,
+    PlayEnglishTheme,
+    PlayEnglishStage,
+    PlayEnglishStageItem,
+)
 
 __all__ = [
     "PlayGame",
@@ -25,6 +34,8 @@ __all__ = [
     "PlaySkillMasteryAgg",
     "PlayUserGameStats",
     "PlayModeProgress",
+    "PlayKidWallet",
+    "PlayWalletLedgerEntry",
     "PlaySession",
     "PlayEvent",
     "PlaySessionSummary",
@@ -32,4 +43,11 @@ __all__ = [
     "PlayDailyRecommendation",
     "PlayParentWeeklySnapshot",
     "PlayMetricsDaily",
+    "PlayDailyScreenTime",
+    "PlayKidConsent",
+    "PlayEnglishWeapon",
+    "PlayEnglishBoss",
+    "PlayEnglishTheme",
+    "PlayEnglishStage",
+    "PlayEnglishStageItem",
 ]

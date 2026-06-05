@@ -93,25 +93,22 @@ async def buy_avatar_item(
         raise HTTPException(status_code=400, detail="Insufficient coins")
         
     try:
-        # 1. Deduct coins
-        current_user.current_coin -= item.price_coins
-        
-        # 2. Add to inventory
+        from app.services import coin_ledger_service as ledger
+
+        ledger.debit(
+            db,
+            current_user,
+            item.price_coins,
+            TransactionType.AVATAR_PURCHASE,
+            f"Bought: {item.name}",
+        )
+
         ua = UserAvatarItem(
             user_id=current_user.id,
             item_id=item.id
         )
         db.add(ua)
-        
-        # 3. Create transaction
-        transaction = Transaction(
-            kid_id=current_user.id,
-            amount=-item.price_coins,
-            transaction_type=TransactionType.AVATAR_PURCHASE,
-            description=f"Bought: {item.name}"
-        )
-        db.add(transaction)
-        
+
         db.commit()
         return {"status": "success", "message": f"Successfully bought {item.name}"}
     except Exception as e:

@@ -47,6 +47,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     
     # Set context
     context.set_current_user_id(str(user.id))
+    context.set_family_id(str(user.family_id))
     return user
 
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> str:

@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}0h h1{% endblock %}
+{% block game_id %}ohh1{% endblock %}
+{% block game_title %}🟥 0h h1{% endblock %}
+{% block game_subtitle %}Logic puzzle · Giải đố logic{% endblock %}
+{% block game_body %}
+<div id="ohh1-board" class="oh-board"></div>
+<div class="rg-controls">
+  <button type="button" id="ohh1-check" class="rg-btn rg-btn-primary">Check / Kiểm tra</button>
+  <button type="button" id="ohh1-reset" class="rg-btn">New / Ván mới</button>
+</div>
+{{ dual_guide([
+  "Numbers on the <strong>top</strong> and <strong>left</strong> show how many red tiles each column and row needs.",
+  "Tap a cell to toggle it <strong>red</strong> or empty.",
+  "Make every row and column match its hint number.",
+  "Press <strong>Check</strong> when you think it is solved.",
+], [
+  "Số <strong>trên</strong> và <strong>trái</strong> cho biết mỗi cột/hàng cần bao nhiêu ô đỏ.",
+  "Chạm ô để bật/tắt <strong>ô đỏ</strong>.",
+  "Mỗi hàng và cột phải khớp số gợi ý.",
+  "Nhấn <strong>Kiểm tra</strong> khi xong.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/ohh1.js?v=20260605p2"></script>
+{% endblock %}

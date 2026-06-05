@@ -749,6 +749,24 @@
         // --- INIT ---
         initMenu();
     </script>
+
+    <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605guides">
+    {% from "games/_reward_guide.html" import dual_guide %}
+    <div class="rg-legacy-guide-wrap">
+    {{ dual_guide([
+      "Move the paddle with <strong>mouse</strong>, <strong>touch</strong>, or <strong>arrow keys</strong>.",
+      "Bounce the ball to break all <strong>bricks</strong>.",
+      "Do not let the ball fall below the paddle.",
+      "Some bricks need multiple hits; clear the level to advance.",
+    ], [
+      "Di chuyển vợt bằng <strong>chuột</strong>, <strong>chạm</strong> hoặc <strong>phím mũi tên</strong>.",
+      "Bóng nảy phá hết <strong>gạch</strong> trên màn hình.",
+      "Đừng để bóng rơi khỏi vợt.",
+      "Một số gạch cần đập nhiều lần; hết gạch là qua màn.",
+    ]) }}
+    </div>
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
+    <script>window.RewardGame = { restart: () => location.reload() };</script>
 </body>
 
 </html>

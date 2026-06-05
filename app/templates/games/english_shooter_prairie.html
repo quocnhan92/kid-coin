@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prairie — English Shooter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+</head>
+<body class="es-app">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← Modes <span class="es-vi">(Chế độ)</span></a>
+      <div class="es-brand">🌾 Prairie</div>
+      <span class="es-gold-pill" id="es-gold">🪙 0</span>
+    </header>
+
+    <p style="font-size:0.85rem;color:var(--es-muted);">Pick grade &amp; theme, then tap Start. <span class="es-vi">(Chọn lớp, chủ đề, rồi bắt đầu)</span></p>
+    <div class="es-hud" id="es-grade-picker" style="margin:8px 0;"></div>
+    <div class="es-theme-list" id="es-theme-list"></div>
+
+    <div id="es-start-overlay" style="display:flex;flex-direction:column;align-items:flex-start;">
+      <button type="button" id="es-start-btn" class="es-btn-primary">▶ Start Game <span class="es-vi">(Bắt đầu)</span></button>
+    </div>
+
+    <div id="es-prairie-play" style="display:none;">
+      <div class="es-hud">
+        <span id="es-score">Score 0</span>
+        <span id="es-progress">0/0</span>
+      </div>
+      <div class="es-prairie-stage" id="es-prairie-stage">
+        <div class="es-target-word">…</div>
+        <p class="es-prompt" id="es-prompt">…</p>
+        <div class="es-choices" id="es-choices"></div>
+      </div>
+    </div>
+
+    <p id="es-profile-label" style="margin-top:12px;font-size:0.75rem;color:var(--es-muted);">…</p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/game_utils.js"></script>
+  <script src="/static/js/english_shooter/common.js?v=20260603"></script>
+  <script src="/static/js/english_shooter/prairie.js?v=20260603"></script>
+</body>
+</html>

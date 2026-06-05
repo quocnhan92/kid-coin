@@ -833,6 +833,21 @@ async def approve_task(
                 reference_id=str(log.id)
             )
 
+            from app.services import domain_event_service as events
+            events.emit(
+                db,
+                events.EVENT_TASK_APPROVED,
+                {
+                    "kid_id": str(kid.id),
+                    "family_id": str(kid.family_id),
+                    "coins": points,
+                    "task_log_id": str(log.id),
+                },
+                family_id=kid.family_id,
+                aggregate_type="task_log",
+                aggregate_id=str(log.id),
+            )
+
             # 3. Update Streak
             streak_service.update_streak(db, str(kid.id))
             

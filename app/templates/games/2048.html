@@ -122,6 +122,22 @@
         <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
     </div>
 
+    <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605guides">
+    {% from "games/_reward_guide.html" import dual_guide %}
+    <div class="rg-legacy-guide-wrap">
+    {{ dual_guide([
+      "Swipe or use <strong>arrow keys</strong> to slide all tiles in one direction.",
+      "When two tiles with the same number touch, they <strong>merge into one</strong>.",
+      "Every move spawns a new <strong>2</strong> or <strong>4</strong> tile.",
+      "Goal: create a <strong>2048</strong> tile (or go higher). The game ends when no moves remain.",
+    ], [
+      "Vuốt hoặc dùng <strong>phím mũi tên</strong> để trượt tất cả ô theo một hướng.",
+      "Hai ô cùng số chạm nhau sẽ <strong>gộp thành một</strong>.",
+      "Mỗi lượt xuất hiện thêm ô <strong>2</strong> hoặc <strong>4</strong>.",
+      "Mục tiêu: tạo ô <strong>2048</strong>. Hết nước đi là thua.",
+    ]) }}
+    </div>
+
     <script>
         const grid = document.getElementById('grid');
         const scoreEl = document.getElementById('score');
@@ -226,6 +242,8 @@
         });
 
         init();
+        window.RewardGame = { restart: init };
     </script>
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
 </body>
 </html>

@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Hextris{% endblock %}
+{% block game_id %}hextris{% endblock %}
+{% block game_title %}⬡ Hextris{% endblock %}
+{% block game_subtitle %}Rotate and match colors · Xoay và ghép màu{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="hex-canvas" width="400" height="480"></canvas>
+</div>
+{{ dual_guide([
+  "Colored blocks fly in toward the <strong>six sides</strong> of the hexagon.",
+  "<strong>Tap</strong> the screen or press <strong>Space</strong> to rotate the hex.",
+  "Land blocks on a side with <strong>3 same colors in a row</strong> to score (+30).",
+  "Each side holds at most <strong>5 blocks</strong> — overflow ends the game.",
+  "Rotate quickly to match colors before blocks reach the center.",
+], [
+  "Các khối màu bay vào <strong>sáu cạnh</strong> của hình lục giác.",
+  "<strong>Chạm màn hình</strong> hoặc nhấn <strong>Space</strong> để xoay lục giác.",
+  "Ghép <strong>3 khối cùng màu liên tiếp</strong> trên một cạnh để ghi điểm (+30).",
+  "Mỗi cạnh tối đa <strong>5 khối</strong> — đầy là thua.",
+  "Xoay nhanh để ghép màu trước khi khối chạm tâm.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/hextris.js?v=20260605p1b"></script>
+{% endblock %}

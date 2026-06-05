@@ -9,7 +9,7 @@
   /** Tên hiển thị chế độ (API id giữ nguyên math_blast:flappy) */
   const MODE_LABELS = {
     candy: 'Bản đồ Kẹo',
-    flappy: 'Chim Toán',
+    flappy: 'Gà Toán',
     arcade: 'Giải trí',
   };
 
@@ -19,6 +19,11 @@
     arcade: 'math_blast:arcade_free',
     arcadeClass: 'math_blast:arcade_class',
   };
+
+  function resolveGameId(override) {
+    if (override) return override;
+    return window.MathBlastV2?.GAME_ID || GAME_ID;
+  }
 
   let _bootstrapCache = {};
   let _userMe = null;
@@ -103,7 +108,11 @@
       throw new Error(AUTH_ERROR);
     }
     if (status === 404) {
-      toast('Không kết nối được máy chủ — hãy khởi động lại ứng dụng');
+      toast(
+        window.ENGLISH_MATH
+          ? 'Cannot reach server — restart the app'
+          : 'Không kết nối được máy chủ — hãy khởi động lại ứng dụng'
+      );
       throw new Error('Not Found');
     }
   }
@@ -144,17 +153,27 @@
     return _userMe;
   }
 
+  function englishProfileExtra(extra) {
+    if (!extra || !(window.isEnglishMath && window.isEnglishMath())) return extra;
+    return extra
+      .replace(/Lớp (\d)/g, 'Grade $1')
+      .replace(/Kỷ lục/g, 'Best')
+      .replace(/điểm/g, 'pts')
+      .replace(/ngày liên tiếp/g, 'day streak');
+  }
+
   async function updateProfileBar(extra) {
     const label = document.getElementById('mb-profile-label');
     if (!label) return;
+    const extraEn = englishProfileExtra(extra);
     try {
       const me = await loadUserMe();
-      let text = me.display_name || 'Bé';
-      if (extra) text += ` · ${extra}`;
+      let text = me.display_name || (window.isEnglishMath && window.isEnglishMath() ? 'Player' : 'Bé');
+      if (extraEn) text += ` · ${extraEn}`;
       else if (me.current_coin != null) text += ` · ${me.current_coin}🪙`;
       label.textContent = text;
     } catch (e) {
-      label.textContent = extra || 'Đăng nhập để chơi';
+      label.textContent = extraEn || (window.isEnglishMath && window.isEnglishMath() ? 'Sign in to play' : 'Đăng nhập để chơi');
     }
   }
 
@@ -166,14 +185,15 @@
     return fetchJson(`${PLAY_API}/levels?game_mode_id=${encodeURIComponent(gameModeId)}`);
   }
 
-  async function getBootstrap(gameModeId, gameId = GAME_ID) {
-    const key = `${gameId}:${gameModeId || ''}`;
+  async function getBootstrap(gameModeId, gameId) {
+    const gid = resolveGameId(gameId);
+    const key = `${gid}:${gameModeId || ''}`;
     const headers = {};
     const cached = _bootstrapCache[key];
     if (cached && cached.etag) headers['If-None-Match'] = cached.etag;
 
     const res = await fetch(
-      `${PLAY_API}/bootstrap?game_id=${encodeURIComponent(gameId)}&game_mode_id=${encodeURIComponent(gameModeId || '')}`,
+      `${PLAY_API}/bootstrap?game_id=${encodeURIComponent(gid)}&game_mode_id=${encodeURIComponent(gameModeId || '')}`,
       { credentials: 'include', headers }
     );
     if (res.status === 401 || res.status === 403 || res.status === 404) {
@@ -265,6 +285,7 @@
   window.MathBlastV2 = {
     PLAY_API,
     GAME_ID,
+    resolveGameId,
     MODES,
     MODE_LABELS,
     AUTH_ERROR,

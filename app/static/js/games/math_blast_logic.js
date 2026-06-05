@@ -47,6 +47,7 @@ function showLevelSelection() {
 // Ensure functions used in HTML via onclick are exposed to global scope
 window.showLevelSelection = showLevelSelection;
 window.selectLevel = function(lvl) {
+    if (window.GameUtils && window.GameUtils.warmupSpeech) window.GameUtils.warmupSpeech();
     currentLevel = lvl;
     levelSelectionEl.style.display = 'none';
     document.querySelector('.level-link').style.display = 'flex';
@@ -121,9 +122,7 @@ function generateProblem() {
     // Khóa nhận đáp án trong lúc máy đọc câu hỏi (tránh xung đột / echo)
     _canSubmit = false;
 
-    // VOICE: Speak question
-    let opText = op === '+' ? 'cộng' : (op === '-' ? 'trừ' : (op === 'x' ? 'nhân' : 'chia'));
-    GameUtils.speak(`${n1} ${opText} ${n2} bằng mấy?`, () => {
+    const onQuestionSpoken = () => {
         console.log("[Logic] TTS finished reading question.");
         // Khởi động lại session nhận diện để xóa sạch transcript cũ (bị dính tiếng TTS)
         if (gameActive) {
@@ -137,7 +136,14 @@ function generateProblem() {
                 console.log("[Logic] _canSubmit is now true.");
             }, 400);
         }
-    });
+    };
+    if (window.ENGLISH_MATH && window.EnglishMathSpeech) {
+        if (window.GameUtils && window.GameUtils.warmupSpeech) window.GameUtils.warmupSpeech();
+        window.EnglishMathSpeech.speakProblem(n1, op, n2, onQuestionSpoken);
+    } else {
+        const opText = op === '+' ? 'cộng' : (op === '-' ? 'trừ' : (op === 'x' ? 'nhân' : 'chia'));
+        GameUtils.speak(`${n1} ${opText} ${n2} bằng mấy?`, onQuestionSpoken);
+    }
 }
 
 function startVoiceListening() {
@@ -246,7 +252,9 @@ function handleWrong() {
     // VOICE: Feedback for wrong answer
     if (gameActive) {
         _canSubmit = false;
-        GameUtils.speak("Tính lại nhé!", () => {
+        const retryMsg = window.ENGLISH_MATH ? 'Try again!' : 'Tính lại nhé!';
+        const speakRetry = window.ENGLISH_MATH && GameUtils.speakEn ? GameUtils.speakEn : GameUtils.speak;
+        speakRetry(retryMsg, () => {
             if (gameActive) {
                 if (recognition) {
                     try { recognition.abort(); } catch (e) {}
@@ -286,11 +294,16 @@ function endGame() {
     // Per-level High Score
     const key = `mathBlast_highScore_${currentLevel}`;
     const highScore = localStorage.getItem(key) || 0;
+    const em = !!window.ENGLISH_MATH;
     if (score > highScore) {
         localStorage.setItem(key, score);
-        highScoreEl.innerText = `Kỷ lục mới Cấp độ ${LEVELS[currentLevel].name}: ${score}! 🏆`;
+        highScoreEl.innerText = em
+            ? `New best (${LEVELS[currentLevel].name}): ${score}! 🏆`
+            : `Kỷ lục mới Cấp độ ${LEVELS[currentLevel].name}: ${score}! 🏆`;
     } else {
-        highScoreEl.innerText = `Kỷ lục (${LEVELS[currentLevel].name}): ${highScore}`;
+        highScoreEl.innerText = em
+            ? `Best (${LEVELS[currentLevel].name}): ${highScore}`
+            : `Kỷ lục (${LEVELS[currentLevel].name}): ${highScore}`;
     }
 
     gameOverEl.style.display = 'flex';
@@ -303,5 +316,21 @@ window.addEventListener('keydown', (e) => {
     else if (e.key === 'Enter') submitAnswer();
 });
 
+const LEVEL_FROM_PARAM = {
+    kiddy: 'KIDDY',
+    starter: 'STARTER',
+    explorer: 'EXPLORER',
+    master: 'MASTER',
+    genius: 'GENIUS',
+};
+
+function initFromQueryLevel() {
+    const raw = new URLSearchParams(window.location.search).get('level');
+    if (!raw) return;
+    const key = LEVEL_FROM_PARAM[raw.toLowerCase()] || raw.toUpperCase();
+    if (LEVELS[key]) selectLevel(key);
+}
+
 // Initialize with selection
 showLevelSelection();
+initFromQueryLevel();

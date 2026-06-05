@@ -1,0 +1,13 @@
+{
+  "common.back": "Back",
+  "common.sign_in": "Sign in to play",
+  "games.math.brand_flappy": "Math Bird",
+  "games.math.start_flappy": "▶ Start Math Bird",
+  "games.math.read_aloud_on": "🔊 Read aloud",
+  "games.math.read_aloud_off": "🔇 Read aloud off",
+  "games.math.score": "Score {n}",
+  "games.math.combo": "Combo x{n}",
+  "games.math.best": "Best",
+  "games.math.grade": "Grade {n}",
+  "games.math.choose_grade": "Choose grade"
+}

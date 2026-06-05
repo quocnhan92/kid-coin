@@ -8,14 +8,24 @@
     sessionsBatch,
     uuid,
   } = window.MathBlastV2;
+  const t = (en, vi) => ((window.isEnglishMath && window.isEnglishMath()) ? en : vi);
+  const em = () => window.isEnglishMath && window.isEnglishMath();
 
-  const LEVELS = [
-    { id: 'kiddy', name: 'Bé nhỏ', meta: 'Cộng trừ 1–10', color: '#10b981' },
-    { id: 'starter', name: 'Khởi đầu', meta: 'Cộng trừ 1–20', color: '#3b82f6' },
-    { id: 'explorer', name: 'Khám phá', meta: 'Nhân chia cơ bản', color: '#f59e0b' },
-    { id: 'master', name: 'Cao thủ', meta: 'Hỗn hợp', color: '#ec4899' },
-    { id: 'genius', name: 'Thiên tài', meta: 'Thử thách', color: '#ef4444' },
-  ];
+  const LEVELS = em()
+    ? [
+        { id: 'kiddy', name: 'Kiddy', meta: 'Add & subtract 1–10', color: '#10b981' },
+        { id: 'starter', name: 'Starter', meta: 'Add & subtract 1–20', color: '#3b82f6' },
+        { id: 'explorer', name: 'Explorer', meta: 'Basic multiply & divide', color: '#f59e0b' },
+        { id: 'master', name: 'Master', meta: 'Mixed operations', color: '#ec4899' },
+        { id: 'genius', name: 'Genius', meta: 'Challenge mode', color: '#ef4444' },
+      ]
+    : [
+        { id: 'kiddy', name: 'Bé nhỏ', meta: 'Cộng trừ 1–10', color: '#10b981' },
+        { id: 'starter', name: 'Khởi đầu', meta: 'Cộng trừ 1–20', color: '#3b82f6' },
+        { id: 'explorer', name: 'Khám phá', meta: 'Nhân chia cơ bản', color: '#f59e0b' },
+        { id: 'master', name: 'Cao thủ', meta: 'Hỗn hợp', color: '#ec4899' },
+        { id: 'genius', name: 'Thiên tài', meta: 'Thử thách', color: '#ef4444' },
+      ];
 
   let selected = 'starter';
   let mode = 'free';
@@ -65,7 +75,7 @@
     try {
       bootstrap = await getBootstrap(gameModeId);
       const hs = bootstrap.game_stats?.high_score ?? 0;
-      await updateProfileBar(`Điểm cao ${hs}`);
+      await updateProfileBar(t(`High score ${hs}`, `Điểm cao ${hs}`));
     } catch (e) {
       console.error(e);
     }
@@ -100,12 +110,13 @@
         ],
         `arcade-${sid}`
       );
-      toast(`Mở ${lv?.name || selected} — chuyển sang game V1`);
-      window.location.href = `/game/math-blast?level=${encodeURIComponent(selected)}`;
+      toast(t(`Opening ${lv?.name || selected} — launching V1`, `Mở ${lv?.name || selected} — chuyển sang game V1`));
+      const base = em() ? '/game/english-shooter/math/v1' : '/game/math-blast';
+      window.location.href = `${base}?level=${encodeURIComponent(selected)}`;
     } catch (e) {
       if (!window.MathBlastV2.isAuthError(e)) {
-        toast(e.message || 'Lỗi kết nối');
-        window.location.href = '/game/math-blast';
+        toast(e.message || t('Connection error', 'Lỗi kết nối'));
+        window.location.href = em() ? '/game/english-shooter/math/v1' : '/game/math-blast';
       }
     }
   }

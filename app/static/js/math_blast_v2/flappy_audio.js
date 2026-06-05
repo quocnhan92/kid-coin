@@ -14,6 +14,7 @@
   const BASE = '/static/audio/math_blast_v2/';
   const LS_BGM = 'mb_v2_flappy_bgm';
   const LS_TTS = 'mb_v2_flappy_tts';
+  const LS_TTS_EM = 'em_math_flappy_tts';
 
   const FILE_CANDIDATES = {
     bgm: ['flappy_bgm.mp3', 'flappy_bgm.ogg'],
@@ -142,6 +143,9 @@
   }
 
   function questionToSpeechText(item) {
+    if ((global.isEnglishMath && global.isEnglishMath()) && global.EnglishMathSpeech) {
+      return global.EnglishMathSpeech.speechFromItem(item) || '';
+    }
     if (!item || !item.q) return '';
     let q = item.q.trim();
     if (q.includes('? +')) {
@@ -163,7 +167,16 @@
     return `${q.trim()} bằng mấy?`;
   }
 
+  function ttsStorageKey() {
+    return global.isEnglishMath && global.isEnglishMath() ? LS_TTS_EM : LS_TTS;
+  }
+
   function getTtsEnabled() {
+    if (global.isEnglishMath && global.isEnglishMath()) {
+      const stored = global.localStorage.getItem(LS_TTS_EM);
+      if (stored === '0') return false;
+      return true;
+    }
     const stored = global.localStorage.getItem(LS_TTS);
     if (stored === '1') return true;
     if (stored === '0') return false;
@@ -171,7 +184,7 @@
   }
 
   function setTtsEnabled(on) {
-    global.localStorage.setItem(LS_TTS, on ? '1' : '0');
+    global.localStorage.setItem(ttsStorageKey(), on ? '1' : '0');
   }
 
   function getBgmEnabled() {
@@ -187,10 +200,24 @@
   }
 
   function speakQuestion(item, opts) {
+    const em = global.isEnglishMath && global.isEnglishMath();
     if (!getTtsEnabled() && !(opts && opts.force)) return;
-    const text = questionToSpeechText(item);
+    let text = questionToSpeechText(item);
+    if (!text && item && item.q) {
+      text = em ? `What is ${item.q.replace(/\s*=\s*\?/u, '').trim()}?` : '';
+    }
     if (!text) return;
     stopSpeech();
+    unlock();
+    if (global.GameUtils && global.GameUtils.warmupSpeech) global.GameUtils.warmupSpeech();
+    if (em && global.GameUtils && global.GameUtils.speakEn) {
+      global.GameUtils.speakEn(text);
+      return;
+    }
+    if (global.EnglishMathSpeech) {
+      global.EnglishMathSpeech.speak(text);
+      return;
+    }
     if (global.GameUtils && global.GameUtils.speak) {
       global.GameUtils.speak(text);
     }
@@ -233,22 +260,29 @@
   }
 
   function updateToggleUi(ttsBtn, bgmBtn) {
+    const em = global.isEnglishMath && global.isEnglishMath();
+    const ttsOn = getTtsEnabled();
     if (ttsBtn) {
-      const on = getTtsEnabled();
-      ttsBtn.classList.toggle('active', on);
-      ttsBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      ttsBtn.textContent = on ? '🔊 Đọc đề' : '🔇 Đọc đề';
+      ttsBtn.classList.toggle('active', ttsOn);
+      ttsBtn.setAttribute('aria-pressed', ttsOn ? 'true' : 'false');
+      ttsBtn.textContent = em
+        ? (ttsOn ? '🔊 Read aloud' : '🔇 Read aloud off')
+        : (ttsOn ? '🔊 Đọc đề' : '🔇 Đọc đề');
     }
     if (bgmBtn) {
-      const on = getBgmEnabled();
-      bgmBtn.classList.toggle('active', on);
-      bgmBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      bgmBtn.textContent = on ? '🎵 Nhạc bật' : '🎵 Nhạc tắt';
+      const bgmOn = getBgmEnabled();
+      bgmBtn.classList.toggle('active', bgmOn);
+      bgmBtn.setAttribute('aria-pressed', bgmOn ? 'true' : 'false');
+      bgmBtn.textContent = em
+        ? (bgmOn ? '🎵 Music on' : '🎵 Music off')
+        : (bgmOn ? '🎵 Nhạc bật' : '🎵 Nhạc tắt');
     }
     const bird = document.getElementById('flappy-bird');
     if (bird) {
-      bird.classList.toggle('mb-bird-speak', getTtsEnabled());
-      bird.title = getTtsEnabled() ? 'Chạm chim để nghe lại câu hỏi' : '';
+      bird.classList.toggle('mb-bird-speak', ttsOn);
+      bird.title = ttsOn
+        ? (em ? 'Tap bird to hear again' : 'Chạm chim để nghe lại câu hỏi')
+        : '';
     }
   }
 

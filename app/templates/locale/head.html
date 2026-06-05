@@ -1,0 +1,15 @@
+{# Inject locale config + platform.js — include once per page (before game scripts). #}
+<script id="kidcoin-locale-config" type="application/json">{{ locale_config_json | safe }}</script>
+<script id="kidcoin-locale-messages" type="application/json">{{ locale_messages_json | safe }}</script>
+<script>
+(function () {
+  var cfg = {};
+  var msg = {};
+  try {
+    cfg = JSON.parse(document.getElementById('kidcoin-locale-config').textContent || '{}');
+    msg = JSON.parse(document.getElementById('kidcoin-locale-messages').textContent || '{}');
+  } catch (e) {}
+  window.__KIDCOIN_LOCALE__ = Object.assign(cfg, { messages: msg });
+})();
+</script>
+<script src="/static/js/locale/platform.js?v=20260608"></script>
