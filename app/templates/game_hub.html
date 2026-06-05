@@ -280,6 +280,10 @@
       gap: 20px;
     }
 
+    .hidden-section {
+      display: none !important;
+    }
+
     .game-card {
       position: relative;
       background: var(--surface);
@@ -591,183 +595,20 @@
     </div>
     {% endif %}
 
-    <!-- Games section -->
+    <!-- Learning games -->
     <div class="section-header">
-      <h2 class="section-title">🕹️ Game đang có</h2>
+      <h2 class="section-title">📚 Learning Games (Học tập)</h2>
       <div class="section-line"></div>
     </div>
 
-    <div class="game-grid">
-      <!-- Math Blast -->
-      <a href="/game/math-blast" id="game-math-blast" class="game-card" data-color="purple">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #2e1065, #3b0764);">
-          <span class="card-emoji" style="animation-delay:0.2s">🚀</span>
-          <span class="card-badge" style="background: #00ff88; color: #000;">HOT NEW</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Math Blast 🚀</div>
-          <div class="card-desc">Thử thách tính nhẩm và rèn luyện tư duy toán học! Trả lời bằng giọng nói cực kỳ thú vị
-            và hấp dẫn cho bé.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 5.0</span>
-              <span class="meta-item">🧠 Trí tuệ</span>
-            </div>
-            <button class="play-btn" style="background: #00ff88; color: #000;">▶ Chơi ngay</button>
-          </div>
-        </div>
-      </a>
+    <div id="learning-game-grid" class="game-grid" aria-live="polite"></div>
 
-      <!-- English Shooter -->
-      <a href="/game/english-shooter" id="game-english-shooter" class="game-card" data-color="cyan">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #064e3b, #0e7490);">
-          <span class="card-emoji" style="animation-delay:0.1s">🎯</span>
-          <span class="card-badge" style="background: #34d399; color: #052e16;">TIẾNG ANH</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Xạ thủ Tiếng Anh</div>
-          <div class="card-desc">Luyện từ vựng và câu trên thảo nguyên, bảo vệ thành phố và đánh Boss — gắn Play Hub, lưu vàng &amp; tiến trình.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">🌾 Thảo nguyên</span>
-              <span class="meta-item">🏙️ Thành phố</span>
-              <span class="meta-item">👾 Boss</span>
-            </div>
-            <button class="play-btn" style="background: #34d399; color: #052e16;">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- Math Blast V2 -->
-      <a href="/game/math-blast-v2" id="game-math-blast-v2" class="game-card" data-color="purple">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #4c1d95, #0c4a6e);">
-          <span class="card-emoji" style="animation-delay:0.15s">🍬</span>
-          <span class="card-badge" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">V2 THỬ NGHIỆM</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Math Blast V2</div>
-          <div class="card-desc">Ba chế độ: Bản đồ Kẹo, Chim Toán, Giải trí. Chuyển chế độ dễ dàng trên cùng một tài khoản.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">🍬 Kẹo</span>
-              <span class="meta-item">🐦 Bay</span>
-              <span class="meta-item">🕹️ Giải trí</span>
-            </div>
-            <button class="play-btn" style="background: linear-gradient(90deg,#a855f7,#38bdf8); color:#fff;">▶ Thử V2</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- Snake -->
-      <a href="/game/snake" id="game-snake" class="game-card" data-color="green">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #064e3b, #065f46);">
-          <span class="card-emoji" style="animation-delay:0s">🐍</span>
-          <span class="card-badge">HOT</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Rắn Săn Mồi</div>
-          <div class="card-desc">Điều khiển con rắn ăn mồi và tránh va vào tường. Càng ăn nhiều càng dài, thử xem bạn
-            đạt được bao nhiêu điểm!</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 4.8</span>
-              <span class="meta-item">🎯 Dễ chơi</span>
-            </div>
-            <button class="play-btn">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- 2048 -->
-      <a href="/game/2048" id="game-2048" class="game-card" data-color="amber">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #78350f, #92400e);">
-          <span class="card-emoji" style="animation-delay:0.5s">🔢</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">2048</div>
-          <div class="card-desc">Gộp các ô số để đạt đến 2048! Game tư duy chiến lược giúp bé rèn luyện khả năng tính
-            toán và lên kế hoạch.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 4.9</span>
-              <span class="meta-item">🧠 Tư duy</span>
-            </div>
-            <button class="play-btn">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- Memory -->
-      <a href="/game/memory" id="game-memory" class="game-card" data-color="cyan">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #0c4a6e, #075985);">
-          <span class="card-emoji" style="animation-delay:1s">🃏</span>
-          <span class="card-badge">Mới</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Lật Bài Nhớ</div>
-          <div class="card-desc">Lật các ô bài để tìm cặp giống nhau! Game trí nhớ tuyệt vời giúp bé rèn luyện trí nhớ
-            và sự tập trung.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 4.7</span>
-              <span class="meta-item">🧩 Trí nhớ</span>
-            </div>
-            <button class="play-btn">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- Flappy -->
-      <a href="/game/flappy" id="game-flappy" class="game-card" data-color="pink">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #500724, #831843);">
-          <span class="card-emoji" style="animation-delay:1.5s">🐦</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Flappy Coin</div>
-          <div class="card-desc">Nhấn để bay qua các cột! Tránh va vào cột và thu thập coin. Game phản xạ nhanh cực kỳ
-            hấp dẫn!</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 4.6</span>
-              <span class="meta-item">⚡ Nhanh tay</span>
-            </div>
-            <button class="play-btn">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
-
-      <!-- Coming soon 1 -->
-      <!-- Coming soon 2 -->
-
-      <!-- Coming soon 2 -->
-      <!-- Block Breaker -->
-      <a href="/game/block-breaker" id="game-block-breaker" class="game-card" data-color="red">
-        <div class="card-glow"></div>
-        <div class="card-banner" style="background: linear-gradient(135deg, #450a0a, #7f1d1d);">
-          <span class="card-emoji" style="animation-delay: 2.5s">🧱</span>
-          <span class="card-badge">Mới</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Block Breaker</div>
-          <div class="card-desc">Phá vỡ các khối gạch bằng quả bóng! Game cổ điển Breakout với đồ họa hiện đại và nhiều
-            level thú vị.</div>
-          <div class="card-footer">
-            <div class="card-meta">
-              <span class="meta-item">⭐ 4.9</span>
-              <span class="meta-item">⚡ Phản xạ</span>
-            </div>
-            <button class="play-btn">▶ Chơi</button>
-          </div>
-        </div>
-      </a>
+    <div class="section-header" style="margin-top:40px;">
+      <h2 class="section-title">🎁 Reward Playground (Phần thưởng)</h2>
+      <div class="section-line"></div>
     </div>
+
+    <div id="reward-game-grid" class="game-grid" aria-live="polite"></div>
 
     {% if show_ads %}
     <!-- Bottom ad slot -->
@@ -792,6 +633,9 @@
     </p>
   </footer>
 
+  <script src="/static/js/platform/features.js?v=20260609"></script>
+  <script src="/static/js/platform/game_hub_loader.js?v=20260609"></script>
+  <script src="/static/js/platform/reward_hub_loader.js?v=20260610"></script>
   <link rel="stylesheet" href="/static/css/game_auth.css">
   {% include "games/game_auth_modal.html" %}
   <script src="/static/js/game_auth.js?v=20260518"></script>

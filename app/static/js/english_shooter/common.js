@@ -96,6 +96,10 @@
     );
   }
 
+  async function getThemes(grade) {
+    return fetchJson(`${PLAY_API}/english/themes?grade=${encodeURIComponent(grade)}`);
+  }
+
   async function sessionsBatch(sessions) {
     return fetchJson(`${PLAY_API}/sessions/batch`, {
       method: 'POST',
@@ -115,11 +119,11 @@
     if (!label) return;
     try {
       const me = await fetchJson(USER_API);
-      let text = me.display_name || 'Bé';
+      let text = me.display_name || 'Player';
       if (extra) text += ` · ${extra}`;
       label.textContent = text;
     } catch {
-      label.textContent = extra || 'Đăng nhập để chơi';
+      label.textContent = extra || 'Sign in to play (Đăng nhập để chơi)';
     }
   }
 
@@ -130,6 +134,7 @@
     toast,
     getBootstrap,
     getStage,
+    getThemes,
     sessionsBatch,
     eventsBatch,
     updateProfileBar,

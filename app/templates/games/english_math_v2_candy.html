@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Math — Candy Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2 em-math" data-english-math="1">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game/english-shooter/math/v2" class="mb-back">← English Math V2</a>
+      <div class="mb-brand">🍬 Candy Map</div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
+    </header>
+
+    <main class="mb-main">
+      <section class="mb-hero" style="padding-top:8px;padding-bottom:16px;">
+        <h1 style="font-size:1.4rem;-webkit-text-fill-color:#e9d5ff;">Worlds &amp; chapters</h1>
+        <p id="candy-chapter-sub">Basic add &amp; subtract · 18 levels</p>
+      </section>
+
+      <div class="mb-world-tabs" role="tablist">
+        <button type="button" class="mb-world-tab active" role="tab">TG 1</button>
+        <button type="button" class="mb-world-tab" role="tab">TG 2</button>
+        <button type="button" class="mb-world-tab" role="tab">TG 3</button>
+        <button type="button" class="mb-world-tab" role="tab" disabled style="opacity:0.4">TG 4+</button>
+      </div>
+
+      <div id="candy-map-path" class="mb-map-path" aria-label="Level map"></div>
+
+      <p id="candy-api-status" style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--mb-muted);">
+        Progress from server · unlock with 3★ on previous level
+      </p>
+    </main>
+
+    {% include "games/english_math_v2_partials/sku_nav.html" %}
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script>window.ENGLISH_MATH=true;</script>
+  <script src="/static/js/english_math/em.js?v=20260608"></script>
+  <script src="/static/js/math_blast_v2/common.js?v=20260608"></script>
+  <script src="/static/js/english_math/play_ids.js?v=20260608"></script>
+  <script src="/static/js/english_math/i18n.js?v=20260608"></script>
+  <script src="/static/js/english_math/grades_en.js?v=20260608"></script>
+  <script src="/static/js/math_blast_v2/candy.js?v=20260608"></script>
+</body>
+</html>

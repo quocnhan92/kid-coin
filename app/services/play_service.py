@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 from sqlalchemy import func
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from app.models.gamification import UserStreak
@@ -37,6 +38,7 @@ from app.schemas.play import (
     PlayFlappyBootstrapOut,
     PlayEnglishBootstrapOut,
     PlayStreakOut,
+    PlayWalletOut,
     PlayGamesResponse,
     PlayGameCatalogItem,
     PlayModeCatalogItem,
@@ -47,6 +49,8 @@ from app.schemas.play import (
 )
 from app.services.play_rollup_service import ensure_initial_level_unlock
 from app.services.english_shooter_service import build_english_bootstrap
+from app.services.platform_seed import game_launch_meta
+from app.services.play_wallet_service import get_or_create_wallet, wallet_snapshot
 
 
 def get_or_create_profile(db: Session, user: User) -> PlayProfile:
@@ -120,8 +124,11 @@ def list_levels(db: Session, game_mode_id: str) -> PlayLevelsResponse:
     )
 
 
-def list_games(db: Session) -> PlayGamesResponse:
-    games = db.query(PlayGame).filter(PlayGame.is_active == True).order_by(PlayGame.sort_order).all()
+def list_games(db: Session, zone: Optional[str] = None) -> PlayGamesResponse:
+    q = db.query(PlayGame).filter(PlayGame.is_active == True)
+    if zone:
+        q = q.filter(PlayGame.hub_zone == zone)
+    games = q.order_by(PlayGame.sort_order).all()
     out: List[PlayGameCatalogItem] = []
     for g in games:
         modes = (
@@ -129,12 +136,21 @@ def list_games(db: Session) -> PlayGamesResponse:
             .filter(PlayGameMode.game_id == g.id)
             .all()
         )
+        launch = game_launch_meta(g)
         out.append(
             PlayGameCatalogItem(
                 id=g.id,
                 display_name=g.display_name,
                 game_type=g.game_type,
+                hub_zone=g.hub_zone or "learning",
+                subject=g.subject,
+                grade_min=int(g.grade_min or 1),
+                grade_max=int(g.grade_max or 5),
+                requires_wallet=bool(g.requires_wallet),
                 meta=g.meta_json or {},
+                launch_url=launch.get("launch_url"),
+                min_client_version=launch.get("min_client_version") or "1.0.0",
+                is_public=bool(launch.get("is_public")),
                 modes=[
                     PlayModeCatalogItem(
                         id=m.id,
@@ -244,10 +260,10 @@ def get_bootstrap(
         english_out = PlayEnglishBootstrapOut(**english_payload)
 
     flappy_out = None
-    if game_mode_id == "math_blast:flappy":
+    if game_mode_id and ":flappy" in game_mode_id:
         tiers = db.query(PlayModeProgress).filter(
             PlayModeProgress.user_id == user.id,
-            PlayModeProgress.game_mode_id == "math_blast:flappy",
+            PlayModeProgress.game_mode_id == game_mode_id,
         ).all()
         extra = (stats.extra_json if stats else {}) or {}
         pb = extra.get("personal_best_by_tier", {})
@@ -258,7 +274,7 @@ def get_bootstrap(
                 for t in tiers
             },
             personal_best=pb,
-            daily_session_count=_daily_session_count(db, user.id, "math_blast:flappy"),
+            daily_session_count=_daily_session_count(db, user.id, game_mode_id),
             daily_session_soft_cap=profile.parental_soft_cap_sessions_day,
         )
 
@@ -267,6 +283,13 @@ def get_bootstrap(
         current=streak_row.current_streak if streak_row else 0,
         last_active_date=streak_row.last_active_date if streak_row else None,
     )
+
+    wallet_out = None
+    try:
+        wallet_row = get_or_create_wallet(db, user.id)
+        wallet_out = PlayWalletOut(**wallet_snapshot(wallet_row))
+    except ProgrammingError:
+        db.rollback()
 
     body = PlayBootstrapResponse(
         profile=PlayProfileOut(
@@ -283,6 +306,7 @@ def get_bootstrap(
         flappy=flappy_out,
         english=english_out,
         streak=streak,
+        wallet=wallet_out,
     )
     etag = compute_bootstrap_etag(db, user.id, game_id, game_mode_id)
     return body, etag

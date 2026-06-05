@@ -26,6 +26,8 @@ from app.api.v1.play import router as play_router
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services import admin_service
 from app.core.middleware import RequestContextMiddleware
+from app.locale.middleware import LocaleMiddleware
+from app.locale.jinja import template_context
 from app.models.user_family import User, Role, Family
 from typing import Optional
 from app.core.security import decode_access_token
@@ -52,7 +54,8 @@ app = FastAPI(
     redoc_url="/redoc" if ENV != "prod" else None,
 )
 
-# Add Middleware
+# Add Middleware (locale after request id)
+app.add_middleware(LocaleMiddleware)
 app.add_middleware(RequestContextMiddleware)
 
 # Mount static files
@@ -66,6 +69,13 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 if not os.path.exists("app/templates"):
     os.makedirs("app/templates")
 templates = Jinja2Templates(directory="app/templates")
+
+
+def render_page(request: Request, template_name: str, extra: dict | None = None):
+    """HTML page with locale/market context + message bundles for JS."""
+    ctx = template_context(request, extra)
+    return templates.TemplateResponse(request, template_name, ctx)
+
 
 # Include Routers
 app.include_router(system_router.router, prefix="/api/v1/system", tags=["System"])
@@ -89,8 +99,22 @@ app.include_router(play_router, prefix="/api/v1/play", tags=["Play"])
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
 def startup_event():
+    from app.core.migration_runner import run_alembic_upgrade
+
+    try:
+        run_alembic_upgrade()
+    except Exception as mig_err:
+        logger.error("Migration failed at startup: %s", mig_err)
     seed_initial_data()
     start_scheduler()
+    try:
+        from app.core.game_registry import register_game_routes, register_legacy_redirects
+
+        mounted = register_game_routes(app, render_page)
+        register_legacy_redirects(app)
+        logger.info("Game registry: %s dynamic routes mounted", mounted)
+    except Exception as reg_err:
+        logger.warning("Game registry skipped: %s", reg_err)
 
 def seed_initial_data():
     # NOTE: alembic upgrade head đã được chạy bởi entrypoint.sh trước khi uvicorn start.
@@ -100,9 +124,14 @@ def seed_initial_data():
     try:
         from app.services.play_catalog_seed import seed_play_catalog
         from app.services.english_catalog_seed import ensure_english_shooter_catalog
+        from app.services.platform_seed import seed_platform
 
         seed_play_catalog(db)
         ensure_english_shooter_catalog(db)
+        try:
+            seed_platform(db)
+        except Exception as plat_err:
+            logger.warning("Platform seed skipped (run migration 017): %s", plat_err)
 
         # Check if any user exists
         if db.query(User).first():
@@ -275,29 +304,79 @@ async def read_kid_dashboard(request: Request, access_token: Optional[str] = Coo
 
 # --- Game Hub Routes (Independent Module) ---
 
+@app.get("/set-market/{market_code}")
+async def set_market_cookie(market_code: str, request: Request, next: str = "/"):
+    """Set market + default locale cookies then redirect (market switcher)."""
+    from app.locale.registry import MARKETS
+
+    code = market_code.lower()
+    if code not in MARKETS:
+        return RedirectResponse(next or "/")
+    m = MARKETS[code]
+    target = next if next.startswith("/") else "/"
+    response = RedirectResponse(url=target)
+    response.set_cookie("kidcoin_market", code, max_age=60 * 60 * 24 * 365, samesite="lax")
+    response.set_cookie("kidcoin_locale", m.default_locale, max_age=60 * 60 * 24 * 365, samesite="lax")
+    return response
+
+
 @app.get("/game", response_class=HTMLResponse)
 async def game_hub(request: Request):
     """Trang chủ kho game mini"""
     return templates.TemplateResponse(request, "game_hub.html")
 
+@app.get("/game/rewards", response_class=HTMLResponse)
+async def game_reward_playground(request: Request):
+    """Reward Playground — fun games unlocked by learning"""
+    return templates.TemplateResponse(request, "games/reward_playground.html")
+
 @app.get("/game/snake", response_class=HTMLResponse)
 async def game_snake(request: Request):
     """Game Rắn săn mồi"""
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
     return templates.TemplateResponse(request, "games/snake.html")
 
 @app.get("/game/2048", response_class=HTMLResponse)
 async def game_2048(request: Request):
     """Game 2048"""
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
     return templates.TemplateResponse(request, "games/2048.html")
 
 @app.get("/game/memory", response_class=HTMLResponse)
 async def game_memory(request: Request):
-    """Game Lật bài"""
+    """Game Lật bài — reward zone"""
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
     return templates.TemplateResponse(request, "games/memory.html")
+
+@app.get("/game/memory-learn", response_class=HTMLResponse)
+async def game_memory_learn(request: Request):
+    """Gà Nhớ bài — learning zone"""
+    return templates.TemplateResponse(request, "games/memory.html")
+
+@app.get("/privacy-play", response_class=HTMLResponse)
+async def privacy_play(request: Request):
+    return templates.TemplateResponse(request, "privacy_play.html")
 
 @app.get("/game/flappy", response_class=HTMLResponse)
 async def game_flappy(request: Request):
     """Game Flappy Baby"""
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
     return templates.TemplateResponse(request, "games/flappy.html")
 
 @app.get("/game/math-blast", response_class=HTMLResponse)
@@ -325,6 +404,30 @@ async def game_math_blast_v2_arcade(request: Request):
     """Math Blast v2 — Arcade prototype"""
     return templates.TemplateResponse(request, "games/math_blast_v2_arcade.html")
 
+@app.get("/game/english-shooter/math", response_class=HTMLResponse)
+async def game_english_math_hub(request: Request):
+    return render_page(request, "games/english_math_hub.html")
+
+@app.get("/game/english-shooter/math/v1", response_class=HTMLResponse)
+async def game_english_math_v1(request: Request):
+    return render_page(request, "games/english_math_v1.html")
+
+@app.get("/game/english-shooter/math/v2", response_class=HTMLResponse)
+async def game_english_math_v2_hub(request: Request):
+    return render_page(request, "games/english_math_v2_hub.html")
+
+@app.get("/game/english-shooter/math/v2/candy", response_class=HTMLResponse)
+async def game_english_math_v2_candy(request: Request):
+    return render_page(request, "games/english_math_v2_candy.html")
+
+@app.get("/game/english-shooter/math/v2/flappy", response_class=HTMLResponse)
+async def game_english_math_v2_flappy(request: Request):
+    return render_page(request, "games/english_math_v2_flappy.html")
+
+@app.get("/game/english-shooter/math/v2/arcade", response_class=HTMLResponse)
+async def game_english_math_v2_arcade(request: Request):
+    return render_page(request, "games/english_math_v2_arcade.html")
+
 @app.get("/game/english-shooter", response_class=HTMLResponse)
 async def game_english_shooter_hub(request: Request):
     """English Shooter — hub chọn chế độ"""
@@ -349,6 +452,91 @@ async def game_english_shooter_boss(request: Request):
 async def game_block_breaker(request: Request):
     """Game Block Breaker"""
     return templates.TemplateResponse(request, "games/block_breaker.html")
+
+
+_REWARD_ROUTES_REGISTERED = {
+    "/game/snake",
+    "/game/2048",
+    "/game/memory",
+    "/game/flappy",
+    "/game/block-breaker",
+}
+
+REWARD_PLAY_TEMPLATES = {
+    "/game/minesweeper": "games/minesweeper.html",
+    "/game/pong-2p": "games/pong_2p.html",
+    "/game/snake-2p": "games/snake_2p.html",
+    "/game/air-hockey-2p": "games/air_hockey_2p.html",
+    "/game/hextris": "games/hextris.html",
+    "/game/ohh1": "games/ohh1.html",
+    "/game/ohn0": "games/ohn0.html",
+    "/game/reversi": "games/reversi.html",
+    "/game/tower-defense": "games/tower_defense_lite.html",
+}
+
+
+def _reward_page_handler(template_name: str):
+    async def handler(request: Request):
+        from app.core.reward_route_guard import reward_route_guard
+
+        blocked = reward_route_guard(request)
+        if blocked:
+            return blocked
+        return templates.TemplateResponse(request, template_name)
+
+    return handler
+
+
+def _register_reward_play_routes() -> None:
+    for route, tpl in REWARD_PLAY_TEMPLATES.items():
+        app.add_api_route(
+            route,
+            _reward_page_handler(tpl),
+            methods=["GET"],
+            response_class=HTMLResponse,
+            name=f"reward_play_{route.replace('/', '_')}",
+        )
+        _REWARD_ROUTES_REGISTERED.add(route)
+
+
+def _register_reward_stub_routes() -> None:
+    from app.data.reward_playground_catalog import REWARD_GAMES
+
+    for game in REWARD_GAMES:
+        route = game["route"]
+        if route in _REWARD_ROUTES_REGISTERED:
+            continue
+
+        async def handler(request: Request, g=game):
+            from app.core.reward_route_guard import reward_route_guard
+
+            blocked = reward_route_guard(request)
+            if blocked:
+                return blocked
+            return templates.TemplateResponse(
+                request,
+                "games/reward_stub.html",
+                {
+                    "game_id": g["id"],
+                    "game_title": g["title"],
+                    "game_emoji": g["emoji"],
+                    "game_desc": g["desc_en"],
+                },
+            )
+
+        app.add_api_route(
+            route,
+            handler,
+            methods=["GET"],
+            response_class=HTMLResponse,
+            name=f"reward_stub_{game['id']}",
+        )
+        _REWARD_ROUTES_REGISTERED.add(route)
+
+
+_register_reward_play_routes()
+_register_reward_stub_routes()
+
 
 @app.get("/test_voice", response_class=HTMLResponse)
 async def test_voice_page():

@@ -1,0 +1,13 @@
+{
+  "common.back": "Kembali",
+  "common.sign_in": "Log masuk untuk bermain",
+  "games.math.brand_flappy": "Burung Matematik",
+  "games.math.start_flappy": "▶ Mula Burung Matematik",
+  "games.math.read_aloud_on": "🔊 Baca soalan",
+  "games.math.read_aloud_off": "🔇 Tutup bacaan",
+  "games.math.score": "Markah {n}",
+  "games.math.combo": "Combo x{n}",
+  "games.math.best": "Terbaik",
+  "games.math.grade": "Tahun {n}",
+  "games.math.choose_grade": "Pilih tahun"
+}

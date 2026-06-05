@@ -1,6 +1,7 @@
 (function () {
   const {
     MODES,
+    resolveGameId,
     toast,
     setActiveSkuNav,
     updateProfileBar,
@@ -20,6 +21,11 @@
     GRADES,
   } = window.MathBlastQuestionGen;
   const AudioFx = window.FlappyAudio;
+
+  const em = () => (window.isEnglishMath ? window.isEnglishMath() : !!window.ENGLISH_MATH);
+  const t = (en, vi) => (em() ? en : vi);
+  const showQ = (item) =>
+    em() && window.EnglishMathSpeech ? window.EnglishMathSpeech.displayFromItem(item) : item.q;
 
   let bootstrap = null;
   let sessionId = null;
@@ -48,12 +54,12 @@
 
   function setRunScore(n) {
     const el = document.getElementById('flappy-score');
-    if (el) el.textContent = `Điểm ${n}`;
+    if (el) el.textContent = t(`Score ${n}`, `Điểm ${n}`);
   }
 
   function setCombo(n) {
     const el = document.getElementById('flappy-combo');
-    if (el) el.textContent = `Chuỗi x${n}`;
+    if (el) el.textContent = t(`Combo x${n}`, `Chuỗi x${n}`);
   }
 
   function setTimerLabel(text) {
@@ -85,8 +91,8 @@
     if (sprintActive) return null;
     const meta = getGradeMeta(activeGrade);
     const best = getFlappyBestForGrade(boot, activeGrade);
-    if (best > 0) return `${meta.label} · Kỷ lục ${best}`;
-    return meta.label;
+    if (best > 0) return `${meta.label} · ${t('Best', 'Kỷ lục')} ${best}`;
+    return `${meta.label}`;
   }
 
   function updateGradeDesc() {
@@ -94,7 +100,12 @@
     if (!el) return;
     const meta = getGradeMeta(activeGrade);
     const best = getFlappyBestForGrade(bootstrap, activeGrade);
-    const pbLine = best > 0 ? `Kỷ lục ${meta.label}: ${best} điểm.` : `Chưa có kỷ lục ${meta.label} — chơi Chim Toán một lần để ghi nhận.`;
+    const pbLine = best > 0
+      ? t(`Best ${meta.label}: ${best} pts.`, `Kỷ lục ${meta.label}: ${best} điểm.`)
+      : t(
+          `No best score for ${meta.label} yet — play once!`,
+          `Chưa có kỷ lục ${meta.label} — chơi Gà Toán một lần để ghi nhận.`
+        );
     el.textContent = `${meta.subtitle} ${pbLine}`;
   }
 
@@ -107,8 +118,8 @@
         const best = getFlappyBestForGrade(bootstrap, gn);
         const pbBadge =
           best > 0
-            ? `<span class="mb-grade-pb" title="Kỷ lục">🏆${best}</span>`
-            : '<span class="mb-grade-pb mb-grade-pb--empty" title="Chưa có kỷ lục">—</span>';
+            ? `<span class="mb-grade-pb" title="${t('Best', 'Kỷ lục')}">🏆${best}</span>`
+            : `<span class="mb-grade-pb mb-grade-pb--empty" title="${t('No record yet', 'Chưa có kỷ lục')}">—</span>`;
         return `
       <button type="button" class="mb-grade-btn ${gn === activeGrade ? 'active' : ''}"
         data-grade="${g}">${GRADES[g].label}${pbBadge}</button>`;
@@ -122,7 +133,7 @@
 
   function selectGrade(grade) {
     if (sprintActive) {
-      toast('Không đổi lớp khi đang chơi');
+      toast(t('Cannot change grade during play', 'Không đổi lớp khi đang chơi'));
       return;
     }
     activeGrade = grade;
@@ -153,15 +164,16 @@
     const qEl = document.getElementById('flappy-question');
     const choicesEl = document.getElementById('flappy-choices');
     if (!qEl || !choicesEl) return;
-    qEl.textContent = item.q;
+    qEl.textContent = showQ(item);
     choicesEl.innerHTML = item.choices
       .map((c) => `<button type="button" class="mb-choice" data-val="${c}">${c}</button>`)
       .join('');
     choicesEl.querySelectorAll('.mb-choice').forEach((btn) => {
       btn.addEventListener('click', () => onAnswer(btn, item));
     });
-    if (sprintActive && AudioFx) {
-      AudioFx.speakQuestion(item);
+    if (sprintActive && AudioFx && (em() || AudioFx.getTtsEnabled())) {
+      const speak = () => AudioFx.speakQuestion(item, em() ? { force: true } : undefined);
+      requestAnimationFrame(() => setTimeout(speak, 80));
     }
   }
 
@@ -227,7 +239,7 @@
       updateBird();
       if (AudioFx) AudioFx.playWrong();
       queueEvent(false, Date.now() - t0, item, 0);
-      toast('Sai rồi — thử lại nhé!');
+      toast(t('Wrong — try again!', 'Sai rồi — thử lại nhé!'));
     }
   }
 
@@ -235,7 +247,7 @@
     sprintActive = false;
     setSprintUi(false);
     clearInterval(timerId);
-    setTimerLabel('Hết giờ');
+    setTimerLabel(t('Time up', 'Hết giờ'));
     setRunScore(score);
     const stage = document.getElementById('flappy-stage');
     if (stage) stage.classList.add('mb-sprint-ended');
@@ -280,12 +292,12 @@
       const isNewPb = finishedScore > prevBest && finishedScore > 0 && newBest === finishedScore;
       if (isNewPb) {
         flashGradePersonalBest(finishedGrade);
-        toast(`🎉 Kỷ lục ${getGradeMeta(finishedGrade).label}: ${newBest} điểm!`);
+        toast(t(`🎉 New best ${getGradeMeta(finishedGrade).label}: ${newBest}!`, `🎉 Kỷ lục ${getGradeMeta(finishedGrade).label}: ${newBest} điểm!`));
       } else {
-        toast(`Hết giờ! Điểm ${finishedScore} — đã lưu`);
+        toast(t(`Time up! Score ${finishedScore} — saved`, `Hết giờ! Điểm ${finishedScore} — đã lưu`));
       }
     } catch (e) {
-      toast(`Điểm ${finishedScore} (chưa lưu máy chủ: ${e.message})`);
+      toast(t(`Score ${finishedScore} (not saved: ${e.message})`, `Điểm ${finishedScore} (chưa lưu máy chủ: ${e.message})`));
     }
   }
 
@@ -305,7 +317,7 @@
     const startBtn = document.getElementById('flappy-start');
     if (!startBtn) return;
     startBtn.disabled = busy;
-    startBtn.textContent = busy ? 'Đang bắt đầu…' : '▶ Chơi Chim Toán';
+    startBtn.textContent = busy ? t('Starting…', 'Đang bắt đầu…') : t('▶ Start Math Bird', '▶ Chơi Gà Toán');
   }
 
   function setSprintUi(active) {
@@ -320,7 +332,7 @@
     try {
       const me = await window.MathBlastV2.loadUserMe();
       if (me.role !== 'KID') {
-        toast('Chọn tài khoản bé để chơi Chim Toán');
+        toast(t('Pick a kid account to play Math Bird', 'Chọn tài khoản bé để chơi Gà Toán'));
         if (window.GameAuth) window.GameAuth.open();
         return;
       }
@@ -358,7 +370,7 @@
     const startOp = {
       op: 'start',
       session_id: sessionId,
-      game_id: 'math_blast',
+      game_id: resolveGameId(),
       game_mode_id: MODES.flappy,
       started_at: now,
     };
@@ -369,7 +381,7 @@
       await sessionsBatch([startOp], `flappy-start-${sessionId}`);
     } catch (e) {
       if (!window.MathBlastV2.isAuthError(e)) {
-        toast('Không bắt đầu được phiên: ' + e.message);
+        toast(t('Could not start session: ', 'Không bắt đầu được phiên: ') + e.message);
       }
       setStartBusy(false);
       return;
@@ -382,7 +394,12 @@
     if (stage) stage.classList.remove('mb-sprint-ended');
     setSprintUi(true);
     updateBird();
-    if (AudioFx) AudioFx.startBgm();
+    if (window.GameUtils && window.GameUtils.warmupSpeech) window.GameUtils.warmupSpeech();
+    if (AudioFx) {
+      AudioFx.unlock();
+      if (em() && AudioFx.setTtsEnabled) AudioFx.setTtsEnabled(true);
+      AudioFx.startBgm();
+    }
     renderQuestion();
     setRunScore(0);
     setCombo(0);
@@ -390,7 +407,7 @@
     document.getElementById('flappy-timer').textContent = '60s';
     clearInterval(timerId);
     timerId = setInterval(tickTimer, 1000);
-    toast('Chim Toán — bắt đầu cuộc đua 60 giây!');
+    toast(t('Math Bird — 60 second race!', 'Gà Toán — bắt đầu cuộc đua 60 giây!'));
   }
 
   function bindBirdReplay() {
@@ -427,15 +444,53 @@
         setCombo(0);
         setTimerLabel('60s');
         questionSession = createSession(activeGrade);
-        renderQuestion();
+      }
+      if (em()) {
+        renderGradePicker();
+        updateGradeDesc();
+        refreshProfileExtra();
+        if (typeof window.__applyEnglishFlappyUi === 'function') window.__applyEnglishFlappyUi();
       }
     } catch (e) {
       console.error(e);
     }
+
+    // Always render grade picker even if bootstrap fails.
+    // This prevents blank UI and allows interaction.
+    if (!sprintActive) {
+      renderGradePicker();
+      updateGradeDesc();
+      refreshProfileExtra();
+      applyFlappyStaticUiLocal();
+      if (typeof window.__applyEnglishFlappyUi === 'function') window.__applyEnglishFlappyUi();
+    }
+
     const startBtn = document.getElementById('flappy-start');
     if (startBtn && !startBtn.dataset.bound) {
       startBtn.dataset.bound = '1';
       startBtn.addEventListener('click', startSprint);
+    }
+  }
+
+  window.addEventListener('em-flappy-refresh', () => {
+    if (!em()) return;
+    renderGradePicker();
+    updateGradeDesc();
+    refreshProfileExtra();
+    applyFlappyStaticUiLocal();
+  });
+
+  function applyFlappyStaticUiLocal() {
+    const start = document.getElementById('flappy-start');
+    if (start && !sprintActive) start.textContent = t('▶ Start Math Bird', '▶ Chơi Gà Toán');
+    setRunScore(score);
+    setCombo(combo);
+    if (!sprintActive) setTimerLabel('60s');
+    if (AudioFx) {
+      AudioFx.updateToggleUi(
+        document.getElementById('flappy-toggle-tts'),
+        document.getElementById('flappy-toggle-bgm')
+      );
     }
   }
 

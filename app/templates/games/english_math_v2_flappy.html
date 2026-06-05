@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Math — Math Bird</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="mb-v2 em-math" data-market="{{ market }}" data-locale="{{ locale }}">
+  <div class="mb-shell">
+    <header class="mb-topbar">
+      <a href="/game/english-shooter/math/v2" class="mb-back">← English Math V2</a>
+      <div class="mb-brand">🐦 Math Bird</div>
+      <div class="mb-profile"><span class="mb-avatar">🧒</span><span id="mb-profile-label">…</span></div>
+    </header>
+    <main class="mb-main">
+      <section class="mb-hero" style="padding:8px 0 16px;">
+        <p class="mb-hero-tagline">In <strong>60 seconds</strong>, pick the right answer to fly higher.</p>
+        <p class="mb-hero-hint">Correct streaks give <strong>bonus points</strong>.</p>
+        <p class="mb-grade-label">Choose grade</p>
+        <div class="mb-grade-picker" id="flappy-grade-picker" role="group" aria-label="Choose grade"></div>
+        <p class="mb-grade-desc" id="flappy-grade-desc">…</p>
+        <button type="button" id="flappy-start" class="mb-btn mb-btn-flappy" style="margin-top:12px;">▶ Start Math Bird</button>
+        <div class="mb-audio-toggles" id="flappy-audio-toggles">
+          <button type="button" id="flappy-toggle-tts" class="mb-audio-btn" aria-pressed="true">🔊 Read aloud</button>
+          <button type="button" id="flappy-toggle-bgm" class="mb-audio-btn" aria-pressed="false">🎵 Music off</button>
+        </div>
+      </section>
+      <div class="mb-flappy-stage" id="flappy-stage">
+        <div class="mb-flappy-hud">
+          <span class="mb-hud-pill" id="flappy-timer">60s</span>
+          <span class="mb-hud-pill" id="flappy-score">Score 0</span>
+          <span class="mb-hud-pill" id="flappy-combo">Combo x0</span>
+        </div>
+        <div class="mb-ladder-rungs" aria-hidden="true">
+          <span class="mb-rung" style="bottom:25%"></span>
+          <span class="mb-rung" style="bottom:47%"></span>
+          <span class="mb-rung" style="bottom:69%"></span>
+        </div>
+        <div class="mb-bird" id="flappy-bird" style="bottom:15%">🐤</div>
+        <div class="mb-question-bar">
+          <div class="mb-question" id="flappy-question">3 + 5 = ?</div>
+          <div class="mb-choices" id="flappy-choices"></div>
+        </div>
+      </div>
+    </main>
+    {% include "games/english_math_v2_partials/sku_nav.html" %}
+  </div>
+  {% include "games/math_blast_v2_auth_include.html" %}
+  {% include "locale/head.html" %}
+  <script src="/static/js/english_math/em.js?v=20260611"></script>
+  <script src="/static/js/game_utils.js?v=20260611"></script>
+  <script src="/static/js/math_blast_v2/common.js?v=20260611"></script>
+  <script src="/static/js/english_math/play_ids.js?v=20260611"></script>
+  <script>
+    // Force English Math UI + separate play-game ids for flappy.
+    window.ENGLISH_MATH = true;
+    window.isEnglishMath = () => true;
+    if (window.MathBlastV2) {
+      window.MathBlastV2.GAME_ID = 'english_math';
+      window.MathBlastV2.FLAPPY_GRADE_LS_KEY = 'english_math_flappy_grade';
+      window.MathBlastV2.MODES = {
+        candy: 'english_math:candy',
+        flappy: 'english_math:flappy',
+        arcade: 'english_math:arcade_free',
+        arcadeClass: 'english_math:arcade_class',
+      };
+      if (typeof window.MathBlastV2.clearBootstrapCache === 'function') {
+        window.MathBlastV2.clearBootstrapCache();
+      }
+    }
+  </script>
+  <script src="/static/js/english_math/i18n.js?v=20260611"></script>
+  <script src="/static/js/math_blast_v2/question_generator.js?v=20260611"></script>
+  <script src="/static/js/english_math/grades_en.js?v=20260611"></script>
+  <script src="/static/js/english_math/math_speech.js?v=20260611"></script>
+  <script src="/static/js/math_blast_v2/flappy_audio.js?v=20260611"></script>
+  <script src="/static/js/english_math/speech_en.js?v=20260611"></script>
+  <script src="/static/js/english_math/ui_strings.js?v=20260611"></script>
+  <script src="/static/js/math_blast_v2/flappy.js?v=20260611"></script>
+</body>
+</html>

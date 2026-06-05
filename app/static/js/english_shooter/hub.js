@@ -1,6 +1,13 @@
 (function () {
   const { MODES, getBootstrap, updateProfileBar, toast } = window.EnglishShooter;
 
+  const RANK_LABELS = {
+    recruit: 'Recruit (Tân binh)',
+    soldier: 'Soldier (Chiến sĩ)',
+    commander: 'Commander (Chỉ huy)',
+    global_commander: 'Global Commander',
+  };
+
   async function init() {
     const status = document.getElementById('es-hub-status');
     const goldEl = document.getElementById('es-hub-gold');
@@ -14,23 +21,23 @@
       if (cityCard) {
         const unlocked = blocks.city?.unlocked;
         cityCard.classList.toggle('locked', !unlocked);
-        if (!unlocked) {
-          const tag = cityCard.querySelector('.es-lock-hint');
-          if (tag) tag.textContent = 'Hoàn thành 1 chủ đề Thảo nguyên để mở';
+        const tag = cityCard.querySelector('.es-lock-hint');
+        if (tag) {
+          tag.textContent = unlocked ? 'Open' : 'Finish 1 Prairie theme (Hoàn thành 1 chủ đề Thảo nguyên)';
         }
       }
       if (bossCard) {
         const unlocked = blocks.boss?.unlocked;
         bossCard.classList.toggle('locked', !unlocked);
-        if (!unlocked) {
-          const tag = bossCard.querySelector('.es-lock-hint');
-          if (tag) tag.textContent = '30 câu đúng trở lên để mở Boss';
+        const tag = bossCard.querySelector('.es-lock-hint');
+        if (tag) {
+          tag.textContent = unlocked ? 'Open' : '30+ correct answers (30 câu đúng trở lên)';
         }
       }
-      await updateProfileBar(`${en.rank || 'recruit'} · ${en.lifetime_correct || 0} câu`);
-      if (status) status.textContent = `${en.themes?.length || 0} chủ đề lớp ${en.last_grade || 1}`;
+      await updateProfileBar(`${RANK_LABELS[en.rank] || en.rank || 'Recruit'} · ${en.lifetime_correct || 0} correct`);
+      if (status) status.textContent = `${en.themes?.length || 0} themes · Grade ${en.last_grade || 1}`;
     } catch (e) {
-      if (status) status.textContent = 'Đăng nhập để lưu tiến trình';
+      if (status) status.textContent = 'Sign in to save progress (Đăng nhập để lưu tiến trình)';
       if (e.message !== 'SESSION_AUTH_REQUIRED') toast(String(e.message || e));
     }
   }

@@ -4,7 +4,7 @@ import traceback
 from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.tasks_rewards import FamilyTask, VerificationType, MasterTask
-from app.models.logs_transactions import TaskLog, TaskStatus
+from app.models.logs_transactions import TaskLog, TaskStatus, TransactionType
 from app.models.user_family import User, Role
 from app.models.audit import AuditStatus
 from app.services.audit import AuditService
@@ -109,23 +109,33 @@ async def submit_quest(
         if initial_status == TaskStatus.APPROVED:
             new_log.resolved_at = datetime.now()
             
-            # Auto-create transaction and update balance
-            from app.models.logs_transactions import Transaction, TransactionType
-            
-            transaction = Transaction(
-                kid_id=current_user.id,
-                amount=task.points_reward,
-                transaction_type=TransactionType.TASK_COMPLETION,
-                reference_id=new_log.id, # We don't have ID yet, need to flush
-                description=f"Auto-approved: {task.name}"
-            )
+            from app.services import coin_ledger_service as ledger
+            from app.services import domain_event_service as events
+
             db.add(new_log)
             db.flush()
-            transaction.reference_id = new_log.id
-            db.add(transaction)
-            
-            current_user.current_coin += task.points_reward
+            ledger.credit(
+                db,
+                current_user,
+                task.points_reward,
+                TransactionType.TASK_COMPLETION,
+                f"Auto-approved: {task.name}",
+                reference_id=new_log.id,
+            )
             current_user.total_earned_score += task.points_reward
+            events.emit(
+                db,
+                events.EVENT_TASK_APPROVED,
+                {
+                    "kid_id": str(current_user.id),
+                    "family_id": str(current_user.family_id),
+                    "coins": task.points_reward,
+                    "task_log_id": str(new_log.id),
+                },
+                family_id=current_user.family_id,
+                aggregate_type="task_log",
+                aggregate_id=str(new_log.id),
+            )
         else:
              db.add(new_log)
 

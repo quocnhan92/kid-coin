@@ -23,9 +23,9 @@
       transcriptText = (event.results?.[0]?.[0]?.transcript || "").trim();
       const el = document.getElementById("es-boss-transcript");
       if (el && transcriptText) el.value = transcriptText;
-      setResult(`Đã nghe: "${transcriptText}"`, true);
+      setResult(`Heard: "${transcriptText}" (Đã nghe)`, true);
     };
-    recognition.onerror = () => setResult("Không nhận diện được, nhập tay để tiếp tục.", false);
+    recognition.onerror = () => setResult("Can't hear you — type instead (Không nhận diện, nhập tay)", false);
   }
 
   function norm(text) {
@@ -61,10 +61,18 @@
       return;
     }
     const item = items[idx];
+    const opts = item.options || {};
+    const subEl = document.getElementById("es-boss-subtopic");
+    if (subEl) {
+      const en = opts.subtopic_en || `Round ${idx + 1}`;
+      const vi = opts.subtopic_vi ? ` (${opts.subtopic_vi})` : "";
+      const total = opts.boss_rounds_total || items.length;
+      subEl.textContent = `Round ${idx + 1}/${total} · ${en}${vi}`;
+    }
     document.getElementById("es-boss-paragraph").textContent = item.target_text || "...";
     document.getElementById("es-boss-transcript").value = "";
     transcriptText = "";
-    setResult("Đọc đoạn văn rồi bấm Tấn công", false);
+    setResult("Read aloud, then tap Attack (Đọc rồi bấm Tấn công)", false);
     hud();
   }
 
@@ -89,9 +97,9 @@
           score_delta: damage,
         },
       ]);
-      setResult(`Trúng đòn ${damage} HP (độ khớp ${(ratio * 100).toFixed(0)}%)`, true);
+      setResult(`Hit ${damage} HP — ${(ratio * 100).toFixed(0)}% match (Trúng đòn)`, true);
     } else {
-      setResult(`Độ khớp thấp ${(ratio * 100).toFixed(0)}%, sát thương yếu ${damage}`, false);
+      setResult(`Low match ${(ratio * 100).toFixed(0)}% — weak hit ${damage} (Sát thương yếu)`, false);
     }
     idx += 1;
     clearBootstrapCache();
@@ -103,7 +111,7 @@
     const stage = await getStage(themeId, "paragraph");
     items = stage.stage?.items || [];
     if (!items.length) {
-      toast("Chưa có dữ liệu paragraph cho chủ đề này");
+      toast("No paragraph data for this theme");
       return;
     }
     idx = 0;
@@ -150,7 +158,7 @@
       },
     ]);
     sessionId = null;
-    toast(completed ? "Boss bị hạ gục!" : "Boss còn sống, luyện thêm nhé");
+    toast(completed ? "Boss defeated! (Boss bị hạ)" : "Boss still alive — keep practicing (Luyện thêm nhé)");
   }
 
   async function init() {
@@ -163,11 +171,11 @@
     document.getElementById("es-boss-attack-btn").addEventListener("click", attackBoss);
     document.getElementById("es-boss-speak-btn").addEventListener("click", () => {
       if (!recognition) {
-        setResult("Trình duyệt chưa hỗ trợ Speech API, nhập tay để chơi.", false);
+        setResult("No mic support — type instead (Nhập tay để chơi)", false);
         return;
       }
       recognition.start();
-      setResult("Đang nghe...", true);
+      setResult("Listening… (Đang nghe)", true);
     });
   }
 

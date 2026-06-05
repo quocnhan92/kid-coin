@@ -71,6 +71,23 @@ def maintenance_cleanup_job():
 # Initialize Scheduler
 scheduler = BackgroundScheduler()
 
+def domain_events_outbox_job():
+    """Poll domain event outbox (lean — no message broker)."""
+    logger.info("Running job: domain_events_outbox_job")
+    db = SessionLocal()
+    try:
+        from sqlalchemy.exc import ProgrammingError, OperationalError
+        from app.services.domain_event_service import process_pending
+
+        count = process_pending(db)
+        logger.info("Outbox job published %s events", count)
+    except (ProgrammingError, OperationalError) as exc:
+        db.rollback()
+        logger.debug("Outbox job skipped (migration pending): %s", exc)
+    finally:
+        db.close()
+
+
 def start_scheduler():
     """Initialize and start the background scheduler."""
     if not scheduler.running:
@@ -86,7 +103,9 @@ def start_scheduler():
         
         # 4. Cleanup: 23:55 PM every day
         scheduler.add_job(maintenance_cleanup_job, CronTrigger(hour=23, minute=55), id="maintenance_cleanup")
-        
+
+        scheduler.add_job(domain_events_outbox_job, CronTrigger(minute="*/1"), id="domain_events_outbox")
+
         scheduler.start()
         logger.info("Background Scheduler started.")
 

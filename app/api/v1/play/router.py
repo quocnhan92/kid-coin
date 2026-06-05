@@ -23,17 +23,24 @@ from app.schemas.play import (
 )
 from app.services import play_service, play_session_service, play_parent_service
 from app.api.v1.play.english import router as english_router
+from app.api.v1.play.rewards import router as rewards_router
+from app.api.v1.play.wallet import router as wallet_router
+from app.api.v1.play.policy import router as policy_router
 
 router = APIRouter()
 router.include_router(english_router)
+router.include_router(rewards_router)
+router.include_router(wallet_router)
+router.include_router(policy_router)
 
 
 @router.get("/games", response_model=PlayGamesResponse)
 def list_play_games(
+    zone: Optional[str] = None,
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_user),
 ):
-    return play_service.list_games(db)
+    return play_service.list_games(db, zone=zone)
 
 
 @router.get("/levels", response_model=PlayLevelsResponse)

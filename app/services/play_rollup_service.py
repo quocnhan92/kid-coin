@@ -19,6 +19,8 @@ from app.services.english_shooter_progress_service import (
     apply_english_session_end,
     GAME_ID as ENGLISH_GAME_ID,
 )
+from app.core.play_constants import GAME_MATH_EN
+from app.services.play_wallet_service import credit_learning, points_from_session_summary
 
 
 def _unlock_next_levels(db: Session, user_id: UUID, level_id: str) -> List[str]:
@@ -78,6 +80,7 @@ def rollup_after_session_end(
     game_id: str,
     game_mode_id: Optional[str],
     summary: SessionSummaryIn,
+    session_id: Optional[UUID] = None,
 ) -> Dict[str, Any]:
     now = datetime.now(timezone.utc)
     result: Dict[str, Any] = {
@@ -193,7 +196,7 @@ def rollup_after_session_end(
         if unlocks:
             result["unlock_events"] = unlocks
 
-    if game_mode_id == "math_blast:flappy" and summary.score is not None:
+    if game_mode_id and ":flappy" in game_mode_id and summary.score is not None:
         summary_json = summary.summary_json or {}
         tier = summary_json.get("tier")
         if not tier:
@@ -209,18 +212,26 @@ def rollup_after_session_end(
             stats.extra_json = extra
         tier_prog = db.query(PlayModeProgress).filter(
             PlayModeProgress.user_id == user_id,
-            PlayModeProgress.game_mode_id == "math_blast:flappy",
+            PlayModeProgress.game_mode_id == game_mode_id,
             PlayModeProgress.tier_key == tier,
         ).first()
         if not tier_prog:
             tier_prog = PlayModeProgress(
                 user_id=user_id,
-                game_mode_id="math_blast:flappy",
+                game_mode_id=game_mode_id,
                 tier_key=tier,
                 mastery_status="in_progress",
                 unlocked_at=now,
             )
             db.add(tier_prog)
+
+    if game_id in (ENGLISH_GAME_ID, GAME_MATH_EN, "math_blast") and summary.correct_count:
+        pts = points_from_session_summary(
+            game_id, summary.correct_count, summary.summary_json
+        )
+        wallet_snap = credit_learning(db, user_id, game_id, pts, session_id=session_id)
+        if wallet_snap:
+            result["wallet"] = wallet_snap
 
     db.flush()
     return result

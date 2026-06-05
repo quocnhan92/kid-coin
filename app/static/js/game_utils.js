@@ -7,6 +7,30 @@
  */
 
 const GameUtils = {
+    _speechWarmed: false,
+
+    warmupSpeech: () => {
+        if (!window.speechSynthesis || GameUtils._speechWarmed) return;
+        GameUtils._speechWarmed = true;
+        window.speechSynthesis.getVoices();
+        if (!GameUtils._voicesHooked) {
+            GameUtils._voicesHooked = true;
+            window.speechSynthesis.addEventListener('voiceschanged', () => {
+                window.speechSynthesis.getVoices();
+            });
+        }
+    },
+
+    pickEnVoice: () => {
+        const voices = window.speechSynthesis?.getVoices() || [];
+        return (
+            voices.find((v) => v.lang === 'en-US' && v.localService) ||
+            voices.find((v) => v.lang === 'en-US') ||
+            voices.find((v) => v.lang.startsWith('en')) ||
+            null
+        );
+    },
+
     // ─── TTS (Text-to-Speech) ────────────────────────────────────────────────
     speak: (text, onEndCallback) => {
         if (!window.speechSynthesis) {
@@ -37,7 +61,46 @@ const GameUtils = {
         window.speechSynthesis.speak(utterance);
     },
 
-    // ─── Voice Recognition ──────────────────────────────────────────────────
+    /** English Math — TTS en-US */
+    speakEn: (text, onEndCallback) => {
+        if (!window.speechSynthesis) {
+            if (onEndCallback) onEndCallback();
+            return;
+        }
+        GameUtils.warmupSpeech();
+        window.speechSynthesis.cancel();
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.05;
+        utterance.volume = 1.0;
+
+        if (onEndCallback) {
+            let called = false;
+            const done = () => {
+                if (!called) {
+                    called = true;
+                    onEndCallback();
+                }
+            };
+            utterance.onend = done;
+            utterance.onerror = done;
+            setTimeout(done, Math.max(text.length * 110, 3500));
+        }
+
+        const run = () => {
+            const voice = GameUtils.pickEnVoice();
+            if (voice) utterance.voice = voice;
+            window.speechSynthesis.speak(utterance);
+        };
+        setTimeout(run, 60);
+    },
+
+    /** Recognition language for English Math */
+    recognitionLang: () =>
+        (window.KidLocale && window.KidLocale.speechLang) ||
+        (window.ENGLISH_MATH ? 'en-US' : 'vi-VN'),
     /**
      * Tạo recognition engine tối ưu cho cả desktop và mobile.
      *
@@ -64,7 +127,7 @@ const GameUtils = {
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = 'vi-VN';
+        recognition.lang = GameUtils.recognitionLang ? GameUtils.recognitionLang() : 'vi-VN';
         recognition.continuous = false;
         recognition.interimResults = !GameUtils.isMobile(); // tắt interim trên mobile để giảm lag
         recognition.maxAlternatives = 3;
@@ -210,7 +273,14 @@ const GameUtils = {
         }
 
         // ── Public API ──────────────────────────────────────────────────────
-        recognition.startListening = () => {
+        recognition.startListening = async () => {
+            if (window.PlayConsent) {
+                const ok = await window.PlayConsent.ensureMicConsent();
+                if (!ok) {
+                    if (onStatusChange) onStatusChange('error', 'consent-required');
+                    return;
+                }
+            }
             _shouldRestart = autoRestart;
             syncFlags();
             if (_running || _starting) return;
@@ -316,7 +386,28 @@ const GameUtils = {
         total += current;
 
         if (total === 0 && cleaned.includes('không')) return 0;
-        return total > 0 ? total : null;
+        if (total > 0) return total;
+
+        if (window.ENGLISH_MATH) {
+            const en = {
+                zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7,
+                eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14,
+                fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+                twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70,
+                eighty: 80, ninety: 90, hundred: 100,
+            };
+            let sum = 0;
+            let hit = false;
+            for (const w of words) {
+                if (en[w] !== undefined) {
+                    sum += en[w];
+                    hit = true;
+                }
+            }
+            if (hit) return sum;
+        }
+
+        return null;
     },
 
     // ─── Utility ─────────────────────────────────────────────────────────────

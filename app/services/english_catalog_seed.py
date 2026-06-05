@@ -19,9 +19,9 @@ CONTENT_PACK_EN = "vn_english_shooter_v1"
 GAME_ID = "english_shooter"
 
 
-def ensure_english_shooter_catalog(db: Session) -> None:
-    """Thêm game/mode/catalog nếu DB đã seed math_blast trước đó."""
-    if not db.query(PlayGame).filter(PlayGame.id == GAME_ID).first():
+def ensure_english_base_catalog(db: Session) -> None:
+    """Game, modes, weapons, bosses — idempotent, cần trước khi seed themes."""
+    if not db.query(PlayGame.id).filter(PlayGame.id == GAME_ID).first():
         db.add(
             PlayGame(
                 id=GAME_ID,
@@ -69,7 +69,6 @@ def ensure_english_shooter_catalog(db: Session) -> None:
                 )
             )
 
-    logger.info("Ensuring English Shooter catalog...")
     weapons = [
         ("slingshot", 1, "Súng cao su gỗ", "weapon_slingshot"),
         ("bow", 2, "Cung tên gỗ", "weapon_bow"),
@@ -78,7 +77,8 @@ def ensure_english_shooter_catalog(db: Session) -> None:
         ("sniper", 5, "Súng bắn tỉa", "weapon_sniper"),
     ]
     for wid, grade, name, asset in weapons:
-        db.add(PlayEnglishWeapon(id=wid, grade=grade, name=name, asset_id=asset, meta_json={}))
+        if not db.query(PlayEnglishWeapon).filter(PlayEnglishWeapon.id == wid).first():
+            db.add(PlayEnglishWeapon(id=wid, grade=grade, name=name, asset_id=asset, meta_json={}))
 
     bosses = [
         ("boss_g1_chicken", 1, "King Chicken", "boss_chicken"),
@@ -88,20 +88,33 @@ def ensure_english_shooter_catalog(db: Session) -> None:
         ("boss_g5_mothership", 5, "Cyber-Mothership", "boss_mothership"),
     ]
     for bid, grade, name, asset in bosses:
-        db.add(
-            PlayEnglishBoss(
-                id=bid,
-                grade=grade,
-                name=name,
-                asset_id=asset,
-                meta_json={"intro_line": f"I am {name}!"},
+        if not db.query(PlayEnglishBoss).filter(PlayEnglishBoss.id == bid).first():
+            db.add(
+                PlayEnglishBoss(
+                    id=bid,
+                    grade=grade,
+                    name=name,
+                    asset_id=asset,
+                    meta_json={"intro_line": f"I am {name}!"},
+                )
             )
-        )
 
     db.flush()
-    _seed_theme_grade1_family(db)
-    _seed_theme_grade2_pets(db)
-    _seed_theme_grade3_school_year(db)
+
+
+def ensure_english_shooter_catalog(db: Session) -> None:
+    """Thêm game/mode/catalog nếu DB đã seed math_blast trước đó."""
+    logger.info("Ensuring English Shooter catalog...")
+    ensure_english_base_catalog(db)
+
+    from app.data.english_curriculum_g123 import seed_english_curriculum_g123
+    from app.models.play.english_catalog import PlayEnglishTheme
+
+    # Nạp bộ chủ đề lớp 1–3 (10 chủ đề/lớp) nếu chưa có marker mới
+    if not db.query(PlayEnglishTheme).filter(PlayEnglishTheme.id == "en_g1_toys").first():
+        n = seed_english_curriculum_g123(db)
+        logger.info("English Shooter G1–G3 curriculum seeded (%s themes).", n)
+
     _seed_theme_grade4_vacation(db)
     _seed_theme_grade5_future(db)
     db.commit()
@@ -294,6 +307,7 @@ def _seed_theme_grade4_vacation(db: Session) -> None:
             meta_json={"vi_title": "Một kỳ nghỉ tuyệt vời"},
         )
     )
+    db.flush()
     _seed_theme_stages(db, theme_id)
     _seed_vocab_items(
         db,
@@ -337,6 +351,7 @@ def _seed_theme_grade5_future(db: Session) -> None:
             meta_json={"vi_title": "Cuộc sống tương lai"},
         )
     )
+    db.flush()
     _seed_theme_stages(db, theme_id)
     _seed_vocab_items(
         db,
@@ -380,6 +395,7 @@ def _seed_theme_stages(db: Session, theme_id: str) -> None:
                 config_json={"boss_fight": stype == "paragraph"},
             )
         )
+    db.flush()
 
 
 def _seed_vocab_items(

@@ -1755,6 +1755,24 @@
         setDifficulty('NORMAL');
         switchTab('DISCOVERY');
     </script>
+
+    <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605guides">
+    {% from "games/_reward_guide.html" import dual_guide %}
+    <div class="rg-legacy-guide-wrap">
+    {{ dual_guide([
+      "Flip two cards per turn to find <strong>matching pairs</strong>.",
+      "If they match, they stay open; if not, they flip back.",
+      "Clear all pairs before time runs out (mode dependent).",
+      "Use memory — remember positions of cards you have seen.",
+    ], [
+      "Mỗi lượt lật <strong>hai thẻ</strong> để tìm cặp giống nhau.",
+      "Đúng thì giữ nguyên; sai thì úp lại.",
+      "Ghép hết cặp trước khi hết giờ (tùy chế độ).",
+      "Ghi nhớ vị trí các thẻ đã lật.",
+    ]) }}
+    </div>
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
+    <script>window.RewardGame = { restart: () => location.reload() };</script>
 </body>
 
 </html>

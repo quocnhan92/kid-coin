@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}0h n0{% endblock %}
+{% block game_id %}ohn0{% endblock %}
+{% block game_title %}⬛ 0h n0{% endblock %}
+{% block game_subtitle %}No three in a row · Không ba liên tiếp{% endblock %}
+{% block game_body %}
+<div id="ohn0-board" class="oh-board"></div>
+<div class="rg-controls">
+  <button type="button" id="ohn0-check" class="rg-btn rg-btn-primary">Check / Kiểm tra</button>
+  <button type="button" id="ohn0-reset" class="rg-btn">New / Ván mới</button>
+</div>
+{{ dual_guide([
+  "Match the <strong>row and column counts</strong> shown on the edges.",
+  "Tap to place a <strong>mark</strong> (●); tap again to clear.",
+  "You cannot have <strong>three marks in a row</strong> horizontally or vertically.",
+  "Press <strong>Check</strong> when all hints are satisfied.",
+], [
+  "Khớp <strong>số đếm</strong> ở mép hàng và cột.",
+  "Chạm để đánh <strong>dấu</strong> (●); chạm lại để xóa.",
+  "Không được có <strong>ba dấu liên tiếp</strong> trên một hàng hoặc cột.",
+  "Nhấn <strong>Kiểm tra</strong> khi đủ gợi ý.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/ohn0.js?v=20260605p2"></script>
+{% endblock %}

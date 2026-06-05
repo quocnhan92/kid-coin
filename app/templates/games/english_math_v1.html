@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self'; media-src 'self';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Blast 🚀 — KidCoin Game Hub</title>
+    <meta name="description"
+        content="Chơi game Math Blast miễn phí! Thử thách tính nhẩm nhanh và rèn luyện tư duy toán học cho trẻ em.">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Game Utils -->
+    <script>window.ENGLISH_MATH=true;</script>
+    <script src="/static/js/english_math/em.js?v=20260608"></script>
+    <script src="/static/js/game_utils.js?v=20260608"></script>
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #141428;
+            --surface2: #1e1e3a;
+            --accent: #7c3aed;
+            --accent2: #06b6d4;
+            --text: #f1f0ff;
+            --text-muted: #8b8aa8;
+            --success: #10b981;
+            --error: #ef4444;
+
+            --color-kiddy: #10b981;
+            --color-starter: #3b82f6;
+            --color-explorer: #f59e0b;
+            --color-master: #ec4899;
+            --color-genius: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Stars background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 10%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 50% 70%, rgba(124, 58, 237, 0.2) 0%, transparent 100%);
+            z-index: -1;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        .level-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            z-index: 100;
+            font-family: inherit;
+            display: none;
+        }
+
+        .level-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(124, 58, 237, 0.1);
+            position: relative;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Level Selection Overlay */
+        #level-selection {
+            position: absolute;
+            inset: 0;
+            background: var(--surface);
+            z-index: 20;
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .level-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .level-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .level-btn:hover {
+            transform: translateX(5px);
+            border-color: var(--btn-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .level-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--btn-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px var(--btn-glow);
+        }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: var(--btn-color);
+        }
+
+        .level-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats & Problem UI */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: var(--surface2);
+            padding: 10px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--accent2);
+        }
+
+        #timer.warning {
+            color: var(--error);
+            animation: pulse-red 0.5s infinite;
+        }
+
+        @keyframes pulse-red {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .problem-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 30px 0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .answer-input-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        #answer-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 2px solid rgba(124, 58, 237, 0.2);
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            outline: none;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .num-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .num-btn:active {
+            transform: scale(0.95);
+            background: var(--accent);
+        }
+
+        .num-btn.clear {
+            color: var(--error);
+        }
+
+        .num-btn.submit {
+            background: var(--success);
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 13, 26, 0.98);
+            border-radius: 24px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            padding: 32px;
+        }
+
+        .final-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .high-score-label {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .restart-btn,
+        .change-level-btn {
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, var(--accent), #ec4899);
+        }
+
+        .change-level-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .restart-btn:hover,
+        .change-level-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .feedback-pop {
+            position: absolute;
+            font-weight: 900;
+            font-size: 2.5rem;
+            pointer-events: none;
+            animation: float-up 0.8s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateY(-20px) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-60px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Level Badge in Game */
+        .level-badge-active {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--level-color);
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            box-shadow: 0 4px 12px var(--level-glow);
+        }
+
+        /* Voice Status */
+        .voice-status {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            z-index: 100;
+            transition: all 0.3s;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .voice-status.active {
+            opacity: 1;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .mic-icon {
+            width: 15px;
+            height: 15px;
+            background: #ff3366;
+            border-radius: 50%;
+            animation: pulse-mic 1s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7);
+            }
+
+            70% {
+                transform: scale(1.3);
+                box-shadow: 0 0 0 10px rgba(255, 51, 102, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="em-math" data-english-math="1">
+    <a href="/game/english-shooter/math" class="back-link">← English Math</a>
+    <button class="level-link" onclick="showLevelSelection()">🧭 Change level</button>
+
+    <div class="game-container">
+        <!-- Level Selection Screen -->
+        <div id="level-selection">
+            <h2 class="level-title">English Math 🧠</h2>
+            <p class="level-subtitle">Pick your grade level to start</p>
+
+            <div class="level-grid">
+                <div class="level-btn" style="--btn-color: var(--color-kiddy); --btn-glow: rgba(16, 185, 129, 0.3)"
+                    onclick="selectLevel('KIDDY')">
+                    <div class="level-icon">👶</div>
+                    <div class="level-info">
+                        <div class="level-name">Kiddy</div>
+                        <div class="level-desc">Pre-school · Add &amp; subtract 0–10</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-starter); --btn-glow: rgba(59, 130, 246, 0.3)"
+                    onclick="selectLevel('STARTER')">
+                    <div class="level-icon">🌱</div>
+                    <div class="level-info">
+                        <div class="level-name">Starter</div>
+                        <div class="level-desc">Grade 1 · Add &amp; subtract 0–100</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-explorer); --btn-glow: rgba(245, 158, 11, 0.3)"
+                    onclick="selectLevel('EXPLORER')">
+                    <div class="level-icon">🧭</div>
+                    <div class="level-info">
+                        <div class="level-name">Explorer</div>
+                        <div class="level-desc">Grade 2 · Up to 1000, ×2 ×5</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-master); --btn-glow: rgba(236, 72, 153, 0.3)"
+                    onclick="selectLevel('MASTER')">
+                    <div class="level-icon">🏆</div>
+                    <div class="level-info">
+                        <div class="level-name">Master</div>
+                        <div class="level-desc">Grade 3 · Times tables</div>
+                    </div>
+                </div>
+
+                <div class="level-btn" style="--btn-color: var(--color-genius); --btn-glow: rgba(239, 68, 68, 0.3)"
+                    onclick="selectLevel('GENIUS')">
+                    <div class="level-icon">⚡</div>
+                    <div class="level-info">
+                        <div class="level-name">Genius</div>
+                        <div class="level-desc">Grades 4–5 · Harder math</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Content -->
+        <div id="game-badge" class="level-badge-active" style="display:none">KIDDY</div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">Time</div>
+                <div class="stat-value" id="timer">30</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+        </div>
+
+        <div class="problem-display" id="problem">
+            <span id="num1">?</span>
+            <span id="operator">+</span>
+            <span id="num2">?</span>
+            <span>=</span>
+        </div>
+
+        <div class="answer-input-container">
+            <input type="number" id="answer-input" placeholder="?" readonly>
+        </div>
+
+        <div class="numpad">
+            <button class="num-btn" onclick="addNum(1)">1</button>
+            <button class="num-btn" onclick="addNum(2)">2</button>
+            <button class="num-btn" onclick="addNum(3)">3</button>
+            <button class="num-btn" onclick="addNum(4)">4</button>
+            <button class="num-btn" onclick="addNum(5)">5</button>
+            <button class="num-btn" onclick="addNum(6)">6</button>
+            <button class="num-btn" onclick="addNum(7)">7</button>
+            <button class="num-btn" onclick="addNum(8)">8</button>
+            <button class="num-btn" onclick="addNum(9)">9</button>
+            <button class="num-btn clear" onclick="clearInput()">C</button>
+            <button class="num-btn" onclick="addNum(0)">0</button>
+            <button class="num-btn submit" onclick="submitAnswer()">✓</button>
+        </div>
+
+        <div class="game-over-overlay" id="game-over">
+            <h2 id="over-title">TIME'S UP! ⏰</h2>
+            <div class="final-score" id="final-score">0</div>
+            <div class="high-score-label" id="high-score-text">Best: 0</div>
+
+            <div class="btn-group">
+                <button class="restart-btn" onclick="startGame()">Play again 🚀</button>
+                <button class="change-level-btn" onclick="showLevelSelection()">Change level 🧭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="voice-indicator" class="voice-status">
+        <div class="mic-icon"></div>
+        <span id="voice-text" style="font-weight: 700; color: #fff;">Listening…</span>
+    </div>
+
+    <script src="/static/js/english_math/math_speech.js?v=20260608"></script>
+    <script src="/static/js/games/math_blast_logic.js?v=20260608"></script>
+</body>
+
+</html>

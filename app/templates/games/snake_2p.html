@@ -1,0 +1,31 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Snake 2P · Rắn 2 người{% endblock %}
+{% block game_id %}snake_2p{% endblock %}
+{% block game_title %}🐍 Snake 2P · Rắn 2 người{% endblock %}
+{% block game_subtitle %}Two snakes, one screen · Hai rắn một màn{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="sn2-canvas" width="520" height="520"></canvas>
+</div>
+<div class="rg-coop-keys">
+  <span><strong>Green / Xanh lá:</strong> WASD</span>
+  <span><strong>Blue / Xanh dương:</strong> Arrow keys</span>
+</div>
+{{ dual_guide([
+  "Two snakes on one board — avoid walls, yourself, and the other snake.",
+  "<strong>Green</strong>: <strong>W A S D</strong> to move.",
+  "<strong>Blue</strong>: <strong>Arrow keys</strong> to move.",
+  "Eat the <strong>gold food</strong> to grow and score; you do not shrink when the other eats.",
+  "You lose if you crash. Last snake standing wins (or draw if both crash).",
+], [
+  "Hai con rắn trên một bàn — tránh tường, thân mình và rắn đối phương.",
+  "<strong>Xanh lá</strong>: <strong>W A S D</strong> để di chuyển.",
+  "<strong>Xanh dương</strong>: <strong>phím mũi tên</strong>.",
+  "Ăn <strong>mồi vàng</strong> để dài ra và ghi điểm.",
+  "Đụng tường hoặc rắn là thua. Ai còn lại cuối cùng thắng (cùng thua là hòa).",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/snake_2p.js?v=20260605p4"></script>
+{% endblock %}

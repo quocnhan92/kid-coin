@@ -1,4 +1,5 @@
 (function () {
+  const t = (en, vi) => ((window.isEnglishMath && window.isEnglishMath()) ? en : vi);
   const {
     MODES,
     toast,
@@ -42,7 +43,7 @@
     const sid = uuid();
     const now = new Date().toISOString();
     try {
-      toast('Đang mở màn…');
+      toast(t('Opening level…', 'Đang mở màn…'));
       await sessionsBatch(
         [
           {
@@ -73,12 +74,12 @@
       bootstrap = await getBootstrap(MODES.candy);
       renderMap();
       const sub = document.getElementById('candy-api-status');
-      if (sub) sub.textContent = `Đã lưu phiên màn ${levelId} · đồng bộ máy chủ`;
-      toast(`Màn ${levelId} — đã ghi lên máy chủ`);
+      if (sub) sub.textContent = t(`Level ${levelId} saved · synced`, `Đã lưu phiên màn ${levelId} · đồng bộ máy chủ`);
+      toast(t(`Level ${levelId} — saved`, `Màn ${levelId} — đã ghi lên máy chủ`));
     } catch (e) {
       console.error(e);
       if (!window.MathBlastV2.isAuthError(e)) {
-        toast(e.message || 'Lỗi lưu phiên');
+        toast(e.message || t('Could not save session', 'Lỗi lưu phiên'));
       }
     }
   }
@@ -93,17 +94,25 @@
       catalogLevels = levelsRes.levels || [];
       bootstrap = boot;
       const streak = boot.streak?.current;
-      await updateProfileBar(streak != null ? `${streak}🔥 ngày liên tiếp` : null);
+      await updateProfileBar(streak != null ? `${streak}🔥 ${t('day streak', 'ngày liên tiếp')}` : null);
       const sub = document.getElementById('candy-chapter-sub');
       if (sub) {
         const cleared = (boot.level_progress || []).filter((p) => p.stars >= 1).length;
-        sub.textContent = `Thế giới 1 · ${catalogLevels.length} màn · đã qua ${cleared}`;
+        sub.textContent = t(
+          `World 1 · ${catalogLevels.length} levels · cleared ${cleared}`,
+          `Thế giới 1 · ${catalogLevels.length} màn · đã qua ${cleared}`
+        );
       }
       renderMap();
     } catch (e) {
       console.error(e);
       const path = document.getElementById('candy-map-path');
-      if (path) path.innerHTML = '<p style="text-align:center;color:var(--mb-muted)">Không tải được dữ liệu. Đăng nhập tài khoản bé rồi thử lại.</p>';
+      if (path) {
+        path.innerHTML = `<p style="text-align:center;color:var(--mb-muted)">${t(
+          'Could not load data. Sign in as kid and try again.',
+          'Không tải được dữ liệu. Đăng nhập tài khoản bé rồi thử lại.'
+        )}</p>`;
+      }
     }
   }
 

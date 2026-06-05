@@ -52,7 +52,14 @@ Seed: `app/services/english_catalog_seed.py` (startup sau `seed_play_catalog`).
 alembic upgrade head
 ```
 
-Khởi động lại app để `ensure_english_shooter_catalog()` chạy trên DB đã có sẵn `play_games`.
+Migration `013_seed_english_curriculum_g123` nạp **20 chủ đề** lớp 1–3 (~350+ mục từ vựng/câu), nguồn GDD + Memory game:
+- Lớp 1 (7): Family, Colors, Numbers, Animals, Fruits, Classroom, Body
+- Lớp 2 (7): Pets, Food, Home, Clothes, Nature, Vehicles, Body & Health
+- Lớp 3 (6): School Year, Subjects, At School, Actions, Daily Routine, Sports
+
+Dữ liệu định nghĩa tại `app/data/english_curriculum_g123.py`.
+
+Khởi động lại app: nếu thiếu `en_g1_colors`, `ensure_english_shooter_catalog()` tự nạp G1–G3.
 
 ## Việc tiếp theo (ngoài MVP)
 

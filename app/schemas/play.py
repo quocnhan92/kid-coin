@@ -17,8 +17,16 @@ class PlayGameCatalogItem(BaseModel):
     id: str
     display_name: str
     game_type: str
+    hub_zone: str = "learning"
+    subject: Optional[str] = None
+    grade_min: int = 1
+    grade_max: int = 5
+    requires_wallet: bool = False
     modes: List[PlayModeCatalogItem] = []
     meta: Dict[str, Any] = {}
+    launch_url: Optional[str] = None
+    min_client_version: str = "1.0.0"
+    is_public: bool = True
 
 
 class PlayGamesResponse(BaseModel):
@@ -119,6 +127,7 @@ class PlayBootstrapResponse(BaseModel):
     flappy: Optional[PlayFlappyBootstrapOut] = None
     english: Optional[PlayEnglishBootstrapOut] = None
     streak: Optional[PlayStreakOut] = None
+    wallet: Optional[PlayWalletOut] = None
 
 
 # --- Sessions batch ---
@@ -290,3 +299,71 @@ class ParentDashboardResponse(BaseModel):
 class ParentChildLevelsResponse(BaseModel):
     user_id: UUID
     levels: List[PlayLevelProgressOut]
+
+
+class PlayWalletOut(BaseModel):
+    available_balance: int = 0
+    accounts: Dict[str, int] = {}
+    total_earned_learning: int = 0
+    total_spent_reward: int = 0
+
+
+class PlayWalletLedgerItem(BaseModel):
+    id: int
+    account_code: str
+    entry_type: str
+    amount: int
+    balance_after: int
+    ref_game_id: Optional[str] = None
+    ref_reward_game_id: Optional[str] = None
+    note: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class RewardGameOut(BaseModel):
+    id: str
+    title: str
+    title_vi: str
+    emoji: str
+    route: str
+    color: str
+    desc_en: str
+    desc_vi: str
+    genre: str = "reflex"
+    player_mode: str = "solo"
+    co_op_parent: bool = False
+    rollout_status: str = "live"
+    session_cap_seconds: int = 600
+    unlocked: bool
+    unlock_hint: str
+    play_cost: int = 0
+
+
+class RewardSectionOut(BaseModel):
+    key: str
+    title_en: str
+    title_vi: str
+    game_ids: List[str] = []
+
+
+class RewardPlaygroundResponse(BaseModel):
+    test_unlock_all: bool = False
+    skip_reward_spend: bool = False
+    logged_in: bool = False
+    metrics: Optional[Dict[str, Any]] = None
+    wallet: Optional[PlayWalletOut] = None
+    games: List[RewardGameOut] = []
+    sections: List[RewardSectionOut] = []
+    unlocked_count: int = 0
+    total_count: int = 0
+
+
+class SpendRewardPlayRequest(BaseModel):
+    reward_game_id: str
+    session_id: Optional[UUID] = None
+
+
+class SpendRewardPlayResponse(BaseModel):
+    ok: bool
+    message: str
+    wallet: Optional[PlayWalletOut] = None

@@ -11,6 +11,7 @@ from app.models.play.english_catalog import (
     PlayEnglishWeapon,
 )
 from app.services.english_shooter_progress_service import merge_extra, GAME_ID, MODE_PRAIRIE
+from app.services.play_reward_service import apply_test_unlock
 
 
 def list_themes_for_grade(db: Session, grade: int) -> List[Dict[str, Any]]:
@@ -74,7 +75,7 @@ def get_theme_stage_bundle(db: Session, theme_id: str, stage_type: str) -> Optio
 
 
 def build_english_bootstrap(db: Session, stats_extra: Optional[Dict[str, Any]], grade: int = 1) -> Dict[str, Any]:
-    extra = merge_extra(stats_extra)
+    extra = apply_test_unlock(db, merge_extra(stats_extra))
     weapon = db.query(PlayEnglishWeapon).filter(PlayEnglishWeapon.grade == grade).first()
     themes = list_themes_for_grade(db, grade)
     return {
@@ -88,7 +89,7 @@ def build_english_bootstrap(db: Session, stats_extra: Optional[Dict[str, Any]], 
         "themes_completed": extra.get("themes_completed", []),
         "prairie_best_by_theme": extra.get("prairie_best_by_theme", {}),
         "weapon": {
-            "name": weapon.name if weapon else "Súng cao su",
+            "name": weapon.name if weapon else "Rubber Gun",
             "asset_id": weapon.asset_id if weapon else "weapon_slingshot",
         }
         if weapon

@@ -1,0 +1,23 @@
+{% macro dual_guide(steps_en, steps_vi) %}
+<aside class="rg-guide-dual" aria-label="How to play">
+  <h2 class="rg-guide-title">📖 How to play · Hướng dẫn chơi</h2>
+  <div class="rg-guide-grid">
+    <section lang="en">
+      <h3>English</h3>
+      <ol>
+        {% for s in steps_en %}
+        <li>{{ s|safe }}</li>
+        {% endfor %}
+      </ol>
+    </section>
+    <section lang="vi">
+      <h3>Tiếng Việt</h3>
+      <ol>
+        {% for s in steps_vi %}
+        <li>{{ s|safe }}</li>
+        {% endfor %}
+      </ol>
+    </section>
+  </div>
+</aside>
+{% endmacro %}

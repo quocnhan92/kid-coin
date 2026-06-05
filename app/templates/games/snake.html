@@ -157,7 +157,7 @@
     <div class="game-over" id="gameOver">
         <h2>GAME OVER!</h2>
         <p id="finalScoreText"></p>
-        <button class="btn" onclick="resetGame()" style="background: var(--accent)">Chơi lại</button>
+        <button class="btn" onclick="resetGame()" style="background: var(--accent)">Play again / Chơi lại</button>
     </div>
 
     <!-- Mobile Controls -->
@@ -168,6 +168,22 @@
         <button class="btn" onclick="changeDir('left')">LEFT</button>
         <button class="btn" onclick="changeDir('down')">DOWN</button>
         <button class="btn" onclick="changeDir('right')">RIGHT</button>
+    </div>
+
+    <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605restart">
+    {% from "games/_reward_guide.html" import dual_guide %}
+    <div class="rg-legacy-guide-wrap">
+    {{ dual_guide([
+      "Use <strong>arrow keys</strong> or the on-screen buttons to steer the snake.",
+      "Eat <strong>food</strong> to grow and increase your score.",
+      "Do not hit the <strong>walls</strong> or your own tail.",
+      "The game speeds up slightly as you score more.",
+    ], [
+      "Dùng <strong>phím mũi tên</strong> hoặc nút trên màn hình để điều khiển rắn.",
+      "Ăn <strong>mồi</strong> để rắn dài ra và tăng điểm.",
+      "Không được đụng <strong>tường</strong> hoặc thân rắn.",
+      "Tốc độ tăng nhẹ khi điểm cao hơn.",
+    ]) }}
     </div>
 
     <script>
@@ -282,7 +298,8 @@
             if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount ||
                 snake.slice(1).some(p => p.x === head.x && p.y === head.y)) {
                 gameOverEl.style.display = 'flex';
-                finalScoreText.innerText = `Điểm của bạn: ${score}`;
+                finalScoreText.innerText = `Score / Điểm: ${score}`;
+                window.RewardShell?.showGameOver(`Game over! Score: ${score} / Hết game! Điểm: ${score}`, resetGame);
                 return true;
             }
             return false;
@@ -315,7 +332,10 @@
 
         generateFood();
         drawGame();
+
+        window.RewardGame = { restart: resetGame };
     </script>
+    <script src="/static/js/reward/reward_restart.js?v=20260605restart"></script>
 </body>
 
 </html>

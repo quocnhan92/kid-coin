@@ -1,5 +1,6 @@
 (function () {
   const { setActiveSkuNav, updateProfileBar, getGames, getBootstrap } = window.MathBlastV2;
+  const t = (en, vi) => ((window.isEnglishMath && window.isEnglishMath()) ? en : vi);
 
   async function init() {
     setActiveSkuNav('hub');
@@ -15,13 +16,13 @@
       if (status) {
         const mb = games.games?.find((g) => g.id === 'math_blast');
         const modeCount = mb?.modes?.length || 0;
-        status.textContent = `Đã tải danh mục · ${modeCount} chế độ Math Blast từ máy chủ`;
+        status.textContent = t(`Catalog loaded · ${modeCount} Math Blast modes`, `Đã tải danh mục · ${modeCount} chế độ Math Blast từ máy chủ`);
       }
     } catch (e) {
       console.error(e);
       const status = document.getElementById('mb-hub-status');
       if (status && !window.MathBlastV2.isAuthError(e)) {
-        status.textContent = 'Đăng nhập tài khoản bé để đồng bộ tiến độ';
+        status.textContent = t('Sign in as kid to sync progress', 'Đăng nhập tài khoản bé để đồng bộ tiến độ');
       }
     }
   }

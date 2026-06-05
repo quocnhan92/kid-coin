@@ -1,10 +1,94 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Request, Depends
 from app.core.database import engine
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 import os
 import uuid
+from typing import Optional
+from uuid import UUID
+
+from app.api import deps
+from app.core import context
+from app.core.api_compat import API_VERSION, MIN_SUPPORTED_CLIENT
+from app.locale.jinja import locale_from_request
+from app.locale.registry import LOCALES, MARKETS
+from app.models.user_family import User
+from app.schemas.platform import FeaturesResponse, PublicGamesResponse
+from app.services.feature_flag_service import is_enabled, list_effective_flags
+from app.services.play_hub_catalog import ZONE_LEARNING, list_hub_games
 
 router = APIRouter()
+
+
+def _optional_user(request: Request, db: Session) -> Optional[User]:
+    try:
+        return deps.get_current_user(request, db)
+    except HTTPException:
+        return None
+
+
+def _resolve_market(request: Request) -> Optional[str]:
+    lc = locale_from_request(request)
+    return lc.market if lc else context.get_market()
+
+
+@router.get("/locale")
+def get_locale_info(request: Request):
+    """Current market/locale + catalog for market switcher UI."""
+    lc = locale_from_request(request)
+    return {
+        "market": lc.market,
+        "locale": lc.locale,
+        "speech_lang": lc.speech_lang,
+        "rtl": lc.is_rtl,
+        "markets": [
+            {
+                "code": m.code,
+                "label": m.label,
+                "flag": m.flag,
+                "default_locale": m.default_locale,
+                "currency": m.currency,
+            }
+            for m in MARKETS.values()
+        ],
+        "locales": [
+            {"tag": l.tag, "label": l.label, "native_label": l.native_label}
+            for l in LOCALES.values()
+        ],
+    }
+
+
+@router.get("/features", response_model=FeaturesResponse)
+def get_features(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+):
+    user = _optional_user(request, db)
+    family_id = user.family_id if user else None
+    market = _resolve_market(request)
+    flags = list_effective_flags(db, family_id=family_id, market=market)
+    return FeaturesResponse(
+        flags=flags,
+        api_version=API_VERSION,
+        min_client_version=MIN_SUPPORTED_CLIENT,
+    )
+
+
+@router.get("/public-games", response_model=PublicGamesResponse)
+def get_public_games(
+    request: Request,
+    zone: str = ZONE_LEARNING,
+    grade: Optional[int] = None,
+    db: Session = Depends(deps.get_db),
+):
+    market = _resolve_market(request)
+    if zone not in (ZONE_LEARNING, "reward"):
+        zone = ZONE_LEARNING
+    if grade is not None and not (1 <= grade <= 5):
+        grade = None
+    games = list_hub_games(db, zone=zone, grade=grade, market=market)
+    return PublicGamesResponse(games=games)
+
 
 @router.get("/health")
 def health_check():

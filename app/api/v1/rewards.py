@@ -65,22 +65,35 @@ async def redeem_reward(
             status=RedemptionStatus.PENDING_DELIVERY
         )
         db.add(redemption)
-        db.flush() # get ID
+        db.flush()
 
-        # 4. Create Transaction
-        transaction = Transaction(
-            kid_id=current_user.id,
-            amount=-reward.points_cost,
-            transaction_type=TransactionType.REWARD_REDEMPTION,
+        from app.services import coin_ledger_service as ledger
+        from app.services import domain_event_service as events
+
+        ledger.debit(
+            db,
+            current_user,
+            reward.points_cost,
+            TransactionType.REWARD_REDEMPTION,
+            f"Redeemed: {reward.name}",
             reference_id=redemption.id,
-            description=f"Redeemed: {reward.name}"
         )
-        db.add(transaction)
-        
-        # 5. Update Balance & Stock
-        current_user.current_coin -= reward.points_cost
         if reward.stock_limit is not None:
             reward.stock_limit -= 1
+
+        events.emit(
+            db,
+            events.EVENT_REWARD_REDEEMED,
+            {
+                "kid_id": str(current_user.id),
+                "family_id": str(current_user.family_id),
+                "cost": reward.points_cost,
+                "reward_id": str(reward.id),
+            },
+            family_id=current_user.family_id,
+            aggregate_type="redemption",
+            aggregate_id=str(redemption.id),
+        )
 
         db.commit()
         

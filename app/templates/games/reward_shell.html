@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{% block page_title %}Reward Game{% endblock %} — KidCoin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/reward_game.css?v=20260605restart">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="rg-app" data-game-id="{% block game_id %}{% endblock %}">
+  <nav class="rg-nav">
+    <a href="/game/rewards" class="rg-back">← Rewards</a>
+    <div class="rg-title-wrap">
+      <div class="rg-title">{% block game_title %}Game{% endblock %}</div>
+      <div class="rg-sub">{% block game_subtitle %}{% endblock %}</div>
+    </div>
+    <button type="button" id="rg-restart" class="rg-restart-nav" title="Play again / Chơi lại">↻</button>
+  </nav>
+  <div class="rg-hud">
+    <span id="rg-hud-primary">{% block hud_primary %}Score: 0{% endblock %}</span>
+    <span id="rg-hud-secondary">{% block hud_secondary %}{% endblock %}</span>
+  </div>
+  <main class="rg-main">{% block game_body %}{% endblock %}</main>
+  <div id="rg-gameover" class="rg-modal" hidden>
+    <div class="rg-modal-card">
+      <p id="rg-gameover-msg"></p>
+      <div class="rg-modal-actions">
+        <button type="button" id="rg-gameover-again" class="rg-btn rg-btn-primary">Play again / Chơi lại</button>
+        <button type="button" id="rg-gameover-close" class="rg-btn">Close / Đóng</button>
+      </div>
+    </div>
+  </div>
+  <script src="/static/js/reward/reward_shell.js?v=20260605restart"></script>
+  {% block game_scripts %}{% endblock %}
+</body>
+</html>

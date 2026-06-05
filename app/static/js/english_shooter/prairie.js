@@ -5,6 +5,7 @@
     toast,
     getBootstrap,
     getStage,
+    getThemes,
     sessionsBatch,
     eventsBatch,
     updateProfileBar,
@@ -23,6 +24,8 @@
   let correctCount = 0;
   let pendingSinceSync = 0;
   let themeId = 'en_g1_family';
+  let activeGrade = 1;
+  let themes = [];
   let startedAt = null;
 
   function speak(text) {
@@ -38,7 +41,7 @@
     const scoreEl = document.getElementById('es-score');
     const goldEl = document.getElementById('es-gold');
     const progEl = document.getElementById('es-progress');
-    if (scoreEl) scoreEl.textContent = `Điểm ${score}`;
+    if (scoreEl) scoreEl.textContent = `Score ${score}`;
     if (goldEl) goldEl.textContent = `🪙 ${bootstrap?.english?.gold ?? 0}`;
     if (progEl) progEl.textContent = `${itemIndex}/${items.length}`;
   }
@@ -111,7 +114,7 @@
     const correct = word === item.target_text;
     if (!correct) {
       btn.classList.add('wrong');
-      toast('Thử lại nhé — không trừ máu');
+      toast('Try again — no HP lost (Thử lại, không mất máu)');
       setTimeout(renderItem, 600);
       return;
     }
@@ -172,7 +175,7 @@
     sessionId = null;
     clearBootstrapCache();
     bootstrap = await getBootstrap(MODES.prairie);
-    if (completed) toast('Hoàn thành chủ đề! + vàng đã lưu');
+    if (completed) toast('Theme done! Gold saved (Hoàn thành chủ đề, vàng đã lưu)');
     setHud();
     document.getElementById('es-start-overlay').style.display = 'flex';
     document.getElementById('es-prairie-play').style.display = 'none';
@@ -189,17 +192,48 @@
     const res = await getStage(themeId, 'vocab');
     items = res.stage?.items || [];
     if (!items.length) {
-      toast('Chưa có câu hỏi — chạy seed catalog');
+      toast('No questions yet — run seed catalog');
       return;
     }
     await startSession();
     renderItem();
   }
 
+  function renderGradePicker() {
+    const wrap = document.getElementById('es-grade-picker');
+    if (!wrap) return;
+    wrap.innerHTML = [1, 2, 3]
+      .map(
+        (g) =>
+          `<button type="button" class="es-theme-btn ${g === activeGrade ? 'active' : ''}" data-grade="${g}">Grade ${g} <span class="es-vi">(Lớp ${g})</span></button>`
+      )
+      .join('');
+    wrap.querySelectorAll('[data-grade]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        activeGrade = Number(btn.dataset.grade);
+        await loadThemesForGrade(activeGrade);
+        renderGradePicker();
+        renderThemes();
+      });
+    });
+  }
+
+  async function loadThemesForGrade(grade) {
+    const res = await getThemes(grade);
+    themes = res.themes || [];
+    if (themes.length && !themes.some((t) => t.id === themeId)) {
+      themeId = themes[0].id;
+    }
+  }
+
   function renderThemes() {
     const wrap = document.getElementById('es-theme-list');
-    if (!wrap || !bootstrap?.english?.themes) return;
-    wrap.innerHTML = bootstrap.english.themes
+    if (!wrap) return;
+    if (!themes.length) {
+      wrap.innerHTML = '<p class="es-muted">No themes yet — run alembic upgrade head</p>';
+      return;
+    }
+    wrap.innerHTML = themes
       .map(
         (t) =>
           `<button type="button" class="es-theme-btn ${t.id === themeId ? 'active' : ''}" data-theme="${t.id}">${t.title}</button>`
@@ -216,9 +250,12 @@
   async function init() {
     try {
       bootstrap = await getBootstrap(MODES.prairie);
+      activeGrade = bootstrap?.english?.last_grade || 1;
+      await loadThemesForGrade(activeGrade);
+      renderGradePicker();
       renderThemes();
       setHud();
-      await updateProfileBar(`Thảo nguyên · 🪙${bootstrap.english?.gold || 0}`);
+      await updateProfileBar(`Prairie · 🪙${bootstrap.english?.gold || 0}`);
     } catch (e) {
       if (e.message !== 'SESSION_AUTH_REQUIRED') toast(String(e.message));
     }

@@ -16,9 +16,9 @@ GOLD_PER_SENTENCE = 20
 SPEAKING_BONUS = 30
 
 RANK_THRESHOLDS = [
-    (0, "recruit", "Tân binh"),
-    (1, "soldier", "Chiến sĩ"),
-    (50, "commander", "Chỉ huy"),
+    (0, "recruit", "Recruit"),
+    (1, "soldier", "Soldier"),
+    (50, "commander", "Commander"),
     (200, "global_commander", "Global Commander"),
 ]
 
@@ -40,8 +40,8 @@ def default_extra() -> Dict[str, Any]:
             "dragon": False,
         },
         "blocks": {
-            "city": {"unlocked": False, "label": "Bảo vệ thành phố", "grades": "1–5"},
-            "boss": {"unlocked": False, "label": "Đại Boss", "grades": "1–5"},
+            "city": {"unlocked": False, "label": "City Defense", "grades": "1–5"},
+            "boss": {"unlocked": False, "label": "Big Boss", "grades": "1–5"},
         },
         "journal_entries": [],
     }

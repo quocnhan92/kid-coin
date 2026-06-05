@@ -32,6 +32,8 @@ from app.schemas.play import (
     PlayEventIn,
 )
 from app.services.play_rollup_service import rollup_after_session_end
+from app.services import streak_service
+from app.services import domain_event_service as events
 from app.services.play_service import compute_bootstrap_etag
 from app.services import streak_service
 
@@ -117,6 +119,9 @@ def process_sessions_batch(
                     SessionBatchResult(session_id=data.session_id, status=existing.status)
                 )
                 continue
+            from app.services import play_screen_time_service
+
+            play_screen_time_service.assert_can_play(db, user.id)
             session = PlaySession(
                 id=data.session_id,
                 user_id=user.id,
@@ -163,14 +168,35 @@ def process_sessions_batch(
                 )
 
             rollup = rollup_after_session_end(
-                db, user.id, session.game_id, session.game_mode_id, summary
+                db, user.id, session.game_id, session.game_mode_id, summary, session.id
             )
+
+            from app.services import play_screen_time_service
+
+            play_screen_time_service.add_minutes(db, user.id, summary.duration_s or 0)
 
             if summary.duration_s >= 40 or summary.questions_count >= 8:
                 try:
                     streak_service.update_streak(db, str(user.id))
                 except Exception:
                     pass
+
+            events.emit(
+                db,
+                events.EVENT_PLAY_SESSION_COMPLETED,
+                {
+                    "kid_id": str(user.id),
+                    "family_id": str(user.family_id),
+                    "game_id": session.game_id,
+                    "mode_id": session.game_mode_id,
+                    "score": summary.score,
+                    "duration": summary.duration_s,
+                    "session_id": str(session.id),
+                },
+                family_id=user.family_id,
+                aggregate_type="play_session",
+                aggregate_id=str(session.id),
+            )
 
             results.append(
                 SessionBatchResult(

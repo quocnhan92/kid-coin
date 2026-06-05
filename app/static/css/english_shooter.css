@@ -63,6 +63,12 @@ body.es-app {
   line-height: 1.45;
 }
 
+.es-vi {
+  font-size: 0.72em;
+  font-weight: 600;
+  color: var(--es-muted);
+}
+
 .es-mode-grid {
   display: grid;
   gap: 12px;
@@ -109,6 +115,16 @@ body.es-app {
   border-radius: 6px;
   background: rgba(52, 211, 153, 0.2);
   color: var(--es-accent);
+}
+
+.es-mode-card.es-mode-warn {
+  border-color: rgba(251, 191, 36, 0.35);
+  opacity: 0.85;
+}
+
+.es-tag-warn {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
 }
 
 .es-prairie-stage {

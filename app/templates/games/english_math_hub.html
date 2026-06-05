@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Math — Grades 1–5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter.css">
+  <link rel="stylesheet" href="/static/css/math_blast_v2.css">
+</head>
+<body class="es-app mb-v2">
+  <div class="es-shell">
+    <header class="es-topbar">
+      <a href="/game/english-shooter" class="es-back">← English Shooter</a>
+      <div class="es-brand">➕ English Math</div>
+      <span id="es-profile-label" style="font-size:0.8rem;color:var(--es-muted)">…</span>
+    </header>
+
+    <section class="es-hero">
+      <h1>Math in English <span class="es-vi">(Toán tiếng Anh)</span></h1>
+      <p>Same Math Blast games — English UI, English reading &amp; speaking. Grades 1–5.</p>
+    </section>
+
+    <div class="es-mode-grid">
+      <a href="/game/english-shooter/math/v1" class="es-mode-card">
+        <h3>🚀 Math Blast V1</h3>
+        <p>Quick levels: Kiddy → Genius. Voice answer supported.</p>
+        <span class="es-tag">Classic</span>
+      </a>
+      <a href="/game/english-shooter/math/v2" class="es-mode-card">
+        <h3>🍬 Math Blast V2</h3>
+        <p>Candy Map, Math Bird, Arcade — pick your style.</p>
+        <span class="es-tag">Grades 1–5</span>
+      </a>
+    </div>
+
+    <p style="margin-top:20px;font-size:0.8rem;color:var(--es-muted);">
+      Also practice words: <a href="/game/english-shooter/prairie" style="color:#34d399">Prairie</a> ·
+      <a href="/game/english-shooter/city" style="color:#34d399">City</a> ·
+      <a href="/game/english-shooter/boss" style="color:#34d399">Boss</a>
+    </p>
+  </div>
+
+  {% include "games/math_blast_v2_auth_include.html" %}
+  <script src="/static/js/english_shooter/common.js?v=20260605"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.EnglishShooter?.updateProfileBar) EnglishShooter.updateProfileBar('English Math');
+    });
+  </script>
+</body>
+</html>

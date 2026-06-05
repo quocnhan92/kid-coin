@@ -34,10 +34,16 @@
                     Chào <span id="kid-name-header">...</span>! 
                     <button onclick="showProfileModal()" class="text-sm bg-yellow-400 hover:bg-yellow-500 rounded-full px-2 py-1 shadow-sm transition-colors">✏️</button>
                 </h1>
-                <div class="flex items-center gap-2 mt-2">
-                    <div class="bg-white/80 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-yellow-200">
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                    <div class="bg-white/80 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-yellow-200" title="Coin nhà — đổi quà việc nhà">
                         <span class="text-lg">💰</span>
+                        <span class="text-[9px] font-bold text-yellow-700 uppercase">Coin nhà</span>
                         <span id="coin-balance" class="text-sm font-black text-yellow-800">0</span>
+                    </div>
+                    <div id="play-wallet-chip" class="hidden-section bg-purple-100 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-purple-200" title="Xu sân chơi — Reward Playground">
+                        <span class="text-lg">🎮</span>
+                        <span class="text-[9px] font-bold text-purple-700 uppercase">Xu chơi</span>
+                        <span id="play-wallet-balance" class="text-sm font-black text-purple-800">0</span>
                     </div>
                     <div id="level-badge" class="hidden-section bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-2 py-1 rounded-full text-[10px] font-black shadow-md border border-white/30 animate-pulse">
                         LV. <span id="level-val">1</span>
@@ -386,7 +392,7 @@
                 window.currentUser = me;
                 currentUserId = me.id;
                 document.getElementById('coin-balance').innerText = me.current_coin;
-                
+                fetchPlayWallet();
                 // Update kid name/avatar
                 const nameHeader = document.getElementById('kid-name-header');
                 const avatarHeader = document.getElementById('kid-avatar-header');
@@ -410,6 +416,20 @@
             } catch (error) {
                 console.error(error);
             }
+        }
+
+        async function fetchPlayWallet() {
+            try {
+                const res = await fetch(`${API_BASE}/play/wallet`, { credentials: 'same-origin' });
+                if (!res.ok) return;
+                const w = await res.json();
+                const chip = document.getElementById('play-wallet-chip');
+                const bal = document.getElementById('play-wallet-balance');
+                if (chip && bal) {
+                    bal.innerText = w.available_balance ?? 0;
+                    chip.classList.remove('hidden-section');
+                }
+            } catch (_) { /* play wallet optional */ }
         }
 
         async function fetchLevelAndStreak() {

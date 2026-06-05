@@ -4,7 +4,9 @@
  */
 (function (global) {
   const OP_SYM = { add: '+', sub: '−', mul: '×', div: '÷' };
-  const LS_GRADE = 'mb_v2_flappy_grade';
+  function flappyGradeLsKey() {
+    return (global.MathBlastV2 && global.MathBlastV2.FLAPPY_GRADE_LS_KEY) || 'mb_v2_flappy_grade';
+  }
 
   /** Lớp 1–5 ↔ tier API (T1…T5) */
   const GRADES = {
@@ -118,7 +120,7 @@
   }
 
   function pack(skill, q, a, op, choiceCount) {
-    return {
+    const item = {
       q,
       a,
       skill,
@@ -126,6 +128,10 @@
       grade: itemGrade(skill),
       choices: makeChoices(a, choiceCount, Math.max(3, Math.ceil(a / 4) + 2)),
     };
+    if (global.isEnglishMath && global.isEnglishMath() && global.EnglishMathSpeech) {
+      global.EnglishMathSpeech.enrichItem(item);
+    }
+    return item;
   }
 
   let _sessionGrade = 1;
@@ -194,14 +200,17 @@
     let b = randInt(0, maxN);
     while (b === a) b = randInt(0, maxN);
     const correct = Math.max(a, b);
-    return {
-      q: `${a} và ${b} — số nào lớn hơn?`,
+    const en = global.isEnglishMath && global.isEnglishMath();
+    const item = {
+      q: en ? `${a} and ${b} — which is bigger?` : `${a} và ${b} — số nào lớn hơn?`,
       a: correct,
       choices: makeChoices(correct, GRADES[_sessionGrade].choiceCount, 5),
       skill,
       op: 'compare',
       grade: 1,
     };
+    if (en && global.EnglishMathSpeech) global.EnglishMathSpeech.enrichItem(item);
+    return item;
   }
 
   function genMulTable(skill, table) {
@@ -408,13 +417,13 @@
   }
 
   function getStoredGrade() {
-    const raw = global.localStorage.getItem(LS_GRADE);
+    const raw = global.localStorage.getItem(flappyGradeLsKey());
     if (raw != null) return normalizeGrade(raw);
     return null;
   }
 
   function setStoredGrade(grade) {
-    global.localStorage.setItem(LS_GRADE, String(normalizeGrade(grade)));
+    global.localStorage.setItem(flappyGradeLsKey(), String(normalizeGrade(grade)));
   }
 
   function gradeToTier(grade) {

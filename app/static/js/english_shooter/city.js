@@ -25,9 +25,9 @@
       transcriptText = (event.results?.[0]?.[0]?.transcript || "").trim();
       const el = document.getElementById("es-city-transcript");
       if (el && transcriptText) el.value = transcriptText;
-      setVoiceResult(`Đã nghe: "${transcriptText}"`, true);
+      setVoiceResult(`Heard: "${transcriptText}" (Đã nghe)`, true);
     };
-    recognition.onerror = () => setVoiceResult("Không nhận diện được, nhập tay để tiếp tục.", false);
+    recognition.onerror = () => setVoiceResult("Can't hear you — type instead (Không nhận diện, nhập tay)", false);
   }
 
   function norm(text) {
@@ -44,7 +44,7 @@
   function hud() {
     const g = bootstrap?.english?.gold || 0;
     document.getElementById("es-city-gold").textContent = `🪙 ${g}`;
-    document.getElementById("es-city-score").textContent = `Điểm ${score}`;
+    document.getElementById("es-city-score").textContent = `Score ${score}`;
     document.getElementById("es-city-hp").textContent = `HP ${hp}`;
     document.getElementById("es-city-progress").textContent = `${idx}/${items.length}`;
   }
@@ -69,7 +69,7 @@
       btn.addEventListener("click", () => selectChoice(btn, choice, opts.answer));
       wrap.appendChild(btn);
     });
-    setVoiceResult("Chưa ghi âm", false);
+    setVoiceResult("Not recorded yet (Chưa ghi âm)", false);
     transcriptText = "";
     document.getElementById("es-city-transcript").value = "";
     hud();
@@ -80,12 +80,12 @@
       btn.classList.add("correct");
       score += 10;
       selectedCorrectSentence = (document.getElementById("es-city-prompt").textContent || "").replace("[____]", answer);
-      setVoiceResult("Đáp án đúng. Hãy đọc lại câu để nhận bonus.", true);
+      setVoiceResult("Correct! Read the sentence for bonus (Đúng — đọc câu để nhận thưởng)", true);
       return;
     }
     btn.classList.add("wrong");
     hp -= 1;
-    toast("Sai đáp án, -1 HP");
+    toast("Wrong answer, -1 HP (Sai đáp án)");
     hud();
     if (hp <= 0) endRun(false);
   }
@@ -96,7 +96,7 @@
     const spoken = norm(input || transcriptText);
     const expected = norm(selectedCorrectSentence);
     if (!expected) {
-      setVoiceResult("Hãy chọn đáp án đúng trước.", false);
+      setVoiceResult("Pick the right answer first (Chọn đáp án trước)", false);
       return;
     }
     if (spoken && expected && spoken.includes(expected.slice(0, Math.max(3, expected.length - 3)))) {
@@ -116,12 +116,12 @@
       idx += 1;
       clearBootstrapCache();
       bootstrap = await getBootstrap(MODES.city);
-      setVoiceResult("Speaking đạt — +20 điểm", true);
+      setVoiceResult("Speaking OK — +20 points (Nói đạt)", true);
       renderQuestion();
       return;
     }
     hp -= 1;
-    setVoiceResult("Speaking chưa khớp, thử lại.", false);
+    setVoiceResult("Not a match — try again (Chưa khớp)", false);
     hud();
     if (hp <= 0) endRun(false);
   }
@@ -130,7 +130,7 @@
     const stage = await getStage(themeId, "sentence");
     items = stage.stage?.items || [];
     if (!items.length) {
-      toast("Chưa có dữ liệu sentence cho chủ đề này");
+      toast("No sentence data for this theme");
       return;
     }
     idx = 0;
@@ -178,7 +178,7 @@
       },
     ]);
     sessionId = null;
-    toast(completed ? "Thành phố được bảo vệ!" : "Thất bại, thử lại nhé");
+    toast(completed ? "City saved! (Thành phố an toàn)" : "Try again (Thử lại nhé)");
   }
 
   async function init() {
@@ -191,11 +191,11 @@
     document.getElementById("es-city-check-btn").addEventListener("click", checkSpeaking);
     document.getElementById("es-city-speak-btn").addEventListener("click", () => {
       if (!recognition) {
-        setVoiceResult("Trình duyệt chưa hỗ trợ Speech API, nhập tay để chơi.", false);
+        setVoiceResult("No mic support — type instead (Nhập tay để chơi)", false);
         return;
       }
       recognition.start();
-      setVoiceResult("Đang nghe...", true);
+      setVoiceResult("Listening… (Đang nghe)", true);
     });
   }
 

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ game_title }} — Reward Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/reward_playground.css">
+  <style>
+    .rs-wrap {
+      max-width: 480px;
+      margin: 48px auto;
+      padding: 24px;
+      text-align: center;
+    }
+    .rs-emoji { font-size: 4rem; margin-bottom: 12px; }
+    .rs-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+    .rs-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+    .rs-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    .rs-actions { display: flex; flex-direction: column; gap: 10px; }
+    .rs-actions a {
+      display: block;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .rs-back { background: #334155; color: #e2e8f0; }
+    .rs-play { background: linear-gradient(90deg, #f59e0b, #ec4899); color: #1a0a00; }
+  </style>
+</head>
+<body>
+  <nav class="rp-nav">
+    <a href="/game/rewards" class="rp-back">← Reward Playground</a>
+    <span class="rp-title">🎁 Fun Zone</span>
+  </nav>
+  <main class="rs-wrap">
+    <div class="rs-emoji">{{ game_emoji }}</div>
+    <h1 class="rs-title">{{ game_title }}</h1>
+    <p class="rs-desc">{{ game_desc }}</p>
+    <span class="rs-badge">Coming soon — P1 build in progress</span>
+    <div class="rs-actions">
+      <a href="/game/rewards" class="rs-back">Back to all reward games</a>
+      <a href="/game/snake" class="rs-play">Play Snake (available now)</a>
+    </div>
+  </main>
+</body>
+</html>

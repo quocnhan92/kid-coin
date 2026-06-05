@@ -1,0 +1,25 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Reversi{% endblock %}
+{% block game_id %}reversi{% endblock %}
+{% block game_title %}⚫ Reversi · Cờ lật{% endblock %}
+{% block game_subtitle %}Flip discs · Lật quân{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="rev-canvas" width="400" height="400"></canvas>
+</div>
+{{ dual_guide([
+  "Two players alternate on one device — <strong>Green</strong> then <strong>Blue</strong>.",
+  "Tap a <strong>highlighted</strong> square to place your disc and flip enemy discs between yours.",
+  "If you cannot move, your turn is skipped.",
+  "Most discs when both players pass wins.",
+], [
+  "Hai người luân phiên — <strong>Xanh lá</strong> rồi <strong>Xanh dương</strong>.",
+  "Chạm ô <strong>sáng</strong> để đặt quân và lật quân đối phương kẹp giữa.",
+  "Hết nước đi thì bỏ lượt.",
+  "Ai nhiều quân hơn khi hết bàn thì thắng.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/reversi.js?v=20260605p2"></script>
+{% endblock %}

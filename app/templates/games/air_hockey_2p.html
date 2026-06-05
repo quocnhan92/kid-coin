@@ -1,0 +1,31 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Air Hockey 2P{% endblock %}
+{% block game_id %}air_hockey_2p{% endblock %}
+{% block game_title %}🏒 Air Hockey 2P · Khúc côn cầu{% endblock %}
+{% block game_subtitle %}Fast puck action · Đánh puck nhanh{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="ah-canvas" width="640" height="400"></canvas>
+</div>
+<div class="rg-coop-keys">
+  <span><strong>Green / Xanh lá:</strong> W / S</span>
+  <span><strong>Blue / Xanh dương:</strong> ↑ / ↓</span>
+</div>
+{{ dual_guide([
+  "Slide your mallet to hit the puck into the opponent's goal.",
+  "<strong>Green (left)</strong>: <strong>W</strong> / <strong>S</strong>.",
+  "<strong>Blue (right)</strong>: <strong>↑</strong> / <strong>↓</strong>.",
+  "The puck bounces off walls and mallets — aim angles to score.",
+  "Score when the puck crosses the left or right edge behind the goal line.",
+], [
+  "Di chuyển vợt để đánh puck vào khung thành đối phương.",
+  "<strong>Xanh lá (trái)</strong>: <strong>W</strong> / <strong>S</strong>.",
+  "<strong>Xanh dương (phải)</strong>: <strong>↑</strong> / <strong>↓</strong>.",
+  "Puck nảy tường và vợt — tính góc để ghi bàn.",
+  "Ghi điểm khi puck vượt mép trái hoặc phải (phía sau vợt đối thủ).",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/air_hockey_2p.js?v=20260605p2"></script>
+{% endblock %}
