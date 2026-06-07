@@ -55,6 +55,17 @@
     });
   });
 
+  function bindTouch() {
+    const CT = window.RewardCoopTouch;
+    if (!CT?.setupTouchUi()) return;
+    CT.bindDualDpad(
+      document.querySelector('.rg-coop-dpad-wrap'),
+      (dx, dy) => setDir(p1, dx, dy),
+      (dx, dy) => setDir(p2, dx, dy)
+    );
+  }
+  bindTouch();
+
   function hitWall(x, y) {
     return x < 0 || y < 0 || x >= cols || y >= rows;
   }

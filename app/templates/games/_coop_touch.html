@@ -1,0 +1,43 @@
+{% macro coop_paddle_zones(left_id, right_id) %}
+<div class="rg-coop-touch-ui" hidden>
+  <p class="rg-coop-touch-title">👀 Nhìn sân phía trên · điều khiển ở đây (ngón tay không che bóng)</p>
+  <div class="rg-coop-paddle-zones">
+    <div class="rg-coop-zone rg-coop-zone-l" id="{{ left_id }}">
+      <span class="rg-coop-label">Xanh lá</span>
+      <div class="rg-coop-track" aria-hidden="true"><div class="rg-coop-knob"></div></div>
+      <span class="rg-coop-hint">Kéo lên / xuống</span>
+    </div>
+    <div class="rg-coop-zone rg-coop-zone-r" id="{{ right_id }}">
+      <span class="rg-coop-label">Xanh dương</span>
+      <div class="rg-coop-track" aria-hidden="true"><div class="rg-coop-knob"></div></div>
+      <span class="rg-coop-hint">Kéo lên / xuống</span>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro coop_dpad() %}
+<div class="rg-coop-touch-ui rg-coop-dpad-wrap" hidden>
+  <p class="rg-coop-touch-title">📱 Phone 2P — tap arrows on your side</p>
+  <div class="rg-coop-dpad-split">
+    <div class="rg-dpad rg-dpad-green">
+      <span class="rg-coop-label">Xanh lá</span>
+      <button type="button" class="rg-dpad-btn rg-dpad-up" data-player="1" data-dir="up">▲</button>
+      <div class="rg-dpad-mid">
+        <button type="button" class="rg-dpad-btn" data-player="1" data-dir="left">◀</button>
+        <button type="button" class="rg-dpad-btn" data-player="1" data-dir="right">▶</button>
+      </div>
+      <button type="button" class="rg-dpad-btn rg-dpad-down" data-player="1" data-dir="down">▼</button>
+    </div>
+    <div class="rg-dpad rg-dpad-blue">
+      <span class="rg-coop-label">Xanh dương</span>
+      <button type="button" class="rg-dpad-btn rg-dpad-up" data-player="2" data-dir="up">▲</button>
+      <div class="rg-dpad-mid">
+        <button type="button" class="rg-dpad-btn" data-player="2" data-dir="left">◀</button>
+        <button type="button" class="rg-dpad-btn" data-player="2" data-dir="right">▶</button>
+      </div>
+      <button type="button" class="rg-dpad-btn rg-dpad-down" data-player="2" data-dir="down">▼</button>
+    </div>
+  </div>
+</div>
+{% endmacro %}

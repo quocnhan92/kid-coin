@@ -1,0 +1,43 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Paint Sandbox{% endblock %}
+{% block game_id %}paint_sandbox{% endblock %}
+{% block game_title %}🎨 Paint Sandbox{% endblock %}
+{% block game_subtitle %}Draw freely · Vẽ tự do{% endblock %}
+{% block game_body %}
+<div class="rg-paint-toolbar" id="paint-toolbar">
+  <div class="rg-paint-swatches" id="paint-swatches"></div>
+  <div class="rg-paint-stamps-row">
+    <span class="rg-paint-label">Notes / Nốt</span>
+    <div class="rg-paint-stamps" id="paint-stamps"></div>
+  </div>
+  <div class="rg-paint-tools">
+    <button type="button" id="paint-brush" class="rg-btn active">Brush / Bút</button>
+    <label class="rg-paint-size">Size
+      <input type="range" id="paint-size" min="2" max="32" value="8">
+    </label>
+    <button type="button" id="paint-eraser" class="rg-btn">Eraser / Tẩy</button>
+    <button type="button" id="paint-clear" class="rg-btn">Clear / Xóa hết</button>
+  </div>
+</div>
+<div class="rg-canvas-wrap rg-paint-wrap">
+  <canvas id="paint-canvas" width="480" height="360"></canvas>
+</div>
+{{ dual_guide([
+  "Switch to <strong>Note stamp</strong> (♩ ♪ ♫) — tap canvas to place musical notes with sound.",
+  "Drag with mouse or finger — works on phones and tablets.",
+  "Adjust <strong>brush size</strong> with the slider.",
+  "<strong>Eraser</strong> removes strokes; <strong>Clear</strong> wipes the whole canvas.",
+  "No score — relax and create! Use ↻ to start a fresh canvas.",
+], [
+  "Chọn <strong>Dấu nốt</strong> (♩ ♪ ♫) — chạm canvas để đặt nốt nhạc kèm âm thanh.",
+  "Kéo chuột hoặc ngón tay — dùng được trên điện thoại.",
+  "Chỉnh <strong>cỡ bút</strong> bằng thanh trượt.",
+  "<strong>Tẩy</strong> xóa nét vẽ; <strong>Xóa hết</strong> làm trắng canvas.",
+  "Không tính điểm — thư giãn và sáng tạo! Nhấn ↻ để vẽ mới.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/music_notes.js?v=20260605p3n"></script>
+<script src="/static/js/reward/paint_sandbox.js?v=20260605p3n"></script>
+{% endblock %}

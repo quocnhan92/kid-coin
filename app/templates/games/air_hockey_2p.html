@@ -1,31 +1,34 @@
 {% extends "games/reward_shell.html" %}
 {% from "games/_reward_guide.html" import dual_guide %}
+{% from "games/_coop_touch.html" import coop_paddle_zones %}
 {% block page_title %}Air Hockey 2P{% endblock %}
 {% block game_id %}air_hockey_2p{% endblock %}
 {% block game_title %}🏒 Air Hockey 2P · Khúc côn cầu{% endblock %}
 {% block game_subtitle %}Fast puck action · Đánh puck nhanh{% endblock %}
 {% block game_body %}
-<div class="rg-canvas-wrap">
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
   <canvas id="ah-canvas" width="640" height="400"></canvas>
 </div>
-<div class="rg-coop-keys">
+<div class="rg-coop-keys rg-coop-keys-desktop">
   <span><strong>Green / Xanh lá:</strong> W / S</span>
   <span><strong>Blue / Xanh dương:</strong> ↑ / ↓</span>
 </div>
+{{ coop_paddle_zones('ah-zone-l', 'ah-zone-r') }}
 {{ dual_guide([
   "Slide your mallet to hit the puck into the opponent's goal.",
   "<strong>Green (left)</strong>: <strong>W</strong> / <strong>S</strong>.",
   "<strong>Blue (right)</strong>: <strong>↑</strong> / <strong>↓</strong>.",
   "The puck bounces off walls and mallets — aim angles to score.",
-  "Score when the puck crosses the left or right edge behind the goal line.",
+  "On <strong>phone</strong>: use the slider below — watch the puck on the court, not your finger.",
 ], [
   "Di chuyển vợt để đánh puck vào khung thành đối phương.",
   "<strong>Xanh lá (trái)</strong>: <strong>W</strong> / <strong>S</strong>.",
   "<strong>Xanh dương (phải)</strong>: <strong>↑</strong> / <strong>↓</strong>.",
   "Puck nảy tường và vợt — tính góc để ghi bàn.",
-  "Ghi điểm khi puck vượt mép trái hoặc phải (phía sau vợt đối thủ).",
+  "Trên <strong>điện thoại</strong>: kéo thanh bên dưới — nhìn puck trên sân, không che màn hình.",
 ]) }}
 {% endblock %}
 {% block game_scripts %}
-<script src="/static/js/reward/air_hockey_2p.js?v=20260605p2"></script>
+<script src="/static/js/reward/coop_touch.js?v=20260605touch2"></script>
+<script src="/static/js/reward/air_hockey_2p.js?v=20260605touch2"></script>
 {% endblock %}

@@ -96,6 +96,35 @@
 
   document.addEventListener('keydown', (e) => { keys[e.code] = true; });
   document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+  function clampMallet(m, isLeft) {
+    if (isLeft) {
+      m.x = Math.max(40, Math.min(W / 2 - 24, m.x));
+    } else {
+      m.x = Math.max(W / 2 + 24, Math.min(W - 40, m.x));
+    }
+    m.y = Math.max(40, Math.min(H - 40, m.y));
+  }
+
+  function bindTouch() {
+    const CT = window.RewardCoopTouch;
+    if (!CT?.setupTouchUi()) return;
+    const zL = document.getElementById('ah-zone-l');
+    const zR = document.getElementById('ah-zone-r');
+    if (zL) {
+      CT.bindTouchDrag(zL, (ratio) => {
+        malletL.y = 40 + ratio * (H - 80);
+        clampMallet(malletL, true);
+      });
+    }
+    if (zR) {
+      CT.bindTouchDrag(zR, (ratio) => {
+        malletR.y = 40 + ratio * (H - 80);
+        clampMallet(malletR, false);
+      });
+    }
+  }
+  bindTouch();
   resetPuck(true);
   requestAnimationFrame(step);
 

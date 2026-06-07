@@ -502,9 +502,11 @@ def _register_reward_play_routes() -> None:
 def _register_reward_stub_routes() -> None:
     from app.data.reward_playground_catalog import REWARD_GAMES
 
+    skip = _REWARD_ROUTES_REGISTERED | frozenset(REWARD_PLAY_TEMPLATES.keys())
+
     for game in REWARD_GAMES:
         route = game["route"]
-        if route in _REWARD_ROUTES_REGISTERED:
+        if route in skip:
             continue
 
         async def handler(request: Request, g=game):
@@ -521,6 +523,7 @@ def _register_reward_stub_routes() -> None:
                     "game_title": g["title"],
                     "game_emoji": g["emoji"],
                     "game_desc": g["desc_en"],
+                    "rollout_status": g.get("rollout_status", "draft"),
                 },
             )
 
@@ -535,6 +538,29 @@ def _register_reward_stub_routes() -> None:
 
 
 _register_reward_play_routes()
+
+
+@app.get("/game/rhythm-trainer", response_class=HTMLResponse, name="reward_play_rhythm_trainer")
+async def reward_rhythm_trainer(request: Request):
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
+    return templates.TemplateResponse(request, "games/rhythm_trainer.html")
+
+
+@app.get("/game/paint-sandbox", response_class=HTMLResponse, name="reward_play_paint_sandbox")
+async def reward_paint_sandbox(request: Request):
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
+    return templates.TemplateResponse(request, "games/paint_sandbox.html")
+
+
+_REWARD_ROUTES_REGISTERED.update({"/game/rhythm-trainer", "/game/paint-sandbox"})
 _register_reward_stub_routes()
 
 
@@ -589,4 +615,6 @@ async def sitemap_xml():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

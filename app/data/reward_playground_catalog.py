@@ -253,7 +253,7 @@ REWARD_GAMES: List[Dict[str, Any]] = [
         desc_vi="Chạm theo nhịp — mini game âm nhạc",
         rule_key="rhythm_trainer",
         genre="music",
-        rollout_status=ROLLout_DRAFT,
+        rollout_status=ROLLout_BETA,
     ),
     _g(
         id="paint_sandbox",
@@ -266,7 +266,7 @@ REWARD_GAMES: List[Dict[str, Any]] = [
         desc_vi="Vẽ và nguệch ngoạc tự do",
         rule_key="paint_sandbox",
         genre="creative",
-        rollout_status=ROLLout_DRAFT,
+        rollout_status=ROLLout_BETA,
     ),
 ]
 

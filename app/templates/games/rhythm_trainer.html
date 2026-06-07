@@ -1,0 +1,34 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Rhythm Trainer{% endblock %}
+{% block game_id %}rhythm_trainer{% endblock %}
+{% block game_title %}🎵 Rhythm Trainer{% endblock %}
+{% block game_subtitle %}Tap to the beat · Chạm theo nhịp{% endblock %}
+{% block game_body %}
+<div class="rg-rhythm-wrap">
+  <canvas id="rhythm-canvas" width="360" height="420"></canvas>
+  <div class="rg-rhythm-keys" id="rhythm-keys">
+    <button type="button" class="rg-rhythm-key" data-lane="0"><span class="rg-note-glyph">♩</span><span>Do · A</span></button>
+    <button type="button" class="rg-rhythm-key" data-lane="1"><span class="rg-note-glyph">♩</span><span>Re · S</span></button>
+    <button type="button" class="rg-rhythm-key" data-lane="2"><span class="rg-note-glyph">♩</span><span>Mi · D</span></button>
+    <button type="button" class="rg-rhythm-key" data-lane="3"><span class="rg-note-glyph">♩</span><span>Fa · F</span></button>
+  </div>
+</div>
+{{ dual_guide([
+  "Notes are <strong>quarter ♩</strong> and <strong>eighth ♪</strong> shapes with pitches Do Re Mi Fa.",
+  "Use keys <strong>A S D F</strong> or tap the buttons below the canvas.",
+  "<strong>Perfect</strong> (+100) · <strong>Good</strong> (+50) · <strong>Miss</strong> loses a heart.",
+  "Build a <strong>combo</strong> for bonus points. Finish the song or lose all 5 hearts.",
+  "Press ↻ or <strong>Play again</strong> to retry the same pattern.",
+], [
+  "Nốt hiển thị dạng <strong>đen ♩</strong> và <strong>móc đơn ♪</strong> theo cao độ Do Re Mi Fa.",
+  "Dùng phím <strong>A S D F</strong> hoặc chạm nút dưới màn hình.",
+  "<strong>Perfect</strong> (+100) · <strong>Good</strong> (+50) · <strong>Miss</strong> mất 1 tim.",
+  "Ghép <strong>combo</strong> để cộng điểm. Hoàn thành bài hoặc hết 5 tim.",
+  "Nhấn ↻ hoặc <strong>Chơi lại</strong> để thử lại.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/music_notes.js?v=20260605p3n"></script>
+<script src="/static/js/reward/rhythm_trainer.js?v=20260605speed"></script>
+{% endblock %}

@@ -100,6 +100,24 @@
     padR.vy = keys.ArrowUp ? -6 : keys.ArrowDown ? 6 : 0;
   });
 
+  function setPadY(pad, y, h) {
+    pad.y = Math.max(0, Math.min(H - pad.h, y - pad.h / 2));
+  }
+
+  function bindTouch() {
+    const CT = window.RewardCoopTouch;
+    if (!CT?.setupTouchUi()) return;
+    const setL = (ratio) => setPadY(padL, ratio * H, H);
+    const setR = (ratio) => setPadY(padR, ratio * H, H);
+    const zL = document.getElementById('pong-zone-l');
+    const zR = document.getElementById('pong-zone-r');
+    if (zL) CT.bindTouchDrag(zL, setL);
+    if (zR) CT.bindTouchDrag(zR, setR);
+    padL.vy = 0;
+    padR.vy = 0;
+  }
+  bindTouch();
+
   resetBall(Math.random() > 0.5);
   requestAnimationFrame(step);
 
