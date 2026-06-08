@@ -1,0 +1,30 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% from "games/_coop_touch.html" import coop_paddle_zones %}
+{% block page_title %}Star Catch 2P{% endblock %}
+{% block game_id %}coop_catch_2p{% endblock %}
+{% block game_title %}⭐ Star Catch / Bắt sao{% endblock %}
+{% block game_subtitle %}Team score · Điểm chung{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
+  <canvas id="cc-canvas" width="480" height="320"></canvas>
+</div>
+{{ coop_paddle_zones('cc-zone-l', 'cc-zone-r') }}
+{{ dual_guide([
+  "Work together — <strong>Green (left)</strong> and <strong>Blue (right)</strong> catch falling stars.",
+  "Move your paddle to line up with a star as it falls.",
+  "Each caught star adds to your <strong>team score</strong>.",
+  "You lose if <strong>10 stars</strong> are missed. Try to catch as many as you can!",
+  "On phone: drag the slider <strong>below</strong> — keep eyes on the stars above.",
+], [
+  "Hai người cùng chơi — <strong>Xanh lá (trái)</strong> và <strong>Xanh dương (phải)</strong> bắt sao rơi.",
+  "Di chuyển vợt để hứng sao khi sao rơi xuống.",
+  "Mỗi sao bắt được cộng vào <strong>điểm chung</strong>.",
+  "Thua nếu <strong>lỡ 10 sao</strong>. Cố bắt càng nhiều càng tốt!",
+  "Trên điện thoại: kéo thanh <strong>bên dưới</strong> — mắt nhìn sao phía trên.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/coop_touch.js?v=20260605coop10"></script>
+<script src="/static/js/reward/coop_catch_2p.js?v=20260605coop10"></script>
+{% endblock %}

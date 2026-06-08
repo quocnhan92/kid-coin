@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Tic-Tac-Toe 2P{% endblock %}
+{% block game_id %}tic_tac_toe_2p{% endblock %}
+{% block game_title %}❌⭕ Tic-Tac-Toe / Caro 3×3{% endblock %}
+{% block game_subtitle %}Quick match · Ván nhanh{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="ttt-canvas" width="300" height="300"></canvas>
+</div>
+{{ dual_guide([
+  "<strong>Green</strong> plays <strong>X</strong>, <strong>Blue</strong> plays <strong>O</strong>. Green goes first.",
+  "Tap an <strong>empty cell</strong> on the 3×3 grid to place your mark.",
+  "Get <strong>three in a row</strong> — across, down, or diagonal — to win.",
+  "If all nine cells are filled with no winner, the game is a <strong>draw</strong>.",
+  "Press ↻ to play again.",
+], [
+  "<strong>Xanh lá</strong> đánh <strong>X</strong>, <strong>Xanh dương</strong> đánh <strong>O</strong>. Xanh lá đi trước.",
+  "Chạm <strong>ô trống</strong> trên lưới 3×3 để đặt quân.",
+  "Ghép <strong>ba liên tiếp</strong> — ngang, dọc hoặc chéo — để thắng.",
+  "Hết 9 ô mà không ai thắng thì <strong>hòa</strong>.",
+  "Nhấn ↻ để chơi lại.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/tic_tac_toe_2p.js?v=20260605coop10"></script>
+{% endblock %}

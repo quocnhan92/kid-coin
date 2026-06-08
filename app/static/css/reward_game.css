@@ -597,3 +597,30 @@ body.rg-app {
   border-color: #fbbf24;
   color: #fbbf24;
 }
+
+.rg-c4-cols {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  max-width: 420px;
+  margin: 8px auto 16px;
+  padding: 0 16px;
+}
+
+.rg-c4-col {
+  min-height: 44px;
+}
+
+.rg-dg-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px 16px 16px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.rg-dg-opt {
+  font-size: 0.75rem;
+  padding: 10px 8px;
+}

@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Memory Duel 2P{% endblock %}
+{% block game_id %}memory_duel_2p{% endblock %}
+{% block game_title %}🃏 Memory Duel / Lật bài{% endblock %}
+{% block game_subtitle %}Take turns · Luân phiên{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="md-canvas" width="320" height="320"></canvas>
+</div>
+{{ dual_guide([
+  "16 cards, 8 matching pairs — players take turns.",
+  "<strong>Green</strong> goes first, then <strong>Blue</strong>.",
+  "Tap a card to flip it, then tap a second card to find a match.",
+  "Matching pair: you keep the pair and <strong>score +1</strong>, same turn continues.",
+  "No match: cards flip back and turn passes. Most pairs wins!",
+], [
+  "16 thẻ, 8 cặp giống nhau — hai người luân phiên.",
+  "<strong>Xanh lá</strong> đi trước, sau đó <strong>Xanh dương</strong>.",
+  "Chạm một thẻ để lật, rồi chạm thẻ thứ hai để tìm cặp.",
+  "Ghép đúng: giữ cặp và <strong>+1 điểm</strong>, được lật tiếp.",
+  "Sai: thẻ úp lại, đổi lượt. Ai nhiều cặp hơn thắng!",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/memory_duel_2p.js?v=20260605coop10"></script>
+{% endblock %}

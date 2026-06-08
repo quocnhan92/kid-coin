@@ -11,4 +11,9 @@
 [2026-06-05] P3 rhythm_trainer paint_sandbox beta routes canvas WebAudio vanilla draw
 [2026-06-05] music_notes.js quarter/eighth glyphs Do-Re-Mi-Fa rhythm+paint stamp mode
 [2026-06-05] main.py explicit rhythm/paint routes fix stub P1 in progress; reward_stub.html
-[2026-06-05] coop_touch.js mobile 2P pong snake air-hockey split zones dpad[2026-06-05 18:47] | .cursor/memory/worklog.md alembic/versions/012a_play_games_registry_cols.py alembic/versions/013_seed_english_curriculum_g123.py alembic/versions/017_platform_infrastructure.py alembic/versions/018_play_hub_zones.py app/schemas/play.py | commit | fix build
+[2026-06-05] coop_touch.js mobile 2P pong snake air-hockey split zones dpad
+[2026-06-05] 10 co-op 2P games catalog routes JS templates co_op section[2026-06-05 18:47] | .cursor/memory/worklog.md alembic/versions/012a_play_games_registry_cols.py alembic/versions/013_seed_english_curriculum_g123.py alembic/versions/017_platform_infrastructure.py alembic/versions/018_play_hub_zones.py app/schemas/play.py | commit | fix build
+[2026-06-07 07:08] | .cursor/memory/worklog.md app/data/reward_playground_catalog.py app/static/css/reward_game.css app/static/js/reward/air_hockey_2p.js app/static/js/reward/coop_touch.js app/static/js/reward/music_notes.js app/static/js/reward/paint_sandbox.js app/static/js/reward/pong_2p.js app/static/js/reward/rhythm_trainer.js app/static/js/reward/snake_2p.js app/templates/games/_coop_touch.html app/templates/games/air_hockey_2p.html app/templates/games/paint_sandbox.html app/templates/games/pong_2p.html app/templates/games/reward_stub.html app/templates/games/rhythm_trainer.html app/templates/games/snake_2p.html main.py | commit | tinh chinh game funy
+[2026-06-08] english_shooter_vocab.html vocab.js vocab.css main.py hub | add | Vocab Shooter mode /game/english-shooter/vocab learning pace
+[2026-06-08] vocab.js english_shooter_vocab.html | add | TTS đọc câu hỏi VI + từ EN khi bắn trúng
+[2026-06-08] english_shooter_lily.html lily.js lily.css main.py hub | add | Lily Bakery/Fashion + TTS /game/english-shooter/lily

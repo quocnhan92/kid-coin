@@ -190,6 +190,156 @@ REWARD_GAMES: List[Dict[str, Any]] = [
         rollout_status=ROLLout_BETA,
     ),
     _g(
+        id="connect4_2p",
+        title="Connect Four",
+        title_vi="Xếp 4",
+        emoji="🔴",
+        route="/game/connect4-2p",
+        color="red",
+        desc_en="Drop four in a row — quick family match.",
+        desc_vi="Xếp 4 quân liên tiếp — ván nhanh",
+        rule_key="connect4_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="tic_tac_toe_2p",
+        title="Tic-Tac-Toe",
+        title_vi="Caro 3×3",
+        emoji="❌",
+        route="/game/tic-tac-toe-2p",
+        color="amber",
+        desc_en="Classic 3×3 grid — X and O.",
+        desc_vi="Caro 3×3 cổ điển",
+        rule_key="tic_tac_toe_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="coop_catch_2p",
+        title="Star Catch",
+        title_vi="Bắt sao cùng nhau",
+        emoji="⭐",
+        route="/game/coop-catch-2p",
+        color="yellow",
+        desc_en="Catch falling stars together — shared score.",
+        desc_vi="Bắt sao rơi cùng nhau — điểm chung",
+        rule_key="coop_catch_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="memory_duel_2p",
+        title="Memory Duel",
+        title_vi="Lật bài đối đầu",
+        emoji="🃏",
+        route="/game/memory-duel-2p",
+        color="cyan",
+        desc_en="Flip pairs — most matches wins.",
+        desc_vi="Lật cặp bài — ai nhiều cặp hơn thắng",
+        rule_key="memory_duel_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="bubble_pop_2p",
+        title="Bubble Pop",
+        title_vi="Bong bóng 2 người",
+        emoji="🫧",
+        route="/game/bubble-pop-2p",
+        color="sky",
+        desc_en="Pop your color bubbles in 60 seconds.",
+        desc_vi="Chạm bong bóng màu mình trong 60 giây",
+        rule_key="bubble_pop_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="checkers_lite_2p",
+        title="Checkers Lite",
+        title_vi="Cờ đam 6×6",
+        emoji="♟️",
+        route="/game/checkers-lite-2p",
+        color="orange",
+        desc_en="Small checkers board — jump and win.",
+        desc_vi="Cờ đam bàn nhỏ — nhảy ăn quân",
+        rule_key="checkers_lite_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="maze_race_2p",
+        title="Maze Race",
+        title_vi="Đua mê cung",
+        emoji="🌀",
+        route="/game/maze-race-2p",
+        color="purple",
+        desc_en="Race side-by-side mazes to the exit.",
+        desc_vi="Đua mê cung song song về đích",
+        rule_key="maze_race_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="draw_guess_2p",
+        title="Draw & Guess",
+        title_vi="Vẽ đoán chữ",
+        emoji="✏️",
+        route="/game/draw-guess-2p",
+        color="pink",
+        desc_en="One draws, one guesses EN/VI words.",
+        desc_vi="Một vẽ, một đoán từ Anh-Việt",
+        rule_key="draw_guess_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="rhythm_duel_2p",
+        title="Rhythm Duel",
+        title_vi="Chạm nhịp đối đầu",
+        emoji="🎵",
+        route="/game/rhythm-duel-2p",
+        color="violet",
+        desc_en="Tap notes — higher score wins.",
+        desc_vi="Chạm đúng nốt — điểm cao hơn thắng",
+        rule_key="rhythm_duel_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="gomoku_lite_2p",
+        title="Gomoku Lite",
+        title_vi="Caro 5 (9×9)",
+        emoji="⚫",
+        route="/game/gomoku-lite-2p",
+        color="stone",
+        desc_en="Five in a row on a 9×9 board.",
+        desc_vi="Năm quân liên tiếp trên bàn 9×9",
+        rule_key="gomoku_lite_2p",
+        genre="co_op",
+        player_mode="local_2p",
+        co_op_parent=True,
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
         id="ohh1",
         title="0h h1",
         title_vi="0h h1",
@@ -283,7 +433,12 @@ REWARD_SECTIONS: List[Dict[str, Any]] = [
         "key": "co_op",
         "title_en": "Play with parents",
         "title_vi": "Chơi cùng bố mẹ",
-        "game_ids": ["pong_2p", "snake_2p", "air_hockey_2p"],
+        "game_ids": [
+            "pong_2p", "snake_2p", "air_hockey_2p",
+            "connect4_2p", "tic_tac_toe_2p", "coop_catch_2p", "memory_duel_2p",
+            "bubble_pop_2p", "checkers_lite_2p", "maze_race_2p", "draw_guess_2p",
+            "rhythm_duel_2p", "gomoku_lite_2p",
+        ],
         "section_flag": "play.reward.co_op_hub",
     },
     {
@@ -350,6 +505,46 @@ def _rule_air_hockey_2p(m: Dict[str, Any]) -> bool:
     return m.get("english_themes_done", 0) >= 1
 
 
+def _rule_connect4_2p(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 1
+
+
+def _rule_tic_tac_toe_2p(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 1
+
+
+def _rule_coop_catch_2p(m: Dict[str, Any]) -> bool:
+    return m.get("english_themes_done", 0) >= 1
+
+
+def _rule_memory_duel_2p(m: Dict[str, Any]) -> bool:
+    return m.get("english_themes_done", 0) >= 1
+
+
+def _rule_bubble_pop_2p(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 2
+
+
+def _rule_checkers_lite_2p(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 2
+
+
+def _rule_maze_race_2p(m: Dict[str, Any]) -> bool:
+    return m.get("math_sessions_3star", 0) >= 1 or m.get("english_themes_done", 0) >= 2
+
+
+def _rule_draw_guess_2p(m: Dict[str, Any]) -> bool:
+    return m.get("english_themes_done", 0) >= 2 or m.get("skills_mastered_count", 0) >= 2
+
+
+def _rule_rhythm_duel_2p(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 3
+
+
+def _rule_gomoku_lite_2p(m: Dict[str, Any]) -> bool:
+    return m.get("avg_mastery_score", 0) >= 0.5
+
+
 def _rule_ohh1(m: Dict[str, Any]) -> bool:
     return m.get("skills_mastered_count", 0) >= 3
 
@@ -385,6 +580,16 @@ RULES: Dict[str, RewardCheck] = {
     "snake_2p": _rule_snake_2p,
     "minesweeper": _rule_minesweeper,
     "air_hockey_2p": _rule_air_hockey_2p,
+    "connect4_2p": _rule_connect4_2p,
+    "tic_tac_toe_2p": _rule_tic_tac_toe_2p,
+    "coop_catch_2p": _rule_coop_catch_2p,
+    "memory_duel_2p": _rule_memory_duel_2p,
+    "bubble_pop_2p": _rule_bubble_pop_2p,
+    "checkers_lite_2p": _rule_checkers_lite_2p,
+    "maze_race_2p": _rule_maze_race_2p,
+    "draw_guess_2p": _rule_draw_guess_2p,
+    "rhythm_duel_2p": _rule_rhythm_duel_2p,
+    "gomoku_lite_2p": _rule_gomoku_lite_2p,
     "ohh1": _rule_ohh1,
     "ohn0": _rule_ohn0,
     "reversi": _rule_reversi,
@@ -404,6 +609,16 @@ RULE_HINTS: Dict[str, str] = {
     "snake_2p": "1 mastery skill ≥70%",
     "minesweeper": "1 Math session ★★★",
     "air_hockey_2p": "1 English theme completed",
+    "connect4_2p": "1 mastery skill ≥70%",
+    "tic_tac_toe_2p": "1 mastery skill ≥70%",
+    "coop_catch_2p": "1 English theme completed",
+    "memory_duel_2p": "1 English theme completed",
+    "bubble_pop_2p": "2 mastery skills ≥70%",
+    "checkers_lite_2p": "2 mastery skills ≥70%",
+    "maze_race_2p": "1 Math ★★★ OR 2 English themes",
+    "draw_guess_2p": "2 English themes OR 2 mastery skills",
+    "rhythm_duel_2p": "3 mastery skills ≥70%",
+    "gomoku_lite_2p": "Average mastery ≥50%",
     "ohh1": "3 mastery skills ≥70%",
     "ohn0": "3 mastery skills ≥70%",
     "reversi": "Average mastery score ≥50%",

@@ -23,6 +23,16 @@ REWARD_GAME_PATHS = {
     "/game/tower-defense": "tower_defense_lite",
     "/game/rhythm-trainer": "rhythm_trainer",
     "/game/paint-sandbox": "paint_sandbox",
+    "/game/connect4-2p": "connect4_2p",
+    "/game/tic-tac-toe-2p": "tic_tac_toe_2p",
+    "/game/coop-catch-2p": "coop_catch_2p",
+    "/game/memory-duel-2p": "memory_duel_2p",
+    "/game/bubble-pop-2p": "bubble_pop_2p",
+    "/game/checkers-lite-2p": "checkers_lite_2p",
+    "/game/maze-race-2p": "maze_race_2p",
+    "/game/draw-guess-2p": "draw_guess_2p",
+    "/game/rhythm-duel-2p": "rhythm_duel_2p",
+    "/game/gomoku-lite-2p": "gomoku_lite_2p",
 }
 
 

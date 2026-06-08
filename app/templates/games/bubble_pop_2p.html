@@ -1,0 +1,28 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Bubble Pop 2P{% endblock %}
+{% block game_id %}bubble_pop_2p{% endblock %}
+{% block game_title %}🫧 Bubble Pop / Bong bóng{% endblock %}
+{% block game_subtitle %}60 seconds · 60 giây{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
+  <canvas id="bp-canvas" width="480" height="360"></canvas>
+</div>
+<p class="rg-coop-touch-title">Tap your half / Chạm nửa màn của bạn</p>
+{{ dual_guide([
+  "<strong>60-second</strong> challenge — Green on the left, Blue on the right.",
+  "Tap bubbles in <strong>your color</strong> on your half of the screen.",
+  "Each pop = <strong>+1 point</strong>. Wrong-side bubbles cannot be popped.",
+  "When time runs out, higher score wins (or draw if tied).",
+  "Watch the timer in the HUD.",
+], [
+  "Thử thách <strong>60 giây</strong> — Xanh lá bên trái, Xanh dương bên phải.",
+  "Chạm bong bóng <strong>đúng màu</strong> trên nửa màn hình của bạn.",
+  "Mỗi bong bóng nổ = <strong>+1 điểm</strong>. Không chạm bong bóng đối phương.",
+  "Hết giờ: ai điểm cao hơn thắng (bằng điểm thì hòa).",
+  "Theo dõi đồng hồ trên HUD.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/bubble_pop_2p.js?v=20260605coop10"></script>
+{% endblock %}

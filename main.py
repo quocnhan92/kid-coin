@@ -433,6 +433,16 @@ async def game_english_shooter_hub(request: Request):
     """English Shooter — hub chọn chế độ"""
     return templates.TemplateResponse(request, "games/english_shooter_hub.html")
 
+@app.get("/game/english-shooter/vocab", response_class=HTMLResponse)
+async def game_english_shooter_vocab(request: Request):
+    """English Shooter — Vocab Shooter (bắn từ vựng + mind map)"""
+    return templates.TemplateResponse(request, "games/english_shooter_vocab.html")
+
+@app.get("/game/english-shooter/lily", response_class=HTMLResponse)
+async def game_english_shooter_lily(request: Request):
+    """English Shooter — Lily Bakery & Fashion (kéo từ vựng)"""
+    return templates.TemplateResponse(request, "games/english_shooter_lily.html")
+
 @app.get("/game/english-shooter/prairie", response_class=HTMLResponse)
 async def game_english_shooter_prairie(request: Request):
     """English Shooter — Thảo nguyên (từ vựng)"""
@@ -472,6 +482,16 @@ REWARD_PLAY_TEMPLATES = {
     "/game/ohn0": "games/ohn0.html",
     "/game/reversi": "games/reversi.html",
     "/game/tower-defense": "games/tower_defense_lite.html",
+    "/game/connect4-2p": "games/connect4_2p.html",
+    "/game/tic-tac-toe-2p": "games/tic_tac_toe_2p.html",
+    "/game/coop-catch-2p": "games/coop_catch_2p.html",
+    "/game/memory-duel-2p": "games/memory_duel_2p.html",
+    "/game/bubble-pop-2p": "games/bubble_pop_2p.html",
+    "/game/checkers-lite-2p": "games/checkers_lite_2p.html",
+    "/game/maze-race-2p": "games/maze_race_2p.html",
+    "/game/draw-guess-2p": "games/draw_guess_2p.html",
+    "/game/rhythm-duel-2p": "games/rhythm_duel_2p.html",
+    "/game/gomoku-lite-2p": "games/gomoku_lite_2p.html",
 }
 
 

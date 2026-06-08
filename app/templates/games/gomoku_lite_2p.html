@@ -1,0 +1,28 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Gomoku Lite 2P{% endblock %}
+{% block game_id %}gomoku_lite_2p{% endblock %}
+{% block game_title %}⚫ Gomoku / Caro 5{% endblock %}
+{% block game_subtitle %}9×9 · Five in a row{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="gm-canvas" width="360" height="360"></canvas>
+</div>
+<button type="button" id="gm-undo" class="rg-btn">Undo 1 move / Hoàn 1 nước</button>
+{{ dual_guide([
+  "Place stones on a <strong>9×9</strong> board — <strong>Green</strong> first, then <strong>Blue</strong>.",
+  "Tap an empty intersection to place your stone.",
+  "First to get <strong>five stones in a row</strong> (any direction) wins.",
+  "Use <strong>Undo 1 move</strong> once per game if parent helps a young child.",
+  "Block your opponent while building your own line!",
+], [
+  "Đặt quân trên bàn <strong>9×9</strong> — <strong>Xanh lá</strong> trước, rồi <strong>Xanh dương</strong>.",
+  "Chạm giao điểm trống để đặt quân.",
+  "Ai ghép <strong>năm quân liên tiếp</strong> (mọi hướng) trước thì thắng.",
+  "Dùng <strong>Hoàn 1 nước</strong> một lần/ván nếu bố mẹ kèm con nhỏ.",
+  "Vừa chặn đối phương vừa tạo hàng của mình!",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/gomoku_lite_2p.js?v=20260605coop10"></script>
+{% endblock %}

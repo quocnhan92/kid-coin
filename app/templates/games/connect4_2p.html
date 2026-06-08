@@ -1,0 +1,28 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Connect Four 2P{% endblock %}
+{% block game_id %}connect4_2p{% endblock %}
+{% block game_title %}🔴 Connect Four / Xếp 4{% endblock %}
+{% block game_subtitle %}Drop discs · Thả quân{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
+  <canvas id="c4-canvas" width="420" height="360"></canvas>
+</div>
+<div id="c4-cols" class="rg-c4-cols"></div>
+{{ dual_guide([
+  "Two players take turns — <strong>Green</strong> first, then <strong>Blue</strong>.",
+  "Tap a <strong>column button (1–7)</strong> below to drop your disc.",
+  "Discs fall to the lowest empty slot in that column.",
+  "Connect <strong>four discs in a row</strong> — horizontal, vertical, or diagonal — to win.",
+  "On phone: watch the board above; tap columns below.",
+], [
+  "Hai người luân phiên — <strong>Xanh lá</strong> trước, rồi <strong>Xanh dương</strong>.",
+  "Chạm <strong>nút cột (1–7)</strong> bên dưới để thả quân.",
+  "Quân rơi xuống ô trống thấp nhất trong cột đó.",
+  "Ghép <strong>bốn quân liên tiếp</strong> — ngang, dọc hoặc chéo — để thắng.",
+  "Trên điện thoại: nhìn bàn cờ phía trên; chạm cột bên dưới.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/connect4_2p.js?v=20260605coop10"></script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Rhythm Duel 2P{% endblock %}
+{% block game_id %}rhythm_duel_2p{% endblock %}
+{% block game_title %}🎵 Rhythm Duel / Chạm nhịp{% endblock %}
+{% block game_subtitle %}Score battle · So điểm{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
+  <canvas id="rd-canvas" width="360" height="360"></canvas>
+</div>
+<div class="rg-rhythm-keys" id="rd-keys">
+  <button type="button" class="rg-rhythm-key" data-lane="0">Green / Xanh lá</button>
+  <button type="button" class="rg-rhythm-key" data-lane="1">Blue / Xanh dương</button>
+</div>
+<div class="rg-coop-touch-ui rg-coop-paddle-zones" hidden>
+  <div class="rg-coop-zone rg-coop-zone-l" id="rd-zone-l"><span class="rg-coop-label">Green tap</span></div>
+  <div class="rg-coop-zone rg-coop-zone-r" id="rd-zone-r"><span class="rg-coop-label">Blue tap</span></div>
+</div>
+{{ dual_guide([
+  "Notes fall in two lanes — <strong>Green (left)</strong> and <strong>Blue (right)</strong>.",
+  "Tap your button when a note hits the <strong>yellow line</strong>.",
+  "<strong>Perfect</strong> timing = 100 pts, <strong>Good</strong> = 50 pts.",
+  "Both players play at the same time — highest score when the song ends wins.",
+  "On phone: tap your colored zone below the canvas.",
+], [
+  "Nốt rơi hai làn — <strong>Xanh lá (trái)</strong> và <strong>Xanh dương (phải)</strong>.",
+  "Chạm nút của bạn khi nốt chạm <strong>vạch vàng</strong>.",
+  "<strong>Perfect</strong> = 100 điểm, <strong>Good</strong> = 50 điểm.",
+  "Hai người chơi cùng lúc — hết bài ai điểm cao hơn thắng.",
+  "Trên điện thoại: chạm vùng màu bên dưới canvas.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/music_notes.js?v=20260605coop10"></script>
+<script src="/static/js/reward/coop_touch.js?v=20260605coop10"></script>
+<script src="/static/js/reward/rhythm_duel_2p.js?v=20260605coop10"></script>
+{% endblock %}

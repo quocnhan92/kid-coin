@@ -1,0 +1,30 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% from "games/_coop_touch.html" import coop_dpad %}
+{% block page_title %}Maze Race 2P{% endblock %}
+{% block game_id %}maze_race_2p{% endblock %}
+{% block game_title %}🌀 Maze Race / Đua mê cung{% endblock %}
+{% block game_subtitle %}First to exit · Về đích trước{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-coop-canvas-wrap">
+  <canvas id="mr-canvas" width="520" height="280"></canvas>
+</div>
+{{ coop_dpad() }}
+{{ dual_guide([
+  "Two mazes side by side — race to the <strong>gold exit</strong> first!",
+  "<strong>Green</strong> uses the left maze, <strong>Blue</strong> the right.",
+  "Keyboard: Green <strong>WASD</strong>, Blue <strong>arrow keys</strong>.",
+  "On phone: use the <strong>D-pad below</strong> — left pad for Green, right for Blue.",
+  "You cannot cross walls — find the path through the maze.",
+], [
+  "Hai mê cung song song — ai tới <strong>cửa vàng</strong> trước thắng!",
+  "<strong>Xanh lá</strong> mê cung trái, <strong>Xanh dương</strong> mê cung phải.",
+  "Bàn phím: Xanh lá <strong>WASD</strong>, Xanh dương <strong>phím mũi tên</strong>.",
+  "Trên điện thoại: dùng <strong>D-pad bên dưới</strong> — trái cho Xanh lá, phải cho Xanh dương.",
+  "Không đi xuyên tường — tìm đường trong mê cung.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/coop_touch.js?v=20260605coop10"></script>
+<script src="/static/js/reward/maze_race_2p.js?v=20260605coop10"></script>
+{% endblock %}

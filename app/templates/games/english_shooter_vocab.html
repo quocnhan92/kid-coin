@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocab Shooter — English Shooter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/english_shooter_vocab.css?v=20260608">
+</head>
+<body class="esv-app">
+
+<canvas id="stars"></canvas>
+
+<div id="game-wrap">
+  <div id="game-col">
+    <div id="hud">
+      <a href="/game/english-shooter" class="esv-back">← Modes</a>
+      <div>
+        <div class="hud-label">Score</div>
+        <div class="hud-score" id="score-el">000000</div>
+      </div>
+      <div>
+        <div class="hud-label">Lives</div>
+        <div class="hud-lives" id="lives-el"></div>
+      </div>
+      <div>
+        <div class="hud-label">Level</div>
+        <div class="hud-level" id="level-el">1</div>
+      </div>
+      <div class="hud-topic" id="topic-el">🐾 Animals</div>
+      <div>
+        <div class="hud-label">Combo</div>
+        <div class="hud-level" id="combo-el" style="color:#fbbf24">x1</div>
+      </div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="qbar">
+      <div class="q-prompt">Bắn vào từ tiếng Anh đúng nghĩa:</div>
+      <div class="q-word" id="q-word">---</div>
+      <div class="q-meaning" id="q-meaning"></div>
+    </div>
+  </div>
+  <div id="sidebar">
+    <div class="mm-title">📡 Mind Map</div>
+    <canvas id="mm-canvas" height="200"></canvas>
+    <div class="sidebar-section">
+      <h4>✅ Đã học được</h4>
+      <div class="learned-list" id="learned-list"></div>
+    </div>
+    <div class="sidebar-section" style="margin-top:auto">
+      <h4>🎯 Gợi ý</h4>
+      <div id="hint-el" style="font-size:12px;color:#d1d5db;line-height:1.6">Nhìn vào mind map để nhớ từ vựng theo nhóm!</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="start-screen">
+  <div style="font-size:56px">🚀</div>
+  <h1>VOCAB<br>SHOOTER</h1>
+  <p>Bắn vào từ tiếng Anh <strong style="color:#34d399">đúng nghĩa</strong> câu hỏi.<br>Học từ vựng qua mind map ngay khi chơi!</p>
+  <button class="btn-start" id="btn-start" type="button">BẮT ĐẦU CHƠI ▶</button>
+  <p style="font-size:13px;color:#6b7280">Di chuyển chuột/ngón tay để ngắm · Chạm/click để bắn</p>
+</div>
+
+<div class="overlay" id="over-screen" style="display:none">
+  <div style="font-size:48px">💫</div>
+  <h1>GAME OVER</h1>
+  <div class="score-big" id="final-score">0</div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-val" id="stat-correct">0</div><div class="stat-lbl">Đúng</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-learned">0</div><div class="stat-lbl">Từ đã học</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-level">1</div><div class="stat-lbl">Level</div></div>
+  </div>
+  <button class="btn-start" id="btn-restart" type="button">CHƠI LẠI 🔄</button>
+</div>
+
+<script src="/static/js/game_utils.js"></script>
+<script src="/static/js/english_shooter/vocab.js?v=20260609"></script>
+</body>
+</html>

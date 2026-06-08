@@ -1,0 +1,28 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Draw & Guess 2P{% endblock %}
+{% block game_id %}draw_guess_2p{% endblock %}
+{% block game_title %}✏️ Draw & Guess / Vẽ đoán{% endblock %}
+{% block game_subtitle %}Family fun · Vui gia đình{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="dg-canvas" width="400" height="280"></canvas>
+</div>
+<div id="dg-options" class="rg-dg-options"></div>
+{{ dual_guide([
+  "Take turns: one player <strong>draws</strong>, the other <strong>guesses</strong>.",
+  "The drawer sees the secret word — draw it so your partner can guess (no letters!).",
+  "The guesser taps one of the <strong>four word buttons</strong> below the canvas.",
+  "Correct guess = +1 point for the guesser. Wrong = drawer gets the point.",
+  "After 6 rounds, highest total score wins. Roles swap each round.",
+], [
+  "Luân phiên: một người <strong>vẽ</strong>, một người <strong>đoán</strong>.",
+  "Người vẽ biết từ bí mật — vẽ để đối phương đoán (không viết chữ!).",
+  "Người đoán chạm một trong <strong>bốn nút từ</strong> bên dưới khung vẽ.",
+  "Đoán đúng = +1 điểm cho người đoán. Sai = người vẽ được điểm.",
+  "Sau 6 vòng, tổng điểm cao hơn thắng. Đổi vai mỗi vòng.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/draw_guess_2p.js?v=20260605coop10"></script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Checkers Lite 2P{% endblock %}
+{% block game_id %}checkers_lite_2p{% endblock %}
+{% block game_title %}♟️ Checkers / Cờ đam{% endblock %}
+{% block game_subtitle %}6×6 board · Bàn nhỏ{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap">
+  <canvas id="ck-canvas" width="360" height="360"></canvas>
+</div>
+{{ dual_guide([
+  "<strong>Green</strong> pieces start at the top, <strong>Blue</strong> at the bottom.",
+  "Tap your piece, then tap a <strong>highlighted square</strong> to move diagonally forward.",
+  "Jump over an enemy piece to <strong>capture</strong> it (piece is removed).",
+  "Win by capturing <strong>all opponent pieces</strong>.",
+  "Players alternate turns — one move per turn.",
+], [
+  "Quân <strong>Xanh lá</strong> ở trên, <strong>Xanh dương</strong> ở dưới.",
+  "Chạm quân của bạn, rồi chạm <strong>ô hợp lệ</strong> để đi chéo tới trước.",
+  "Nhảy qua quân địch để <strong>ăn quân</strong> (quân bị xóa).",
+  "Thắng khi ăn hết quân đối phương.",
+  "Luân phiên — mỗi lượt một nước.",
+]) }}
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/checkers_lite_2p.js?v=20260605coop10"></script>
+{% endblock %}
