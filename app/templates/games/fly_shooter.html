@@ -1,0 +1,37 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Fly Shooter{% endblock %}
+{% block game_id %}fly_shooter{% endblock %}
+{% block game_title %}✈️ Fly Shooter{% endblock %}
+{% block game_subtitle %}Shoot the swarm · Bắn đàn ruồi{% endblock %}
+{% block hud_primary %}Score: 0{% endblock %}
+{% block hud_secondary %}Level 1 · ❤️❤️❤️{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap fs-wrap">
+  <canvas id="fs-canvas" width="360" height="520"></canvas>
+  <div id="fs-overlay" class="fs-overlay">
+    <p id="fs-overlay-msg" class="fs-overlay-msg">Tap Start · Chạm Bắt đầu</p>
+    <button type="button" id="fs-start" class="fs-btn">▶ Start / Bắt đầu</button>
+  </div>
+</div>
+{{ dual_guide([
+  "Move with <strong>← →</strong> or <strong>A/D</strong>; drag on canvas on mobile.",
+  "Bullets fire <strong>automatically</strong> — shoot the fly block above.",
+  "Dodge <strong>falling eggs</strong> 🥚 and flies that <strong>dive down</strong> 🪰.",
+  "Clear all flies to advance — <strong>10 levels</strong> get faster and tougher.",
+  "You have <strong>3 lives</strong>. Press ↻ to restart from Level 1.",
+], [
+  "Di chuyển bằng <strong>← →</strong> hoặc <strong>A/D</strong>; kéo trên màn hình (mobile).",
+  "Đạn bắn <strong>tự động</strong> — hạ đàn ruồi phía trên.",
+  "Né <strong>trứng rơi</strong> 🥚 và ruồi <strong>lao xuống</strong> 🪰.",
+  "Tiêu diệt hết ruồi để qua màn — <strong>10 level</strong> càng lúc càng khó.",
+  "Có <strong>3 mạng</strong>. Nhấn ↻ để chơi lại từ Level 1.",
+]) }}
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/fly_shooter.css?v=20260609f">
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/spaceship_sprite.js?v=20260609f"></script>
+<script src="/static/js/reward/fly_shooter.js?v=20260609f"></script>
+{% endblock %}

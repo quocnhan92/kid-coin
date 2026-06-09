@@ -581,6 +581,32 @@ async def reward_paint_sandbox(request: Request):
 
 
 _REWARD_ROUTES_REGISTERED.update({"/game/rhythm-trainer", "/game/paint-sandbox"})
+
+
+@app.get("/game/space-fly", response_class=HTMLResponse, name="reward_play_space_fly")
+async def reward_space_fly(request: Request):
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
+    return templates.TemplateResponse(request, "games/space_fly.html")
+
+
+_REWARD_ROUTES_REGISTERED.add("/game/space-fly")
+
+
+@app.get("/game/fly-shooter", response_class=HTMLResponse, name="reward_play_fly_shooter")
+async def reward_fly_shooter(request: Request):
+    from app.core.reward_route_guard import reward_route_guard
+
+    blocked = reward_route_guard(request)
+    if blocked:
+        return blocked
+    return templates.TemplateResponse(request, "games/fly_shooter.html")
+
+
+_REWARD_ROUTES_REGISTERED.add("/game/fly-shooter")
 _register_reward_stub_routes()
 
 

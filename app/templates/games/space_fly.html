@@ -1,0 +1,32 @@
+{% extends "games/reward_shell.html" %}
+{% from "games/_reward_guide.html" import dual_guide %}
+{% block page_title %}Space Fly{% endblock %}
+{% block game_id %}space_fly{% endblock %}
+{% block game_title %}🚀 Space Fly{% endblock %}
+{% block game_subtitle %}Dodge asteroids · Né thiên thạch{% endblock %}
+{% block hud_primary %}Score: 0{% endblock %}
+{% block hud_secondary %}Distance: 0m{% endblock %}
+{% block game_body %}
+<div class="rg-canvas-wrap rg-space-wrap">
+  <canvas id="space-canvas" width="360" height="520"></canvas>
+  <div id="space-tap-hint" class="rg-space-hint">Tap or drag to fly · Chạm để bay</div>
+</div>
+{{ dual_guide([
+  "Move the <strong>spaceship</strong> left and right to dodge falling asteroids.",
+  "Collect <strong>golden stars</strong> for bonus points (+25 each).",
+  "Use <strong>arrow keys</strong>, <strong>A/D</strong>, or touch/drag on the canvas.",
+  "Speed increases over time — survive as long as you can!",
+], [
+  "Di chuyển <strong>tàu vũ trụ</strong> trái/phải để né thiên thạch.",
+  "Nhặt <strong>sao vàng</strong> để cộng điểm (+25 mỗi sao).",
+  "Dùng <strong>phím mũi tên</strong>, <strong>A/D</strong>, hoặc chạm/kéo trên màn hình.",
+  "Tốc độ tăng dần — bay càng lâu càng khó!",
+]) }}
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/space_fly.css?v=20260609">
+{% endblock %}
+{% block game_scripts %}
+<script src="/static/js/reward/spaceship_sprite.js?v=20260609c"></script>
+<script src="/static/js/reward/space_fly.js?v=20260609c"></script>
+{% endblock %}

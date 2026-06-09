@@ -106,6 +106,32 @@ REWARD_GAMES: List[Dict[str, Any]] = [
         rollout_status=ROLLout_LIVE,
     ),
     _g(
+        id="space_fly",
+        title="Space Fly",
+        title_vi="Phi cơ vũ trụ",
+        emoji="🚀",
+        route="/game/space-fly",
+        color="indigo",
+        desc_en="Fly through space — dodge asteroids, grab stars.",
+        desc_vi="Bay vũ trụ — né thiên thạch, nhặt sao",
+        rule_key="space_fly",
+        genre="reflex",
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
+        id="fly_shooter",
+        title="Fly Shooter",
+        title_vi="Phi cơ diệt ruồi",
+        emoji="✈️",
+        route="/game/fly-shooter",
+        color="sky",
+        desc_en="Shoot fly swarms — dodge eggs and dive attacks.",
+        desc_vi="Bắn đàn ruồi — né trứng và ruồi lao xuống",
+        rule_key="fly_shooter",
+        genre="reflex",
+        rollout_status=ROLLout_BETA,
+    ),
+    _g(
         id="block_breaker",
         title="Block Breaker",
         title_vi="Phá gạch",
@@ -427,7 +453,7 @@ REWARD_SECTIONS: List[Dict[str, Any]] = [
         "key": "reflex",
         "title_en": "Reflex",
         "title_vi": "Phản xạ",
-        "game_ids": ["hextris", "flappy", "snake", "block_breaker"],
+        "game_ids": ["hextris", "flappy", "space_fly", "fly_shooter", "snake", "block_breaker"],
     },
     {
         "key": "co_op",
@@ -479,6 +505,14 @@ def _rule_memory(m: Dict[str, Any]) -> bool:
 
 def _rule_flappy(m: Dict[str, Any]) -> bool:
     return m.get("skills_mastered_count", 0) >= 3 or m.get("avg_mastery_score", 0) >= 0.5
+
+
+def _rule_space_fly(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 2 or m.get("english_themes_done", 0) >= 1
+
+
+def _rule_fly_shooter(m: Dict[str, Any]) -> bool:
+    return m.get("skills_mastered_count", 0) >= 2 or m.get("math_sessions_3star", 0) >= 1
 
 
 def _rule_block_breaker(m: Dict[str, Any]) -> bool:
@@ -574,6 +608,8 @@ RULES: Dict[str, RewardCheck] = {
     "2048": _rule_2048,
     "memory": _rule_memory,
     "flappy": _rule_flappy,
+    "space_fly": _rule_space_fly,
+    "fly_shooter": _rule_fly_shooter,
     "block_breaker": _rule_block_breaker,
     "hextris": _rule_hextris,
     "pong_2p": _rule_pong_2p,
@@ -603,6 +639,8 @@ RULE_HINTS: Dict[str, str] = {
     "2048": "1 Math session ★★★ OR 1 English theme",
     "memory": "2 mastery skills ≥70%",
     "flappy": "3 mastery skills OR avg mastery ≥50%",
+    "space_fly": "2 mastery skills OR 1 English theme",
+    "fly_shooter": "2 mastery skills OR 1 Math session ★★★",
     "block_breaker": "2 English themes OR 5 mastery skills",
     "hextris": "2 mastery skills ≥70%",
     "pong_2p": "1 mastery skill ≥70%",

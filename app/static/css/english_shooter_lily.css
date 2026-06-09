@@ -5,11 +5,13 @@ body.esl-app{font-family:'Nunito',sans-serif;background:#FFF5FB;color:#333}
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
 .screen.hide{display:none}
 
-#start-screen{background:linear-gradient(160deg,#FFF0F9 0%,#F0EEFF 100%)}
+#start-screen{background:linear-gradient(160deg,#FFF0F9 0%,#F0EEFF 100%);overflow-y:auto;justify-content:flex-start;padding:56px 16px 28px}
 .esl-back-start{position:absolute;top:14px;left:14px;font-size:12px;font-weight:800;color:#9D174D;text-decoration:none;padding:6px 12px;border:1.5px solid #F9A8D4;border-radius:16px;background:#fff}
 .start-title{font-size:clamp(24px,5vw,36px);font-weight:900;color:#C2185B;text-align:center;line-height:1.2;margin-bottom:6px}
 .start-sub{font-size:15px;color:#994877;margin-bottom:28px;text-align:center;padding:0 16px}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;width:480px;max-width:90vw}
+.grade-section{width:520px;max-width:92vw;margin-bottom:8px}
+.grade-label{font-size:13px;font-weight:900;color:#7C3AED;margin:14px 0 10px;letter-spacing:.3px}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-bottom:6px;width:100%}
 .mode-btn{border-radius:22px;padding:22px 18px;border:3px solid transparent;cursor:pointer;text-align:center;transition:.18s;background:#fff}
 .mode-btn:hover{transform:translateY(-4px)}
 .mode-btn.bakery{border-color:#F9A8D4;background:#FFF0F9}
@@ -21,6 +23,15 @@ body.esl-app{font-family:'Nunito',sans-serif;background:#FFF5FB;color:#333}
 .mode-btn .mb-desc{font-size:12px;margin-top:4px;line-height:1.5}
 .mode-btn.bakery .mb-desc{color:#9D174D}
 .mode-btn.fashion .mb-desc{color:#5B21B6}
+.mode-btn.grade1{border-color:#6EE7B7;background:#ECFDF5}
+.mode-btn.grade1 .mb-title{color:#047857}
+.mode-btn.grade1 .mb-desc{color:#065F46}
+.mode-btn.grade2{border-color:#93C5FD;background:#EFF6FF}
+.mode-btn.grade2 .mb-title{color:#1D4ED8}
+.mode-btn.grade2 .mb-desc{color:#1E40AF}
+.mb-grade{display:inline-block;margin-top:6px;font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.06)}
+.chip.g1-chip{background:#D1FAE5;color:#065F46;border-color:#6EE7B7}
+.chip.g2-chip{background:#DBEAFE;color:#1E40AF;border-color:#93C5FD}
 
 #game-screen{background:#FFF5FB;flex-direction:row;align-items:stretch;justify-content:stretch}
 #main-area{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;overflow:hidden}

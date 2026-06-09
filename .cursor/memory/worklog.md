@@ -17,3 +17,9 @@
 [2026-06-08] english_shooter_vocab.html vocab.js vocab.css main.py hub | add | Vocab Shooter mode /game/english-shooter/vocab learning pace
 [2026-06-08] vocab.js english_shooter_vocab.html | add | TTS đọc câu hỏi VI + từ EN khi bắn trúng
 [2026-06-08] english_shooter_lily.html lily.js lily.css main.py hub | add | Lily Bakery/Fashion + TTS /game/english-shooter/lily
+[2026-06-09] space_fly.html space_fly.js space_fly.css catalog main.py | add | Space Fly reward game phi co vu tru beta
+[2026-06-09] fly_shooter.html fly_shooter.js fly_shooter.css catalog main.py | add | Fly Shooter 5 level ban ruoi reward beta
+[2026-06-09] spaceship_sprite.js fly_shooter space_fly | update | Sprite phi thuyen arcade dep hon
+[2026-06-09] lily_vocab.js lily.js lily.html lily.css | add | 10 kich ban Lily + tu vung G1/G2 curriculum
+[2026-06-09] lily_vocab.js | fix | IIFE thieu window arg -> LilyVocab undefined man bat dau
+[2026-06-09] fly_shooter.js fly_shooter.css | update | Nen troi dem sao + 10 level kho hon
