@@ -6,7 +6,7 @@
   <title>Lily Shop — English Shooter</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/english_shooter_lily.css?v=20260609d">
+  <link rel="stylesheet" href="/static/css/english_shooter_lily.css?v=20260610">
 </head>
 <body class="esl-app">
 
@@ -27,8 +27,9 @@
     </g>
   </svg>
   <div class="start-title">Cửa Hàng Lily 🧚</div>
-  <div class="start-sub">Học từ vựng lớp 1 &amp; 2 — kéo thả cùng cô tiên Lily!</div>
+  <div class="start-sub" id="start-sub">Học từ vựng lớp 1 &amp; 2 — kéo thả cùng cô tiên Lily!</div>
   <div id="mode-sections"></div>
+  <div id="lily-unlocked-modes" class="lily-unlocked-modes hide"></div>
 </div>
 
 <div class="screen hide" id="game-screen">
@@ -44,6 +45,7 @@
 
     <div id="lily-area">
       <div id="lily-svg-wrap">
+        <div id="lily-outfit-badge" class="lily-outfit-badge" hidden></div>
         <svg width="90" height="110" viewBox="0 0 90 110" aria-hidden="true">
           <ellipse cx="45" cy="98" rx="20" ry="7" fill="#F9A8D4" opacity=".35"/>
           <g id="lily-float">
@@ -72,6 +74,8 @@
     </div>
 
     <div id="play-area">
+      <div id="combo-banner" class="combo-banner hide" aria-live="polite"></div>
+      <div id="hit-pop" class="hit-pop hide">Đúng rồi!</div>
       <div id="bakery-scene">
         <div class="drop-zone" id="drop-zone">🥣</div>
         <div id="ingredient-shelf"></div>
@@ -127,18 +131,22 @@
 </div>
 
 <div class="screen hide" id="result-screen">
-  <div class="result-stars" id="result-stars">⭐⭐⭐</div>
-  <div class="result-title" id="result-title">Tuyệt vời!</div>
-  <div class="stat-row">
-    <div class="stat-box"><div class="stat-val" id="res-score">0</div><div class="stat-lbl">Điểm</div></div>
-    <div class="stat-box"><div class="stat-val" id="res-words">0</div><div class="stat-lbl">Từ đã học</div></div>
-    <div class="stat-box"><div class="stat-val" id="res-level">1</div><div class="stat-lbl">Level</div></div>
+  <div class="lily-celebrate">
+    <div class="lily-dance" id="lily-dance">🧚</div>
+    <div class="coin-burst" id="coin-burst"></div>
+    <div class="coin-reward" id="coin-reward">+0 xu</div>
+    <p class="result-cheer" id="result-cheer">Lily vui lắm!</p>
+    <div class="result-stars" id="result-stars">⭐⭐⭐</div>
   </div>
-  <button type="button" class="play-again-btn" id="btn-play-again">Chơi lại 🌸</button>
+  <div class="result-actions">
+    <button type="button" class="play-again-btn" id="btn-play-more">Chơi thêm →</button>
+    <button type="button" class="btn-muted" id="btn-go-home">Về nhà</button>
+  </div>
 </div>
 
 <script src="/static/js/game_utils.js"></script>
-<script src="/static/js/english_shooter/lily_vocab.js?v=20260609e"></script>
-<script src="/static/js/english_shooter/lily.js?v=20260609e"></script>
+<script src="/static/js/kid_engagement.js?v=20260610"></script>
+<script src="/static/js/english_shooter/lily_vocab.js?v=20260610"></script>
+<script src="/static/js/english_shooter/lily.js?v=20260610"></script>
 </body>
 </html>

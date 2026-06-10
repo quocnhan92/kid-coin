@@ -1,6 +1,7 @@
 (function () {
   const API = '/api/v1/play/rewards';
   let skipRewardSpend = false;
+  let hideWalletUi = false;
 
   const BANNERS = {
     green: 'linear-gradient(135deg, #064e3b, #065f46)',
@@ -21,15 +22,26 @@
     fuchsia: 'linear-gradient(135deg, #4a044e, #86198f)',
   };
 
+  function shouldOnboardLily() {
+    const KE = window.KidEngagement;
+    if (!KE?.isFirstSessionDone()) return true;
+    const p = new URLSearchParams(window.location.search);
+    return p.get('onboard') === '1';
+  }
+
   function renderMetrics(m, wallet, testAll) {
     const el = document.getElementById('rp-metrics');
     if (!el) return;
+    if (hideWalletUi) {
+      el.textContent = 'Chào bé! Chọn game để chơi nhé 🎮';
+      return;
+    }
     if (testAll) {
       el.textContent = 'Test mode — all games unlocked';
       return;
     }
     if (skipRewardSpend) {
-      el.textContent = 'Free play — coin spend disabled for testing';
+      el.textContent = 'Chơi miễn phí — tận hưởng sân chơi!';
       return;
     }
     const bal = wallet ? ` · ${wallet.available_balance} coins to spend` : '';
@@ -56,7 +68,7 @@
 
   function playLabel(g) {
     if (!g.unlocked) return 'Locked';
-    if (skipRewardSpend) return 'Play (free)';
+    if (skipRewardSpend || hideWalletUi) return 'Chơi ngay';
     return `Play (${g.play_cost || 0} coins)`;
   }
 
@@ -111,8 +123,28 @@
       `<div class="rp-grid">${(games || []).map(cardHtml).join('')}</div>`;
   }
 
+  function renderStarterHub(games, container, starterIds) {
+    const byId = Object.fromEntries((games || []).map((g) => [g.id, g]));
+    const starters = (starterIds || []).map((id) => byId[id]).filter(Boolean);
+    const lilyCard = `
+      <a href="/game/english-shooter/lily?onboard=1" class="rp-feature-card">
+        <span class="rp-feature-icon">🧚</span>
+        <h2>Lily — Tiệm Bánh</h2>
+        <p>Hôm nay học: đồ ăn ngon</p>
+        <span class="rp-feature-cta">▶ Chơi ngay</span>
+        <span class="rp-feature-free">Miễn phí · không cần xu</span>
+      </a>`;
+    const arcade = starters.map(cardHtml).join('');
+    container.innerHTML = `
+      <section class="rp-onboard">
+        ${lilyCard}
+        <h3 class="rp-section-title">Thử thêm arcade</h3>
+        <div class="rp-grid">${arcade}</div>
+      </section>`;
+  }
+
   async function spendAndPlay(gameId, route, cost) {
-    if (skipRewardSpend) {
+    if (skipRewardSpend || hideWalletUi) {
       window.location.href = route;
       return;
     }
@@ -140,21 +172,38 @@
   }
 
   async function init() {
+    if (shouldOnboardLily() && !window.location.search.includes('skip_onboard')) {
+      window.location.replace('/game/english-shooter/lily?onboard=1');
+      return;
+    }
+
     const main = document.getElementById('rp-main');
     const status = document.getElementById('rp-status');
+    const hero = document.querySelector('.rp-hero');
     try {
       const res = await fetch(API, { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       skipRewardSpend = Boolean(data.skip_reward_spend);
+      hideWalletUi = Boolean(data.onboarding?.hide_wallet_ui)
+        || !window.KidEngagement?.isFirstSessionDone();
+      if (hideWalletUi && hero) hero.classList.add('rp-hero-onboard');
       renderMetrics(data.metrics, data.wallet, data.test_unlock_all);
-      if (status && data.wallet) {
-        status.textContent = `${data.unlocked_count}/${data.total_count} open · Balance ${data.wallet.available_balance}`;
-      } else if (status) {
-        status.textContent = `${data.unlocked_count}/${data.total_count} games open`;
+      if (status) {
+        if (hideWalletUi) {
+          status.textContent = 'Sân chơi đã mở — chơi thử nhé!';
+        } else if (data.wallet) {
+          status.textContent = `${data.unlocked_count}/${data.total_count} open · Balance ${data.wallet.available_balance}`;
+        } else {
+          status.textContent = `${data.unlocked_count}/${data.total_count} games open`;
+        }
       }
       if (main) {
-        renderSections(data.sections, data.games, main);
+        if (hideWalletUi && data.onboarding?.starter_game_ids?.length) {
+          renderStarterHub(data.games, main, data.onboarding.starter_game_ids);
+        } else {
+          renderSections(data.sections, data.games, main);
+        }
         bindPlayButtons(main);
       }
     } catch (e) {

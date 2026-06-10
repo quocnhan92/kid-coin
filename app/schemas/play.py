@@ -346,6 +346,13 @@ class RewardSectionOut(BaseModel):
     game_ids: List[str] = []
 
 
+class RewardOnboardingOut(BaseModel):
+    featured_route: str = "/game/english-shooter/lily"
+    first_play_free: bool = False
+    hide_wallet_ui: bool = False
+    starter_game_ids: List[str] = []
+
+
 class RewardPlaygroundResponse(BaseModel):
     test_unlock_all: bool = False
     skip_reward_spend: bool = False
@@ -356,6 +363,7 @@ class RewardPlaygroundResponse(BaseModel):
     sections: List[RewardSectionOut] = []
     unlocked_count: int = 0
     total_count: int = 0
+    onboarding: Optional[RewardOnboardingOut] = None
 
 
 class SpendRewardPlayRequest(BaseModel):

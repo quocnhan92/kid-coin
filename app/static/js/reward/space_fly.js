@@ -78,12 +78,16 @@
     playing = true;
     hint?.classList.add('hidden');
     window.RewardShell?.hideGameOver();
+    window.SpaceFlightAudio?.unlock();
+    window.SpaceFlightAudio?.startBgm();
     updateHud();
     loop();
   }
 
   function endGame() {
     playing = false;
+    window.SpaceFlightAudio?.playHurt();
+    window.SpaceFlightAudio?.stopBgm();
     cancelAnimationFrame(raf);
     const msg = `Crashed! Score: ${score} · Distance: ${Math.floor(dist)}m / Va chạm! Điểm: ${score} · ${Math.floor(dist)}m`;
     window.RewardShell?.showGameOver(msg, reset);
@@ -140,6 +144,7 @@
     pickups = pickups.filter((s) => {
       if (hitCircle(px, py, pr + 4, s.x, s.y, s.r)) {
         score += 25;
+        window.SpaceFlightAudio?.playPickup();
         updateHud();
         return false;
       }
@@ -262,10 +267,12 @@
   initBg();
   bindInput();
   draw();
+  window.SpaceFlightAudio?.mountToggle(canvas.closest('.rg-space-wrap'));
   window.RewardGame = { restart: reset };
   window.RewardShell?.pauseOnHidden(() => {
     if (!playing) return;
     playing = false;
+    window.SpaceFlightAudio?.stopBgm();
     cancelAnimationFrame(raf);
     last = 0;
   });

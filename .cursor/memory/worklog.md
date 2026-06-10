@@ -23,3 +23,11 @@
 [2026-06-09] lily_vocab.js lily.js lily.html lily.css | add | 10 kich ban Lily + tu vung G1/G2 curriculum
 [2026-06-09] lily_vocab.js | fix | IIFE thieu window arg -> LilyVocab undefined man bat dau
 [2026-06-09] fly_shooter.js fly_shooter.css | update | Nen troi dem sao + 10 level kho hon
+[2026-06-10] play_engagement_service kid_engagement lily reward_playground | add | Sprint1 onboarding free pass juice combo
+[2026-06-10] space_flight_audio.js space_fly fly_shooter | add | BGM + sfx ban/hit/nhat sao toggle
+[2026-06-10] fly_shooter space_flight_audio | polish | cartoon BGM pew/bup/boom dive return loop
+[2026-06-10] fly_shooter | add | ship boom respawn blink slowmo fly poop hazard
+[2026-06-10] fly_shooter space_flight_audio | polish | tier fly colors drops powerups louder ship boom
+[2026-06-10] fly_shooter.js | fix | 50 levels dive homing formation reset bullets up
+[2026-06-10] fly_shooter | polish | dive pacing L49 attack heart pickup 4-way ship
+[2026-06-09 19:32] | .cursor/memory/worklog.md app/data/reward_playground_catalog.py app/static/css/english_shooter_lily.css app/static/css/fly_shooter.css app/static/css/space_fly.css app/static/js/english_shooter/lily.js app/static/js/english_shooter/lily_vocab.js app/static/js/reward/fly_shooter.js app/static/js/reward/space_fly.js app/static/js/reward/spaceship_sprite.js app/templates/games/english_shooter_hub.html app/templates/games/english_shooter_lily.html app/templates/games/fly_shooter.html app/templates/games/space_fly.html main.py | commit | them kich ban game

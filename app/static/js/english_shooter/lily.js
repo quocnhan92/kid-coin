@@ -5,18 +5,23 @@
     console.error("LilyVocab failed to load — check lily_vocab.js");
     return;
   }
-  const { MODES, SECTIONS, pickCelebrate } = vocab;
+  const { MODES, SECTIONS, MODE_ORDER, pickCelebrate } = vocab;
+  const KE = window.KidEngagement;
   const lilyTips = {
     correct: ["Giỏi lắm bạn ơi! 🌸", "Bạn thông minh quá! ⭐", "Đúng rồi! Lily rất vui! 💕", "Hoàn hảo luôn! 🎉"],
     wrong: ["Chưa đúng rồi, thử lại nha! 🌼", "Bạn thử lại nhé, gần đúng rồi! 💪", "Không sao, thử thêm lần nữa! 🌸"],
   };
-  const ROUNDS_PER_GAME = 10;
+  const ROUNDS_PER_GAME = 5;
   const ITEM_SEL = ".ingredient-item,.clothing-item,.drag-item";
+  let audioCtx = null;
 
   let mode = "bakery";
   let score = 0;
   let level = 1;
   let roundCount = 0;
+  let combo = 0;
+  let correctInSession = 0;
+  let outfitLevel = 0;
   let currentWord = null;
   let currentOptions = [];
   let learnedWords = {};
@@ -28,6 +33,100 @@
   const cfg = () => MODES[mode];
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  const isOnboard = () => new URLSearchParams(location.search).get("onboard") === "1";
+
+  const ensureAudio = () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  };
+
+  const playDing = (high) => {
+    try {
+      ensureAudio();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      o.frequency.value = high ? 880 : 660;
+      g.gain.value = 0.08;
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.12);
+    } catch (_) { /* ignore */ }
+  };
+
+  const bumpCombo = () => {
+    combo += 1;
+    correctInSession += 1;
+    const banner = $("combo-banner");
+    if (!banner) return;
+    if (combo >= 5) banner.textContent = `${combo} liên tiếp — Siêu sao! ⭐`;
+    else if (combo >= 3) banner.textContent = `${combo} liên tiếp! 🔥`;
+    else banner.textContent = "";
+    banner.classList.toggle("hide", combo < 3);
+    if (combo >= 5) playDing(true);
+    else playDing(false);
+    if (navigator.vibrate) navigator.vibrate(50);
+    const pop = $("hit-pop");
+    if (pop) {
+      pop.classList.remove("hide");
+      pop.classList.add("hit-pop-show");
+      setTimeout(() => pop.classList.remove("hit-pop-show"), 320);
+    }
+    if (combo >= 5 && outfitLevel < 2) {
+      outfitLevel = 2;
+      setOutfitBadge("👩‍🍳");
+    } else if (combo >= 3 && outfitLevel < 1) {
+      outfitLevel = 1;
+      setOutfitBadge("👒");
+    }
+    lilyDance();
+  };
+
+  const resetCombo = () => {
+    combo = 0;
+    $("combo-banner")?.classList.add("hide");
+  };
+
+  const setOutfitBadge = (emoji) => {
+    const el = $("lily-outfit-badge");
+    if (!el) return;
+    el.textContent = emoji;
+    el.hidden = false;
+  };
+
+  const lilyDance = () => {
+    const wrap = $("lily-svg-wrap");
+    wrap?.classList.remove("lily-dance-anim");
+    void wrap?.offsetWidth;
+    wrap?.classList.add("lily-dance-anim");
+  };
+
+  const runCoinBurst = (amount) => {
+    const host = $("coin-burst");
+    if (!host) return;
+    host.innerHTML = "";
+    for (let i = 0; i < 10; i += 1) {
+      const c = document.createElement("span");
+      c.className = "coin-particle";
+      c.textContent = "🪙";
+      const tx = (Math.random() - 0.5) * 120;
+      const ty = -40 - Math.random() * 80;
+      c.style.setProperty("--tx", `${tx}px`);
+      c.style.setProperty("--ty", `${ty}px`);
+      c.style.animationDelay = `${Math.random() * 0.25}s`;
+      host.appendChild(c);
+    }
+    $("coin-reward").textContent = `+${amount} xu`;
+  };
+
+  const calcStars = () => {
+    if (correctInSession >= 4) return 3;
+    if (correctInSession >= 3) return 2;
+    if (correctInSession >= 1) return 1;
+    return 0;
+  };
 
   const showScreen = (id) => {
     document.querySelectorAll(".screen").forEach((s) => s.classList.add("hide"));
@@ -204,6 +303,7 @@
 
   const correctDrop = () => {
     score += 100 * level;
+    bumpCombo();
     learnedWords[currentWord.en] = currentWord;
     speakAnswer(currentWord.en);
     showToast("✨", pick(lilyTips.correct), currentWord.en, `= ${currentWord.vi}`);
@@ -216,6 +316,7 @@
   };
 
   const wrongDrop = (en) => {
+    resetCombo();
     $("lily-tip").textContent = pick(lilyTips.wrong);
     document.querySelectorAll(ITEM_SEL).forEach((el) => {
       if (el.dataset.en === en) {
@@ -301,15 +402,16 @@
   const onTouchEndFashion = (e) => touchHit(e, $("doll-drop"), handleFashionDrop);
 
   const showResult = () => {
-    const stars = score >= 800 ? "⭐⭐⭐" : score >= 400 ? "⭐⭐" : "⭐";
-    const msg = score >= 800
-      ? "Giỏi xuất sắc! Lily tự hào lắm! 🌟"
-      : score >= 400 ? "Làm tốt lắm! Cố thêm nhé! 🌸" : "Tiếp tục cố gắng nhé! 💕";
+    const starN = calcStars();
+    const stars = "⭐".repeat(starN) + "☆".repeat(3 - starN);
+    const coins = Math.max(5, correctInSession * 2 + starN * 3);
+    KE?.setModeStars(mode, starN);
+    KE?.markFirstSessionDone();
     $("result-stars").textContent = stars;
-    $("result-title").textContent = msg;
-    $("res-score").textContent = String(score);
-    $("res-words").textContent = String(Object.keys(learnedWords).length);
-    $("res-level").textContent = String(level);
+    $("result-cheer").textContent = starN >= 2 ? "Lily vui lắm! 🌟" : "Cố thêm chút nữa nhé! 🌸";
+    runCoinBurst(coins);
+    playDing(true);
+    lilyDance();
     showScreen("result-screen");
   };
 
@@ -346,8 +448,14 @@
     score = 0;
     level = 1;
     roundCount = 0;
+    combo = 0;
+    correctInSession = 0;
+    outfitLevel = 0;
     learnedWords = {};
     dollOutfit = [];
+    const ob = $("lily-outfit-badge");
+    if (ob) ob.hidden = true;
+    $("combo-banner")?.classList.add("hide");
     const c = cfg();
     showScreen("game-screen");
     $("hud-topic").textContent = c.hud;
@@ -360,29 +468,69 @@
     nextRound();
   };
 
-  const buildModeButtons = () => {
+  const renderNextWorldPreview = () => {
+    const el = $("lily-next-world");
+    if (!el || !KE) return;
+    const nextId = KE.nextLockedMode();
+    if (!nextId || KE.isModeUnlocked(nextId)) {
+      el.innerHTML = "";
+      return;
+    }
+    const m = MODES[nextId];
+    el.innerHTML = `
+      <p class="lily-next-label">Thế giới tiếp theo</p>
+      <div class="lily-next-card locked">
+        <span>${m?.icon || "🔒"}</span> ${m?.title || nextId}
+        <small>Mở sau 3⭐ ở màn trước</small>
+      </div>`;
+  };
+
+  const buildStartScreen = () => {
     const root = $("mode-sections");
+    const extra = $("lily-unlocked-modes");
     if (!root) return;
-    root.innerHTML = SECTIONS.map((sec) => {
-      const btns = Object.entries(MODES)
-        .filter(([, m]) => m.section === sec.key)
-        .map(([id, m]) => `
-          <button type="button" class="mode-btn ${m.btnClass}" data-mode="${id}">
-            <span class="mb-icon">${m.icon}</span>
-            <div class="mb-title">${m.title}</div>
-            <div class="mb-desc">${m.desc}</div>
-            ${m.grade ? `<span class="mb-grade">Lớp ${m.grade}</span>` : ""}
-          </button>`).join("");
-      return `<div class="grade-section"><div class="grade-label">${sec.label}</div><div class="mode-grid">${btns}</div></div>`;
-    }).join("");
-    root.querySelectorAll(".mode-btn").forEach((btn) => {
+    const simple = isOnboard() || !KE?.isFirstSessionDone();
+    if (simple) {
+      root.innerHTML = `
+        <div class="lily-feature-card">
+          <div class="lily-feature-icon">🍰</div>
+          <h2 class="lily-feature-title">Tiệm Bánh Lily</h2>
+          <p class="lily-feature-topic">Hôm nay học: nguyên liệu làm bánh</p>
+          <button type="button" class="lily-play-hero" id="btn-hero-play">▶ Chơi ngay</button>
+          <p class="lily-feature-free">Miễn phí · 5 câu vui thôi!</p>
+        </div>
+        <div id="lily-next-world" class="lily-next-world"></div>`;
+      $("btn-hero-play")?.addEventListener("click", () => startGame("bakery"));
+      extra?.classList.add("hide");
+      renderNextWorldPreview();
+      return;
+    }
+    root.innerHTML = "";
+    extra?.classList.remove("hide");
+    const unlocked = (MODE_ORDER || []).filter((id) => KE?.isModeUnlocked(id));
+    extra.innerHTML = `
+      <p class="grade-label">Chọn thế giới</p>
+      <div class="mode-grid">${unlocked.map((id) => {
+        const m = MODES[id];
+        return `<button type="button" class="mode-btn ${m.btnClass}" data-mode="${id}">
+          <span class="mb-icon">${m.icon}</span>
+          <div class="mb-title">${m.title}</div>
+          <span class="mb-grade">${"⭐".repeat(KE.getModeStars(id))}</span>
+        </button>`;
+      }).join("")}</div>`;
+    extra.querySelectorAll(".mode-btn").forEach((btn) => {
       btn.addEventListener("click", () => startGame(btn.dataset.mode));
     });
+    renderNextWorldPreview();
   };
 
   $("btn-mode-switch")?.addEventListener("click", goHome);
   $("btn-next")?.addEventListener("click", nextRound);
-  $("btn-play-again")?.addEventListener("click", goHome);
+  $("btn-play-more")?.addEventListener("click", () => startGame(mode));
+  $("btn-go-home")?.addEventListener("click", () => {
+    if (KE?.isFirstSessionDone()) window.location.href = "/game/rewards?skip_onboard=1";
+    else goHome();
+  });
   window.addEventListener("resize", drawMindMap);
-  buildModeButtons();
+  buildStartScreen();
 })();

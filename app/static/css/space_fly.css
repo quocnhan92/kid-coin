@@ -2,6 +2,32 @@
   position: relative;
 }
 
+.sf-audio-bar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 4;
+}
+
+.sf-audio-btn {
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  touch-action: manipulation;
+}
+
+.sf-audio-btn.off {
+  opacity: 0.45;
+}
+
 .rg-space-wrap canvas {
   background: radial-gradient(ellipse at 50% 0%, #1a1a4e 0%, #050510 70%);
   box-shadow: 0 0 24px rgba(99, 102, 241, 0.25);

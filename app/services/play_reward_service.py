@@ -20,6 +20,11 @@ from app.data.reward_playground_catalog import (
     VISIBLE_ROLLOUT,
     reward_flag_key,
 )
+from app.services.play_engagement_service import (
+    FIRST_PLAY_FREE_GAME_IDS,
+    is_first_play_free_eligible,
+    onboarding_payload,
+)
 from app.services.play_learning_metrics import english_extra, math_metrics
 from app.services.play_mastery_service import mastery_metrics
 from app.services.play_wallet_service import get_or_create_wallet, wallet_snapshot
@@ -106,13 +111,19 @@ def _build_game_item(
     *,
     test_all: bool,
     metrics: Optional[Dict[str, Any]],
+    first_play_free: bool = False,
 ) -> Dict[str, Any]:
     rule_key = g["rule_key"]
+    unlocked = _game_unlocked(g, test_all=test_all, metrics=metrics)
+    cost = REWARD_PLAY_COST.get(g["id"], 0)
+    if first_play_free and g["id"] in FIRST_PLAY_FREE_GAME_IDS:
+        unlocked = True
+        cost = 0
     return {
         **g,
-        "unlocked": _game_unlocked(g, test_all=test_all, metrics=metrics),
+        "unlocked": unlocked,
         "unlock_hint": RULE_HINTS.get(rule_key, ""),
-        "play_cost": REWARD_PLAY_COST.get(g["id"], 0),
+        "play_cost": cost,
     }
 
 
@@ -151,7 +162,11 @@ def build_reward_playground(
     test_all = is_enabled(db, "play.test_unlock_all")
     allow_draft = include_draft and test_all
     metrics = learning_metrics(db, user_id) if user_id else None
+    first_free = is_first_play_free_eligible(db, user_id)
+    wallet = _safe_wallet(db, user_id) if user_id else None
+    from app.core.config import settings
 
+    skip_spend = settings.PLAY_SKIP_REWARD_SPEND or test_all or first_free
     games: List[Dict[str, Any]] = []
     for g in REWARD_GAMES:
         if genre and g.get("genre") != genre:
@@ -164,13 +179,12 @@ def build_reward_playground(
             continue
         if not is_reward_game_flag_enabled(db, g):
             continue
-        games.append(_build_game_item(g, test_all=test_all, metrics=metrics))
-
+        games.append(
+            _build_game_item(
+                g, test_all=test_all, metrics=metrics, first_play_free=first_free
+            )
+        )
     visible_ids = [g["id"] for g in games]
-    wallet = _safe_wallet(db, user_id) if user_id else None
-    from app.core.config import settings
-
-    skip_spend = settings.PLAY_SKIP_REWARD_SPEND or test_all
     return {
         "test_unlock_all": test_all,
         "skip_reward_spend": skip_spend,
@@ -181,6 +195,7 @@ def build_reward_playground(
         "sections": _build_sections(visible_ids, db),
         "unlocked_count": sum(1 for x in games if x["unlocked"]),
         "total_count": len(games),
+        "onboarding": onboarding_payload(db, user_id),
     }
 
 
@@ -205,7 +220,11 @@ def validate_reward_play(
 
     metrics = learning_metrics(db, user_id)
     if not _game_unlocked(g, test_all=test_all, metrics=metrics):
-        return False, "Game locked — keep learning to unlock", 403
+        if not (
+            is_first_play_free_eligible(db, user_id)
+            and reward_game_id in FIRST_PLAY_FREE_GAME_IDS
+        ):
+            return False, "Game locked — keep learning to unlock", 403
 
     cost = REWARD_PLAY_COST.get(reward_game_id)
     if cost is None:

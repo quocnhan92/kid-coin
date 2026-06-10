@@ -147,6 +147,21 @@ def debit_reward_play(
     wallet = get_or_create_wallet(db, user_id)
     if settings.PLAY_SKIP_REWARD_SPEND:
         return True, "ok (free play)", wallet_snapshot(wallet)
+    from app.services.play_engagement_service import is_first_play_free_eligible
+
+    if is_first_play_free_eligible(db, user_id):
+        _append_ledger(
+            db,
+            user_id,
+            ACCOUNT_AVAILABLE,
+            "debit",
+            0,
+            int(wallet.available_balance or 0),
+            ref_reward_game_id=reward_game_id,
+            note="First plays free (onboarding)",
+        )
+        db.flush()
+        return True, "ok (first play free)", wallet_snapshot(wallet)
     avail = int(wallet.available_balance or 0)
     if avail < cost:
         return False, f"Need {cost} points (have {avail})", wallet_snapshot(wallet)

@@ -15,23 +15,26 @@
   </div>
 </div>
 {{ dual_guide([
-  "Move with <strong>← →</strong> or <strong>A/D</strong>; drag on canvas on mobile.",
+  "Move in <strong>4 directions</strong> with arrow keys or <strong>WASD</strong>; drag on canvas on mobile.",
   "Bullets fire <strong>automatically</strong> — shoot the fly block above.",
   "Dodge <strong>falling eggs</strong> 🥚 and flies that <strong>dive down</strong> 🪰.",
-  "Clear all flies to advance — <strong>10 levels</strong> get faster and tougher.",
-  "You have <strong>3 lives</strong>. Press ↻ to restart from Level 1.",
+  "Clear all flies to advance — <strong>50 levels</strong> get faster and tougher.",
+  "Collect <strong>❤️ hearts</strong> from defeated flies to restore lives (max 5).",
+  "You start with <strong>3 lives</strong>. Press ↻ to restart from Level 1.",
 ], [
-  "Di chuyển bằng <strong>← →</strong> hoặc <strong>A/D</strong>; kéo trên màn hình (mobile).",
+  "Di chuyển <strong>4 hướng</strong> bằng phím mũi tên hoặc <strong>WASD</strong>; kéo trên màn hình (mobile).",
   "Đạn bắn <strong>tự động</strong> — hạ đàn ruồi phía trên.",
   "Né <strong>trứng rơi</strong> 🥚 và ruồi <strong>lao xuống</strong> 🪰.",
-  "Tiêu diệt hết ruồi để qua màn — <strong>10 level</strong> càng lúc càng khó.",
-  "Có <strong>3 mạng</strong>. Nhấn ↻ để chơi lại từ Level 1.",
+  "Tiêu diệt hết ruồi để qua màn — <strong>50 level</strong> càng lúc càng khó.",
+  "Nhặt <strong>❤️ tim</strong> từ ruồi chết để hồi mạng (tối đa 5).",
+  "Bắt đầu <strong>3 mạng</strong>. Nhấn ↻ để chơi lại từ Level 1.",
 ]) }}
 {% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="/static/css/fly_shooter.css?v=20260609f">
+<link rel="stylesheet" href="/static/css/fly_shooter.css?v=20260610i">
 {% endblock %}
 {% block game_scripts %}
-<script src="/static/js/reward/spaceship_sprite.js?v=20260609f"></script>
-<script src="/static/js/reward/fly_shooter.js?v=20260609f"></script>
+<script src="/static/js/reward/space_flight_audio.js?v=20260610i"></script>
+<script src="/static/js/reward/spaceship_sprite.js?v=20260610i"></script>
+<script src="/static/js/reward/fly_shooter.js?v=20260610i"></script>
 {% endblock %}

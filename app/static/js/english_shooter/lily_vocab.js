@@ -243,7 +243,12 @@
     { key: "g2", label: "Lớp 2 — Chương trình học" },
   ];
 
-  global.LilyVocab = { MODES, SECTIONS, pickCelebrate(cfg) {
+  const MODE_ORDER = [
+    "bakery", "family", "animals", "fruit", "classroom", "colors",
+    "pets", "food", "home", "nature", "vehicles", "fashion",
+  ];
+
+  global.LilyVocab = { MODES, SECTIONS, MODE_ORDER, pickCelebrate(cfg) {
     const c = cfg?.celebrate;
     if (!c?.pool?.length) return null;
     return c.pool[Math.floor(Math.random() * c.pool.length)];
