@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from typing import Optional
 from app.core.database import SessionLocal
 from app.models.user_family import User, Role, Family
 from app.core import context
@@ -63,6 +64,15 @@ def get_current_admin(request: Request, db: Session = Depends(get_db)) -> str:
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Admin access required",
     )
+
+
+def is_valid_admin_token(token: Optional[str]) -> bool:
+    if not token:
+        return False
+    payload = decode_access_token(token)
+    if not payload or "sub" not in payload:
+        return False
+    return str(payload["sub"]).startswith("admin:")
 
 def require_role(role: Role):
     def role_checker(current_user: User = Depends(get_current_user)):

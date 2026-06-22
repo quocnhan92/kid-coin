@@ -23,6 +23,7 @@ from app.api.v1 import social as social_router
 from app.api.v1 import teen as teen_router
 from app.api.v1 import admin as admin_router
 from app.api.v1.play import router as play_router
+from app.api.v1.learning import router as learning_router
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services import admin_service
 from app.core.middleware import RequestContextMiddleware
@@ -40,6 +41,14 @@ from app.models.social import Club, ClubMember
 from app.models.audit import AuditLog
 from app.models.devices import FamilyDevice
 from app.models.notifications import Notification
+from app.models.learning import (
+    LearningSubject,
+    LearningChapter,
+    LearningLesson,
+    LearningChapterProgress,
+    LearningLessonProgress,
+    LearningDailySummary,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -95,17 +104,23 @@ app.include_router(teen_router.router, prefix="/api/v1/teen", tags=["Teen"])
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin UI"])
 app.include_router(play_router, prefix="/api/v1/play", tags=["Play"])
+app.include_router(learning_router, prefix="/api/v1/learning", tags=["Learning"])
 
 # --- Startup Event for Seeding Data ---
 @app.on_event("startup")
 def startup_event():
-    from app.core.migration_runner import run_alembic_upgrade
+    """Seed + scheduler. Migration chạy mỗi lần startup (nhanh nếu đã head)."""
+    if os.getenv("SKIP_STARTUP_MIGRATION", "").lower() not in ("1", "true", "yes"):
+        from app.core.migration_runner import run_alembic_upgrade
 
+        try:
+            run_alembic_upgrade()
+        except Exception as mig_err:
+            logger.error("Migration failed at startup — API learning có thể 500: %s", mig_err)
     try:
-        run_alembic_upgrade()
-    except Exception as mig_err:
-        logger.error("Migration failed at startup: %s", mig_err)
-    seed_initial_data()
+        seed_initial_data()
+    except Exception as seed_err:
+        logger.error("Startup seed failed (app vẫn chạy): %s", seed_err)
     start_scheduler()
     try:
         from app.core.game_registry import register_game_routes, register_legacy_redirects
@@ -132,6 +147,11 @@ def seed_initial_data():
             seed_platform(db)
         except Exception as plat_err:
             logger.warning("Platform seed skipped (run migration 017): %s", plat_err)
+        try:
+            from app.services.learning_curriculum_seed import seed_learning_curriculum
+            seed_learning_curriculum(db)
+        except Exception as learn_err:
+            logger.warning("Learning curriculum seed skipped: %s", learn_err)
 
         # Check if any user exists
         if db.query(User).first():
@@ -224,11 +244,13 @@ def seed_initial_data():
         logger.info("Seeding completed successfully!")
 
     except Exception as e:
-        logger.error(f"Seeding failed: {e}")
+        logger.error("Seeding failed: %s", e)
         db.rollback()
     finally:
-        # Seed Admin User
-        admin_service.seed_admin(db)
+        try:
+            admin_service.seed_admin(db)
+        except Exception as admin_err:
+            logger.warning("Admin seed skipped: %s", admin_err)
         db.close()
 
 @app.on_event("shutdown")
@@ -249,6 +271,15 @@ def get_user_from_cookie(access_token: Optional[str], db: Session) -> Optional[U
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse(request, "login.html")
+
+
+@app.get("/logout")
+async def logout_page():
+    """Đăng xuất bố mẹ/bé — chỉ xóa access_token, không ảnh hưởng admin_token."""
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie("access_token")
+    return response
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, access_token: Optional[str] = Cookie(None)):
@@ -301,6 +332,19 @@ async def read_kid_dashboard(request: Request, access_token: Optional[str] = Coo
         return response
         
     return templates.TemplateResponse(request, "kid_dashboard.html")
+
+@app.get("/learning", response_class=HTMLResponse)
+async def read_learning_page(request: Request, access_token: Optional[str] = Cookie(None)):
+    if not access_token:
+        return RedirectResponse("/login")
+    db = SessionLocal()
+    user = get_user_from_cookie(access_token, db)
+    db.close()
+    if not user:
+        response = RedirectResponse("/login")
+        response.delete_cookie("access_token")
+        return response
+    return render_page(request, "learning/index.html")
 
 # --- Game Hub Routes (Independent Module) ---
 
@@ -661,6 +705,14 @@ async def sitemap_xml():
 
 if __name__ == "__main__":
     import uvicorn
+
+    if os.getenv("SKIP_STARTUP_MIGRATION", "").lower() not in ("1", "true", "yes"):
+        try:
+            from app.core.migration_runner import run_alembic_upgrade
+
+            run_alembic_upgrade()
+        except Exception as mig_err:
+            logger.error("Pre-start migration failed: %s", mig_err)
 
     port = int(os.environ.get("PORT", "8000"))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

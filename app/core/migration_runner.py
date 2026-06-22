@@ -25,7 +25,15 @@ def run_alembic_upgrade() -> None:
             cfg.set_main_option("sqlalchemy.url", database_url)
 
         command.upgrade(cfg, "head")
-        logger.info("Database migration completed successfully.")
+        from alembic.script import ScriptDirectory
+        from alembic.runtime.migration import MigrationContext
+        from sqlalchemy import create_engine
+
+        engine = create_engine(cfg.get_main_option("sqlalchemy.url"))
+        with engine.connect() as conn:
+            rev = MigrationContext.configure(conn).get_current_revision()
+        head = ScriptDirectory.from_config(cfg).get_current_head()
+        logger.info("Database migration OK — revision %s (head %s)", rev, head)
     except Exception as e:
         logger.error(f"Database migration failed: {e}")
         raise

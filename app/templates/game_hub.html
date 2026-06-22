@@ -540,9 +540,10 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/static/css/feature-guide.css">
 </head>
 
-<body>
+<body class="game-hub-page">
   <!-- Navbar -->
   <nav class="navbar">
     <a href="/game" class="logo">
@@ -551,6 +552,7 @@
     </a>
     <div class="nav-links">
       <a href="/game" class="hide-mobile">Tất cả Game</a>
+      <a href="/learning" class="hide-mobile">Học tập</a>
       <a href="/" class="hide-mobile">KidCoin App</a>
       <button type="button" id="ga-nav-btn" class="ga-nav-auth-btn">Đăng nhập / Đăng ký</button>
     </div>
@@ -558,6 +560,9 @@
 
   <!-- Hero -->
   <section class="hero">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('game_hub')" title="Hướng dẫn kho game" style="background:#2a2a4a;color:#c4b5fd;border:1px solid #4c4c7a">❓ Hướng dẫn</button>
+    </div>
     <div class="hero-badge">🕹️ Chơi miễn phí ngay trên trình duyệt, không cần cài đặt! Các mini game vui nhộn giúp bé
       học tư duy và giải trí lành mạnh · Đăng ký một lần cho Kid Coin + Math Blast</div>
     <h1>🚀 Dành cho các bé chơi mà học, học mà chơi</h1>
@@ -598,6 +603,7 @@
     <!-- Learning games -->
     <div class="section-header">
       <h2 class="section-title">📚 Learning Games (Học tập)</h2>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('game_hub')" title="Hướng dẫn" style="background:#2a2a4a;color:#c4b5fd;border:1px solid #4c4c7a">❓</button>
       <div class="section-line"></div>
     </div>
 
@@ -605,6 +611,7 @@
 
     <div class="section-header" style="margin-top:40px;">
       <h2 class="section-title">🎁 Reward Playground (Phần thưởng)</h2>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('game_reward')" title="Hướng dẫn Xu chơi" style="background:#2a2a4a;color:#c4b5fd;border:1px solid #4c4c7a">❓</button>
       <div class="section-line"></div>
     </div>
 
@@ -627,12 +634,14 @@
   <footer class="footer">
     <p>© 2025 <a href="/">KidCoin</a> · Ứng dụng Quản lý Việc nhà cho Trẻ em</p>
     <p style="margin-top:8px">
+      <a href="/learning">Học tập</a> ·
       <a href="/game">Game Hub</a> ·
       <a href="/login">Đăng nhập</a> ·
       <a href="mailto:admin@choimahoc.io.vn">Liên hệ</a>
     </p>
   </footer>
 
+  <script src="/static/js/feature-guide.js"></script>
   <script src="/static/js/platform/features.js?v=20260609"></script>
   <script src="/static/js/platform/game_hub_loader.js?v=20260609"></script>
   <script src="/static/js/platform/reward_hub_loader.js?v=20260610"></script>

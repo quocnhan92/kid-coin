@@ -7,6 +7,7 @@
     <title>Dashboard Phụ huynh — KidCoin</title>
     <meta name="robots" content="noindex, nofollow">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/feature-guide.css">
     <style>
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
@@ -147,6 +148,15 @@
                     class="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-bold border border-yellow-200 hidden md:block">
                     🎮 Thi đua cùng con
                 </a>
+                <a href="/learning"
+                    class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-bold border border-green-200 hidden sm:block">
+                    📚 Học tập
+                </a>
+                <a href="/game"
+                    class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-bold border border-indigo-200 hidden sm:block">
+                    🕹️ Game
+                </a>
+                <button type="button" onclick="FeatureGuide.open(parentGuideForTab(currentTab || 'overview'))" class="fg-help-btn" title="Hướng dẫn tab hiện tại">❓</button>
                 <button onclick="showCreateAdminModal()"
                     class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-bold border border-blue-200 hidden sm:block">
                     + Thêm Admin (Bố/Mẹ)
@@ -176,6 +186,10 @@
             <button onclick="switchTab('kids')"
                 class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
                 👶 Các con
+            </button>
+            <button onclick="switchTab('learning')"
+                class="tab-btn px-4 py-2 border-b-2 border-transparent text-green-600 font-bold hover:text-green-800 hover:bg-green-50 whitespace-nowrap rounded-t-lg transition-colors">
+                📚 Học tập
             </button>
             <button onclick="switchTab('tasks')"
                 class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-600 font-medium hover:text-gray-800 hover:bg-gray-50 whitespace-nowrap rounded-t-lg transition-colors">
@@ -212,6 +226,14 @@
             <a href="/kid"
                 class="sm:hidden px-4 py-2 border-b-2 border-transparent text-yellow-600 font-bold hover:text-yellow-800 hover:bg-yellow-50 whitespace-nowrap rounded-t-lg transition-colors">
                 🎮 Vào làm nhiệm vụ
+            </a>
+            <a href="/learning"
+                class="sm:hidden px-4 py-2 border-b-2 border-transparent text-green-600 font-bold hover:text-green-800 hover:bg-green-50 whitespace-nowrap rounded-t-lg transition-colors">
+                📚 Học tập
+            </a>
+            <a href="/game"
+                class="sm:hidden px-4 py-2 border-b-2 border-transparent text-indigo-600 font-bold hover:text-indigo-800 hover:bg-indigo-50 whitespace-nowrap rounded-t-lg transition-colors">
+                🕹️ Game
             </a>
             <button onclick="showCreateAdminModal()"
                 class="sm:hidden px-4 py-2 border-b-2 border-transparent text-blue-600 font-medium hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap rounded-t-lg transition-colors">
@@ -281,6 +303,23 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="kids-grid">
                 <p class="text-gray-500 text-center py-8 col-span-full">Đang tải...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Học tập hè -->
+        <div id="learning" class="tab-content hidden-section fade-in">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-2xl font-black text-gray-800">📚 Lộ trình học ở nhà</h2>
+                        <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('parent_learning')" title="Hướng dẫn">❓</button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Bé tự chọn lớp — ôn lại không cộng điểm lần hai. Gợi ý 15–60 phút/ngày.</p>
+                </div>
+                <a href="/learning" class="px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700">🎯 Bé vào học</a>
+            </div>
+            <div id="learning-overview" class="space-y-6">
+                <p class="text-gray-500">Đang tải...</p>
             </div>
         </div>
 
@@ -1507,6 +1546,18 @@
             }
 
             loadTabData(tab);
+
+            const parentGuideMap = {
+                overview: 'parent_overview', kids: 'parent_kids', learning: 'parent_learning',
+                tasks: 'parent_tasks', rewards: 'parent_rewards', clubs: 'parent_clubs',
+                pending: 'parent_pending', expansion: 'parent_overview', audit: 'parent_overview'
+            };
+            if (window.FeatureGuide && parentGuideMap[tab]) FeatureGuide.setFabGuide(parentGuideMap[tab]);
+        }
+
+        function parentGuideForTab(tab) {
+            const m = { overview: 'parent_overview', kids: 'parent_kids', learning: 'parent_learning', tasks: 'parent_tasks', rewards: 'parent_rewards', clubs: 'parent_clubs', pending: 'parent_pending' };
+            return m[tab] || 'parent_overview';
         }
 
         async function loadTabData(tab) {
@@ -1515,6 +1566,8 @@
                     await loadOverview();
                 } else if (tab === 'kids') {
                     await loadKids();
+                } else if (tab === 'learning') {
+                    await loadLearningOverview();
                 } else if (tab === 'tasks') {
                     await loadTasks();
                 } else if (tab === 'rewards') {
@@ -1612,6 +1665,64 @@
                 if (container) {
                     container.innerHTML = '<div class="p-6 bg-red-50 rounded-xl border border-red-100 text-red-600">Lỗi tải mục Tổng quan. Mở console để biết chi tiết.</div>';
                 }
+            }
+        }
+
+        async function loadLearningOverview() {
+            const box = document.getElementById('learning-overview');
+            try {
+                const data = await fetchJsonSafe(`${API_BASE}/learning/parent/overview`);
+                if (!data.kids || !data.kids.length) {
+                    box.innerHTML = '<p class="text-gray-500">Chưa có bé trong gia đình.</p>';
+                    return;
+                }
+                box.innerHTML = data.kids.map(kid => `
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                        <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                            <h3 class="text-xl font-black text-gray-800">${kid.display_name}</h3>
+                            <div class="text-sm text-gray-600">Hôm nay <strong>${kid.today_minutes} phút</strong> · ${kid.today_lessons || 0} bài · Tuần <strong>${kid.week_minutes} phút</strong></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            ${(kid.subjects || []).map(s => `
+                                <div class="rounded-xl border border-green-100 bg-green-50/50 p-4">
+                                    <div class="font-bold">${s.icon} ${s.name}</div>
+                                    <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-green-500 rounded-full" style="width:${s.progress_pct}%"></div>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">${s.progress_pct}% · ⭐ ${s.stars_total}</div>
+                                </div>
+                            `).join('') || '<p class="text-gray-400 text-sm">Chưa có môn cho lớp này.</p>'}
+                        </div>
+                    </div>
+                `).join('');
+                const cps = data.pending_checkpoints || [];
+                if (cps.length) {
+                    box.innerHTML += `<div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                        <h4 class="font-bold text-amber-900 mb-2">👨‍👩‍👦 Chờ bố mẹ xác nhận</h4>
+                        ${cps.map(cp => `
+                            <div class="flex flex-wrap items-center justify-between gap-2 py-2 border-b border-amber-100 last:border-0">
+                                <span><strong>${cp.kid_name}</strong> — ${cp.lesson_title}</span>
+                                <button onclick="confirmLearningCheckpoint('${cp.checkpoint_id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700">Xác nhận 👍</button>
+                            </div>
+                        `).join('')}
+                    </div>`;
+                }
+            } catch (e) {
+                box.innerHTML = '<p class="text-red-500">Không tải được dữ liệu học tập.</p>';
+            }
+        }
+
+        async function confirmLearningCheckpoint(checkpointId) {
+            try {
+                const res = await fetch(`${API_BASE}/learning/family-checkpoints/${checkpointId}/confirm`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!res.ok) throw new Error(await res.text());
+                await loadLearningOverview();
+            } catch (e) {
+                alert('Không xác nhận được. Thử lại nhé!');
             }
         }
 
@@ -3371,6 +3482,15 @@
         </div>
     </div>
 
+    <script src="/static/js/feature-guide.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.FeatureGuide) {
+                FeatureGuide.mountFab('parent_overview');
+                FeatureGuide.setFabGuide('parent_overview');
+            }
+        });
+    </script>
 </body>
 
 </html>

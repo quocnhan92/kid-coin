@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Học theo lớp — ChoiMaHoc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/learning.css">
+  <link rel="stylesheet" href="/static/css/feature-guide.css">
+</head>
+<body class="learning-page">
+<div class="phone-frame">
+  <div class="learning-top-nav">
+    <a href="/kid">🏠 Việc nhà</a>
+    <a href="/game">🕹️ Game</a>
+  </div>
+  <div id="s1" class="screen active">
+    <div class="grade-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div>
+          <div class="title">🌟 Học theo lớp</div>
+          <div class="sub">Chọn lớp tự do — bài ngắn 5–10 phút, học lại được nhưng điểm chỉ tính lần đầu!</div>
+        </div>
+        <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_home')" title="Hướng dẫn">❓</button>
+      </div>
+    </div>
+    <div class="daily-badge" id="daily-badge">Đang tải...</div>
+    <div class="today-nav"><button type="button" class="today-nav-btn" onclick="goTodaySchedule()">📅 Lịch học hôm nay</button></div>
+    <div class="grade-grid" id="grade-grid"></div>
+  </div>
+
+  <div id="s0" class="screen">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goScreen('s1')">←</button>
+      <span class="top-bar-title" id="s0-title">Hôm nay</span>
+      <button type="button" class="sound-btn" onclick="toggleSound(this)">🔊</button>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_schedule')" title="Hướng dẫn">❓</button>
+    </div>
+    <div class="daily-badge" id="schedule-badge">Đang tải...</div>
+    <div class="schedule-list" id="schedule-list"></div>
+  </div>
+
+  <div id="s2" class="screen">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goScreen('s1')">←</button>
+      <span class="top-bar-title" id="s2-title">Lớp 1</span>
+      <button type="button" class="sound-btn" onclick="toggleSound(this)">🔊</button>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_subjects')" title="Hướng dẫn">❓</button>
+      <span class="grade-badge" id="s2-badge">Lớp 1</span>
+    </div>
+    <div class="teacher-panel hide" id="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <div class="teacher-panel-title">🎓 Giáo viên online</div>
+          <div class="teacher-panel-sub">Tiết 30 phút — máy đọc, bé làm theo từng bước</div>
+        </div>
+        <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_teacher')" title="Hướng dẫn">❓</button>
+      </div>
+      <div class="teacher-panel-list-wrap">
+        <div class="teacher-panel-list" id="teacher-panel-list">
+          <p class="teacher-loading">Đang tải tiết…</p>
+        </div>
+        <div class="teacher-scroll-hint hide" id="teacher-scroll-hint">Vuốt để xem thêm tiết ↓</div>
+      </div>
+    </div>
+    <div class="subject-section">
+      <div class="subject-section-label">📚 Các môn — bài ngắn</div>
+      <div class="subject-grid" id="subject-grid"></div>
+    </div>
+  </div>
+
+  <div id="s3" class="screen">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goScreen('s2')">←</button>
+      <span class="top-bar-title" id="s3-title">Toán</span>
+      <button type="button" class="sound-btn" onclick="toggleSound(this)">🔊</button>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_map')" title="Hướng dẫn">❓</button>
+      <span class="grade-badge" id="s3-badge">Lớp 1</span>
+    </div>
+    <div class="topic-header">
+      <div class="breadcrumb" id="s3-breadcrumb"></div>
+      <div class="topic-title" id="s3-icon-title"></div>
+      <div class="topic-desc" id="s3-desc"></div>
+    </div>
+    <div class="overall-progress"><div class="overall-progress-fill" id="overall-fill" style="width:0"></div></div>
+    <div class="progress-label" id="progress-label"></div>
+    <div class="parent-tip"><strong>💡 Gợi ý:</strong> Mỗi ngọn núi là một chủ đề. Mỗi bài ~5 phút — nghỉ hè học 15–60 phút/ngày là vừa!</div>
+    <div class="zigzag-map" id="chapter-list"></div>
+  </div>
+
+  <div id="s4" class="screen">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goScreen('s3')">←</button>
+      <span class="top-bar-title" id="s4-title">Chủ đề</span>
+      <button type="button" class="sound-btn" onclick="toggleSound(this)">🔊</button>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_map')" title="Hướng dẫn">❓</button>
+    </div>
+    <div class="lesson-list" id="lesson-list"></div>
+  </div>
+
+  <div id="s5" class="screen">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="backFromLesson()">←</button>
+      <span class="top-bar-title" id="s5-title">Bài học</span>
+      <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('learning_lesson')" title="Hướng dẫn">❓</button>
+    </div>
+    <div class="player-body" id="player-body"></div>
+    <div style="padding:1rem;text-align:center">
+      <button type="button" class="modal-btn" id="finish-lesson-btn" onclick="finishLessonManual()">Hoàn thành ✅</button>
+    </div>
+  </div>
+
+  <div class="mascot" onclick="speakMascot()">
+    <div class="mascot-speech" id="mascot-speech">Bắt đầu học thôi! 🎉</div>
+    <div class="mascot-body">🐱</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal-dialog">
+    <span style="font-size:56px" id="modal-emoji">🚀</span>
+    <div style="font-size:20px;font-weight:700;margin:12px 0" id="modal-title"></div>
+    <div style="font-size:14px;color:#6B6B6B;margin-bottom:1rem" id="modal-desc"></div>
+    <button type="button" class="modal-btn" id="modal-ok">Đồng ý 👍</button>
+  </div>
+</div>
+
+<script src="/static/js/feature-guide.js"></script>
+<script src="/static/js/learning/player.js"></script>
+<script src="/static/js/learning/app.js"></script>
+</body>
+</html>

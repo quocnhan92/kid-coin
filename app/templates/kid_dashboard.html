@@ -6,6 +6,7 @@
     <title>Dashboard Bé — KidCoin</title>
     <meta name="robots" content="noindex, nofollow">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/feature-guide.css">
     <style>
         .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
         .tab-content.active { display: block; }
@@ -79,12 +80,26 @@
             </div>
         </div>
 
+        <!-- Quick links: Học & Game -->
+        <div class="px-4 pt-3 pb-1 bg-yellow-50 flex gap-2 z-30">
+            <a href="/learning" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-green-500 text-white text-xs font-black shadow-md border-b-4 border-green-700 active:scale-95 transition-transform">
+                <span class="text-lg">📚</span> Học tập
+            </a>
+            <a href="/game" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-indigo-500 text-white text-xs font-black shadow-md border-b-4 border-indigo-700 active:scale-95 transition-transform">
+                <span class="text-lg">🕹️</span> Chơi game
+            </a>
+        </div>
+
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto p-4 pb-24 bg-yellow-50">
 
             <!-- Tab: Quests (Nhiệm vụ) -->
             <div id="tab-quests" class="tab-content active space-y-4">
-                <h2 class="text-lg font-black text-yellow-800 mb-2 uppercase tracking-wide">Việc hôm nay 📅</h2>
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-black text-yellow-800 uppercase tracking-wide">Việc hôm nay 📅</h2>
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_quests')" title="Hướng dẫn">❓</button>
+                </div>
+                <p class="fg-inline-hint">Làm việc → Nộp (chụp ảnh nếu cần) → chờ bố mẹ duyệt → nhận Coin nhà 💰</p>
                 <div id="quest-list" class="space-y-3">
                     <div class="text-center text-gray-400 py-10">Đang tải nhiệm vụ...</div>
                 </div>
@@ -112,8 +127,11 @@
 
             <!-- Tab: Shop (Cửa hàng) -->
             <div id="tab-shop" class="tab-content space-y-4">
-                <h2 class="text-lg font-black text-purple-800 mb-2 uppercase tracking-wide">Đổi Quà 🎁</h2>
-                
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-black text-purple-800 uppercase tracking-wide">Đổi Quà 🎁</h2>
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_shop')" title="Hướng dẫn">❓</button>
+                </div>
+                <p class="fg-inline-hint">Dùng Coin nhà (không phải Xu chơi) — bố mẹ duyệt trước khi nhận quà.</p>
                 <div class="mt-4 mb-6">
                     <h2 class="text-md font-black text-purple-700 mb-3 uppercase tracking-wide flex items-center gap-2">
                         Gợi ý quà tặng ✨
@@ -155,7 +173,11 @@
             
             <!-- Tab: Clubs (Thi đua) -->
             <div id="tab-clubs" class="tab-content space-y-4">
-                <h2 class="text-lg font-black text-blue-800 mb-2 uppercase tracking-wide">Bảng xếp hạng 🏆</h2>
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-black text-blue-800 uppercase tracking-wide">Bảng xếp hạng 🏆</h2>
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_clubs')" title="Hướng dẫn">❓</button>
+                </div>
+                <p class="fg-inline-hint">Tham gia CLB gia đình — làm thử thách cùng bạn bè.</p>
                 <div id="club-list" class="space-y-3">
                     <div class="text-center text-gray-400 py-10">Đang tải nhóm...</div>
                 </div>
@@ -173,8 +195,10 @@
 
             <!-- Tab: Avatar Shop (Mặc đồ) -->
             <div id="tab-avatar" class="tab-content space-y-4">
-                <h2 class="text-lg font-black text-pink-700 mb-2 uppercase tracking-wide">Trang trí Avatar ✨</h2>
-                
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-black text-pink-700 uppercase tracking-wide">Trang trí Avatar ✨</h2>
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_avatar')" title="Hướng dẫn">❓</button>
+                </div>
                 <div class="bg-white p-4 rounded-3xl border-4 border-pink-100 shadow-sm mb-6">
                     <h3 class="font-black text-pink-600 text-sm mb-3">Tủ đồ của bé 🎒</h3>
                     <div id="inventory-list" class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
@@ -190,6 +214,9 @@
 
             <!-- Tab: Finance (Tiền bạc) -->
             <div id="tab-finance" class="tab-content space-y-4">
+                <div class="flex justify-end mb-1">
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_finance')" title="Hướng dẫn">❓</button>
+                </div>
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
                     <div class="relative z-10">
                         <h2 class="text-xl font-black mb-1">Ví của bé 👛</h2>
@@ -218,8 +245,10 @@
 
             <!-- Tab: Thinking (Tư duy) -->
             <div id="tab-thinking" class="tab-content space-y-4">
-                <h2 class="text-lg font-black text-indigo-800 mb-2 uppercase tracking-wide">Thử thách trí tuệ 🧠</h2>
-                
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-black text-indigo-800 uppercase tracking-wide">Thử thách trí tuệ 🧠</h2>
+                    <button type="button" class="fg-help-btn" onclick="FeatureGuide.open('kid_thinking')" title="Hướng dẫn">❓</button>
+                </div>
                 <div id="problem-board" class="space-y-4">
                     <!-- Loaded via JS -->
                     <div class="text-center text-gray-400 py-10 italic">Đang tìm câu đố...</div>
@@ -1411,6 +1440,9 @@
             if (tabId === 'avatar') { fetchAvatarShop(); fetchInventory(); }
             if (tabId === 'finance') fetchFinanceData();
             if (tabId === 'thinking') fetchThinkingData();
+
+            const kidGuideMap = { quests: 'kid_quests', shop: 'kid_shop', clubs: 'kid_clubs', avatar: 'kid_avatar', finance: 'kid_finance', thinking: 'kid_thinking' };
+            if (window.FeatureGuide && kidGuideMap[tabId]) FeatureGuide.setFabGuide(kidGuideMap[tabId]);
         }
 
         // --- Notifications ---
@@ -1623,6 +1655,15 @@
                     pendingTaskUpload = null;
                 }
             });
+        });
+    </script>
+    <script src="/static/js/feature-guide.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.FeatureGuide) {
+                FeatureGuide.mountFab('kid_quests');
+                FeatureGuide.setFabGuide('kid_quests');
+            }
         });
     </script>
 </body>

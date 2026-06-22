@@ -33,12 +33,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="/admin/learning" class="nav-link {% if active_page == 'learning' %}active{% endif %}">
+                            <i class="fas fa-book-open"></i> Học tập
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/admin/logs" class="nav-link {% if active_page == 'logs' %}active{% endif %}">
                             <i class="fas fa-terminal"></i> Error Logs
                         </a>
                     </li>
                     <li class="nav-item" style="margin-top: 2rem;">
-                        <a href="/logout" class="nav-link">
+                        <a href="/admin/logout" class="nav-link">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>

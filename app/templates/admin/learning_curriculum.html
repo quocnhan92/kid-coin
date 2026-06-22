@@ -1,0 +1,77 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Học tập{% endblock %}
+{% block page_title %}Quản lý nội dung học tập{% endblock %}
+{% block page_subtitle %}Bổ sung môn, chủ đề, bài học theo lớp — chương trình Kết nối tri thức.{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:1rem">
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
+    <div>
+      <label>Lớp</label>
+      <select id="filter-grade" style="padding:0.5rem;border-radius:8px">
+        <option value="">Tất cả</option>
+        <option value="1">Lớp 1</option>
+        <option value="2">Lớp 2</option>
+        <option value="3">Lớp 3</option>
+        <option value="4">Lớp 4</option>
+        <option value="5">Lớp 5</option>
+      </select>
+    </div>
+    <button class="modal-btn" style="padding:0.5rem 1rem" onclick="loadSubjects()">Tải lại</button>
+  </div>
+</div>
+
+<div class="grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+  <div class="card">
+    <div class="card-title">Môn học</div>
+    <div id="subject-list" style="max-height:400px;overflow:auto"></div>
+    <hr style="margin:1rem 0">
+    <h4>Thêm môn</h4>
+    <input id="new-subj-id" placeholder="id (toan-g2)" style="width:100%;margin:4px 0;padding:6px">
+    <input id="new-subj-name" placeholder="Tên môn" style="width:100%;margin:4px 0;padding:6px">
+    <input id="new-subj-grade" type="number" min="1" max="5" value="1" style="width:100%;margin:4px 0;padding:6px">
+    <button class="modal-btn" style="margin-top:8px" onclick="createSubject()">Tạo môn</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Chủ đề <span id="sel-subject-label"></span></div>
+    <div id="chapter-list" style="max-height:320px;overflow:auto"></div>
+    <hr style="margin:1rem 0">
+    <input id="new-ch-name" placeholder="Tên chủ đề" style="width:100%;margin:4px 0;padding:6px">
+    <input id="new-ch-sub" placeholder="Mô tả ngắn" style="width:100%;margin:4px 0;padding:6px">
+    <button class="modal-btn" style="margin-top:8px" onclick="createChapter()">Thêm chủ đề</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Bài học <span id="sel-chapter-label"></span></div>
+    <div id="lesson-list" style="max-height:280px;overflow:auto"></div>
+    <hr style="margin:1rem 0">
+    <input id="new-lesson-title" placeholder="Tiêu đề bài" style="width:100%;margin:4px 0;padding:6px">
+    <textarea id="new-lesson-json" rows="4" placeholder='{"pass_score":60,"questions":[...]}' style="width:100%;margin:4px 0;padding:6px;font-family:monospace;font-size:12px"></textarea>
+    <button class="modal-btn" style="margin-top:8px" onclick="createLesson()">Thêm bài</button>
+    <button class="modal-btn" style="margin-top:8px;background:#4CAF50" onclick="publishChapter()">Publish chủ đề</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <div class="card-title">Bước giảng dạy (guided) <span id="sel-lesson-label"></span></div>
+  <div id="step-list" style="max-height:200px;overflow:auto"></div>
+  <hr style="margin:1rem 0">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <input id="new-step-sort" type="number" value="0" placeholder="sort" style="width:60px;padding:6px">
+    <select id="new-step-type" style="padding:6px">
+      <option value="observe">observe</option>
+      <option value="choice">choice</option>
+      <option value="quiz">quiz</option>
+      <option value="family_checkpoint">family_checkpoint</option>
+      <option value="reward">reward</option>
+    </select>
+    <input id="new-step-emoji" value="👀" style="width:50px;padding:6px">
+  </div>
+  <textarea id="new-step-json" rows="3" placeholder='{"tts_text":"..."}' style="width:100%;margin:8px 0;padding:6px;font-family:monospace;font-size:12px"></textarea>
+  <button class="modal-btn" onclick="addGuidedStep()">Thêm bước</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin/learning_curriculum.js"></script>
+{% endblock %}

@@ -21,48 +21,101 @@ from app.schemas.platform import FeatureFlagAdminItem, FeatureFlagUpdateRequest
 from app.services import admin_service, analytics_service
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from urllib.parse import quote
+from app.api.v1.learning_admin import router as learning_admin_router
 
 router = APIRouter()
+router.include_router(learning_admin_router, prefix="/learning", tags=["Learning Admin"])
 templates = Jinja2Templates(directory="app/templates")
 
+ADMIN_PUBLIC_PATHS = {"/admin/login", "/admin/logout"}
+
+
+def _admin_login_redirect(request: Request) -> RedirectResponse:
+    nxt = request.url.path
+    if request.url.query:
+        nxt += "?" + request.url.query
+    return RedirectResponse(url=f"/admin/login?next={quote(nxt, safe='')}", status_code=302)
+
+
+def require_admin_html(request: Request):
+    """Chỉ chấp nhận admin_token — không dùng access_token của bố mẹ/bé."""
+    token = request.cookies.get("admin_token")
+    if not deps.is_valid_admin_token(token):
+        return _admin_login_redirect(request)
+    return None
+
 # --- HTML ROUTES ---
+
+@router.get("/login", response_class=HTMLResponse)
+async def admin_login_page(request: Request):
+    if deps.is_valid_admin_token(request.cookies.get("admin_token")):
+        nxt = request.query_params.get("next") or "/admin"
+        return RedirectResponse(url=nxt, status_code=302)
+    return templates.TemplateResponse(request, "admin/login.html", {
+        "next_url": request.query_params.get("next") or "/admin",
+    })
+
+
+@router.get("/logout", response_class=RedirectResponse)
+async def admin_logout_page():
+    response = RedirectResponse(url="/admin/login", status_code=302)
+    response.delete_cookie("admin_token")
+    return response
+
+
+@router.post("/auth/logout")
+async def admin_logout_api(response: Response):
+    response.delete_cookie("admin_token")
+    return {"message": "Đã đăng xuất admin"}
+
 
 @router.get("/", response_class=HTMLResponse)
 async def admin_dashboard_page(
     request: Request,
     db: Session = Depends(deps.get_db)
 ):
-    # In a real app, we'd check for admin token in cookies
-    token = request.cookies.get("admin_token")
-    if not token:
-        # For this demo/test environment, we might allow bypass or redirect
-        # return RedirectResponse("/api/v1/admin/login-page") 
-        pass
+    denied = require_admin_html(request)
+    if denied:
+        return denied
         
-    return templates.TemplateResponse("admin/dashboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin/dashboard.html", {
         "active_page": "dashboard"
     })
 
 @router.get("/families", response_class=HTMLResponse)
 async def admin_families_page(request: Request):
-    return templates.TemplateResponse("admin/families.html", {
-        "request": request,
+    denied = require_admin_html(request)
+    if denied:
+        return denied
+    return templates.TemplateResponse(request, "admin/families.html", {
         "active_page": "families"
     })
 
 @router.get("/master-data", response_class=HTMLResponse)
 async def admin_master_data_page(request: Request):
-    return templates.TemplateResponse("admin/master_data.html", {
-        "request": request,
+    denied = require_admin_html(request)
+    if denied:
+        return denied
+    return templates.TemplateResponse(request, "admin/master_data.html", {
         "active_page": "master_data"
+    })
+
+@router.get("/learning", response_class=HTMLResponse)
+async def admin_learning_page(request: Request):
+    denied = require_admin_html(request)
+    if denied:
+        return denied
+    return templates.TemplateResponse(request, "admin/learning_curriculum.html", {
+        "active_page": "learning"
     })
 
 @router.get("/logs", response_class=HTMLResponse)
 async def admin_logs_page(request: Request):
-    # Create logs template or just reuse dashboard's log section
-    return templates.TemplateResponse("admin/dashboard.html", {
-        "request": request,
+    denied = require_admin_html(request)
+    if denied:
+        return denied
+    return templates.TemplateResponse(request, "admin/dashboard.html", {
         "active_page": "logs"
     })
 
@@ -80,8 +133,13 @@ async def admin_login(
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
     token = admin_service.create_admin_token(admin.id)
-    # Set cookie for potential admin panel UI
-    response.set_cookie(key="admin_token", value=token, httponly=True)
+    response.set_cookie(
+        key="admin_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 8,
+    )
     return {"access_token": token, "token_type": "bearer"}
 
 @router.get("/auth/me", response_model=admin_schemas.AdminUserResponse)
